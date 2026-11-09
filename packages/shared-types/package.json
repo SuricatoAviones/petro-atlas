@@ -2,5 +2,25 @@
   "name": "@petroatlas/shared-types",
   "version": "0.0.0",
   "private": true,
-  "type": "module"
+  "description": "Domain types and Zod schemas shared by the web, the API and the ETL.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "@petroatlas/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc --project tsconfig.build.json",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "4.6.7"
+  }
 }
