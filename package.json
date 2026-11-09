@@ -1,0 +1,16 @@
+{
+  "name": "petroatlas",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Open-source oil well explorer: map, production and pressure series, and engineering tools.",
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@12.18.0",
+  "engines": {
+    "node": ">=26.13.0"
+  },
+  "scripts": {
+    "build": "pnpm --recursive build",
+    "typecheck": "pnpm --recursive typecheck"
+  }
+}
