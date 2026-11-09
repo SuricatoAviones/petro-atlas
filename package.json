@@ -13,7 +13,8 @@
     "build": "pnpm --recursive --if-present run build",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
-    "typecheck": "pnpm --recursive --if-present run typecheck"
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit && pnpm --recursive --if-present run typecheck"
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",
@@ -23,6 +24,8 @@
     "globals": "17.14.0",
     "prettier": "3.9.10",
     "typescript": "6.0.3",
-    "typescript-eslint": "8.72.1"
+    "typescript-eslint": "8.72.1",
+    "vite": "8.3.6",
+    "vitest": "5.1.0"
   }
 }
