@@ -11,6 +11,14 @@ export default defineConfig({
           include: ['src/**/*.test.ts'],
         },
       },
+      {
+        extends: true,
+        test: {
+          name: 'db',
+          root: './db',
+          include: ['seed/**/*.test.ts'],
+        },
+      },
     ],
   },
 });

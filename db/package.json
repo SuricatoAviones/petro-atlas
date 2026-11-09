@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "migrate": "node --env-file-if-exists=../.env scripts/migrate.ts",
+    "seed": "node --env-file-if-exists=../.env seed/seed.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
