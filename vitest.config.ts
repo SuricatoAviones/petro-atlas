@@ -1,6 +1,9 @@
+import { defaultServerConditions } from 'vite';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  // Resolve workspace packages to their TypeScript sources, as in tsconfig.base.json.
+  ssr: { resolve: { conditions: ['@petroatlas/source', ...defaultServerConditions] } },
   test: {
     projects: [
       {
@@ -16,6 +19,14 @@ export default defineConfig({
         test: {
           name: 'shared-types',
           root: './packages/shared-types',
+          include: ['src/**/*.test.ts'],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'api',
+          root: './apps/api',
           include: ['src/**/*.test.ts'],
         },
       },
