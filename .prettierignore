@@ -1,0 +1,14 @@
+pnpm-lock.yaml
+data/
+coverage/
+**/dist/
+**/.next/
+**/next-env.d.ts
+
+# Design documents are edited by hand (docs/README.md)
+docs/
+
+# Local agent tooling
+.agents/
+.claude/
+skills-lock.json
