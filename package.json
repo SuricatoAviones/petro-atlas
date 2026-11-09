@@ -14,7 +14,8 @@
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit && pnpm --recursive --if-present run typecheck"
+    "typecheck": "tsc --noEmit && pnpm --recursive --if-present run typecheck",
+    "db:migrate": "pnpm --filter @petroatlas/db migrate"
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",

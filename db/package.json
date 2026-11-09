@@ -2,5 +2,16 @@
   "name": "@petroatlas/db",
   "version": "0.0.0",
   "private": true,
-  "type": "module"
+  "description": "PostgreSQL + PostGIS migrations and synthetic seed data.",
+  "type": "module",
+  "scripts": {
+    "migrate": "node --env-file-if-exists=../.env scripts/migrate.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "pg": "8.23.1"
+  },
+  "devDependencies": {
+    "@types/pg": "8.23.1"
+  }
 }
