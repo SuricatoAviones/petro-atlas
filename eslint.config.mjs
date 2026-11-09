@@ -1,5 +1,6 @@
 // @ts-check
 import js from '@eslint/js';
+import nextCoreWebVitals from 'eslint-config-next/core-web-vitals';
 import prettier from 'eslint-config-prettier/flat';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import globals from 'globals';
@@ -40,6 +41,12 @@ export default defineConfig([
     files: ['**/*.{js,mjs,cjs}'],
     extends: [tseslint.configs.disableTypeChecked],
     languageOptions: { globals: globals.node },
+  },
+
+  {
+    files: ['apps/web/**'],
+    extends: [nextCoreWebVitals],
+    settings: { next: { rootDir: 'apps/web/' } },
   },
 
   // docs/12: named exports only, except where a framework requires a default export.
