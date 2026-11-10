@@ -39,7 +39,7 @@ body {
 
 .app-shell {
   display: grid;
-  grid-template-rows: var(--header-height) 1fr;
+  grid-template-rows: var(--header-height) 1fr auto;
   height: 100dvh;
 }
 
@@ -95,6 +95,63 @@ body {
 
 .app-main--page {
   overflow-y: auto;
+}
+
+.app-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem 1rem;
+  padding: 0.5rem 1rem;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-panel);
+  color: var(--color-ink-muted);
+  font-size: 0.72rem;
+}
+
+.app-footer p {
+  margin: 0;
+}
+
+.app-footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.9rem;
+}
+
+.app-footer a {
+  color: var(--color-header);
+  text-decoration: none;
+}
+
+.app-footer a:hover {
+  text-decoration: underline;
+}
+
+.legal-page__updated {
+  margin: -0.75rem 0 1.5rem;
+  color: var(--color-ink-muted);
+  font-size: 0.8rem;
+}
+
+.legal-section {
+  margin: 1.5rem 0;
+}
+
+.legal-section h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+}
+
+.legal-section p {
+  margin: 0.5rem 0;
+}
+
+.legal-section__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
 }
 
 .page {

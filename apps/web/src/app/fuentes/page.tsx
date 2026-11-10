@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import { AppFooter } from '@/components/app-footer';
 import { AppHeader } from '@/components/app-header';
 import { SourcesList } from '@/components/sources-list';
 import { messages } from '@/messages/es';
@@ -25,6 +26,7 @@ export default function SourcesPage() {
           </Link>
         </div>
       </main>
+      <AppFooter />
     </div>
   );
 }

@@ -3,10 +3,11 @@ import Link from 'next/link';
 import { messages } from '@/messages/es';
 
 interface AppHeaderProps {
-  current: 'map' | 'sources';
+  /** Page highlighted in the header; legal pages do not highlight any. */
+  current?: 'map' | 'sources';
 }
 
-/** Application header with the two pages of phase 1. */
+/** Application header with the main pages. */
 export function AppHeader({ current }: AppHeaderProps) {
   return (
     <header className="app-header">
