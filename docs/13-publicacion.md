@@ -37,6 +37,8 @@ npm publish --access public
 
 `prepublishOnly` compila el paquete antes de empaquetar. `publishConfig.access` ya está en `public`, así que `npm publish` sin `--access public` también funciona, pero se deja explícito para que la intención quede clara.
 
+Si la cuenta exige verificación en dos pasos, npm devuelve un 403. En una terminal interactiva se introduce el código cuando lo pide; en un entorno automatizado se usa `--otp=<código>` o un token granular con la opción de omitir 2FA.
+
 ### Verificación posterior
 
 ```bash
@@ -71,6 +73,7 @@ El tag usa el prefijo `petro-calc-v` para no confundirse con las versiones de la
 | --- | --- | --- |
 | `ENEEDAUTH` | No hay sesión de npm en la máquina | `npm login` |
 | `403 Forbidden` | La cuenta no tiene permiso sobre el ámbito | Crear o unirse a la organización `@petroatlas`, o cambiar el nombre del paquete |
+| `403` con «Two-factor authentication» | La cuenta exige 2FA para publicar | Repetir con `--otp=<código>` o usar un token granular con bypass de 2FA |
 | `404 Not Found` al publicar | El ámbito no existe o no es visible para la cuenta | Confirmar el ámbito antes de publicar |
 | `EPUBLISHCONFLICT` | La versión ya existe | Subir la versión; no se reutiliza una versión publicada |
 | El tarball no lleva `dist` | Falta el build | Ejecutar `pnpm build`; `prepublishOnly` también lo hace |
