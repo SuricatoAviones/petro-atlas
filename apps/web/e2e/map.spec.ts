@@ -78,4 +78,8 @@ test('filters the map, opens a well and keeps the view after a reload', async ({
   expect(afterView[0]).toBeCloseTo(beforeView[0], 3);
   expect(afterView[1]).toBeCloseTo(beforeView[1], 3);
   expect(afterView[2]).toBeCloseTo(beforeView[2], 2);
+
+  const filterPanel = page.getByRole('complementary', { name: 'Filtros de pozos' });
+  await filterPanel.getByRole('radio', { name: 'Petróleo' }).check();
+  await expect(filterPanel.getByText('Volumen acumulado')).toBeVisible();
 });

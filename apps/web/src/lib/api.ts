@@ -3,11 +3,13 @@ import {
   fieldListResponseSchema,
   sourceListResponseSchema,
   wellCollectionResponseSchema,
+  wellCumulativeResponseSchema,
   wellDetailSchema,
   wellProductionResponseSchema,
   wellTrajectoryResponseSchema,
   type FieldSummary,
   type SourceListResponse,
+  type WellCumulative,
   type WellDetail,
   type WellProductionResponse,
   type WellTrajectoryResponse,
@@ -42,6 +44,16 @@ export async function fetchWellCount(query: string, signal?: AbortSignal): Promi
   const suffix = query === '' ? '' : `&${query}`;
   const body = await getJson(`/api/wells?limit=1${suffix}`, signal);
   return wellCollectionResponseSchema.parse(body).totalCount;
+}
+
+/** Cumulative volumes per well for the bubble map (docs/06). */
+export async function fetchCumulativeWells(
+  query: string,
+  signal?: AbortSignal,
+): Promise<WellCumulative[]> {
+  const suffix = query === '' ? '' : `?${query}`;
+  return wellCumulativeResponseSchema.parse(await getJson(`/api/wells/cumulative${suffix}`, signal))
+    .items;
 }
 
 /** Metadata of one well and the series it has (docs/06, `GET /api/wells/:id`). */

@@ -25,6 +25,16 @@ export const messages = {
       field: 'Campo',
       unknownType: 'Sin tipo',
     },
+    bubbles: {
+      title: 'Mapa de burbujas',
+      none: 'Sin burbujas',
+      oil: 'Petróleo',
+      gas: 'Gas',
+      water: 'Agua',
+      legend: 'Volumen acumulado',
+      loading: 'Cargando los acumulados…',
+      loadError: 'No se pudieron cargar los acumulados.',
+    },
     /** Overrides for MapLibre's built-in control texts. */
     controls: {
       'NavigationControl.ZoomIn': 'Acercar',

@@ -31,6 +31,12 @@ export const WELL_OUTLINE_COLOR = '#13212b';
 export const CLUSTER_COLOR = '#12303a';
 export const CLUSTER_TEXT_COLOR = '#ffffff';
 
+export const BUBBLE_COLORS = {
+  oil: '#1a7f4b',
+  gas: '#c0392b',
+  water: '#1f6fb2',
+} as const;
+
 export const FIELD_FILL_COLOR = '#e0a526';
 export const FIELD_OUTLINE_COLOR = '#8a6410';
 export const FIELD_LABEL_COLOR = '#5c430b';

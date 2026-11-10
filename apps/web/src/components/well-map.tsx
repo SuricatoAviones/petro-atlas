@@ -23,8 +23,10 @@ import {
   WELL_LAYER_ID,
   WELL_SOURCE_ID,
   addWellLayers,
+  setBubbleLayer,
   setWellColorMode,
   setWellFilters,
+  type BubbleLayerState,
 } from './well-layers';
 
 type MapStatus = 'loading' | 'ready' | 'error';
@@ -71,6 +73,8 @@ export interface WellMapProps {
   filtersQuery: string;
   /** View read from the URL; only applied when the map is created. */
   initialView: MapView;
+  /** Cumulative bubbles replace the well points while this is set. */
+  bubbles: BubbleLayerState | null;
   onSelectWells: (wells: readonly WellAtPoint[]) => void;
   onViewChange: (view: MapView) => void;
 }
@@ -80,6 +84,7 @@ export function WellMap({
   colorMode,
   filtersQuery,
   initialView,
+  bubbles,
   onSelectWells,
   onViewChange,
 }: WellMapProps) {
@@ -90,6 +95,7 @@ export function WellMap({
   const latestFiltersQuery = useRef(filtersQuery);
   const latestOnSelectWells = useRef(onSelectWells);
   const latestOnViewChange = useRef(onViewChange);
+  const latestBubbles = useRef(bubbles);
   const [status, setStatus] = useState<MapStatus>('loading');
   const [hasDataError, setHasDataError] = useState(false);
 
@@ -108,6 +114,10 @@ export function WellMap({
   useEffect(() => {
     latestOnViewChange.current = onViewChange;
   }, [onViewChange]);
+
+  useEffect(() => {
+    latestBubbles.current = bubbles;
+  }, [bubbles]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -130,6 +140,7 @@ export function WellMap({
 
     map.once('load', () => {
       addWellLayers(map, latestColorMode.current, latestFiltersQuery.current);
+      setBubbleLayer(map, latestBubbles.current);
       mapRef.current = map;
       setStatus('ready');
     });
@@ -182,8 +193,15 @@ export function WellMap({
   useEffect(() => {
     if (status === 'ready' && mapRef.current !== null) {
       setWellFilters(mapRef.current, filtersQuery, latestColorMode.current);
+      setBubbleLayer(mapRef.current, latestBubbles.current);
     }
   }, [status, filtersQuery]);
+
+  useEffect(() => {
+    if (status === 'ready' && mapRef.current !== null) {
+      setBubbleLayer(mapRef.current, bubbles);
+    }
+  }, [status, bubbles]);
 
   return (
     <div className="well-map">

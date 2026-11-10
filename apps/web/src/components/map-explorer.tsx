@@ -1,15 +1,21 @@
 'use client';
 
-import type { FieldSummary } from '@petroatlas/shared-types';
+import type { FieldSummary, WellCumulative } from '@petroatlas/shared-types';
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { fetchFields, fetchWellCount } from '@/lib/api';
+import { fetchCumulativeWells, fetchFields, fetchWellCount } from '@/lib/api';
+import { bubbleMaximum, type BubbleFluid } from '@/lib/bubble';
 import type { SheetTab, UnitSystem } from '@/lib/sheet-state';
 import { parseMapUrlState, writeMapUrlState, type MapView } from '@/lib/url-state';
 import { toWellQuery, type WellFilters } from '@/lib/well-filters';
 
-import { FilterPanel, type FilterOptionsStatus, type WellCountState } from './filter-panel';
+import {
+  FilterPanel,
+  type BubbleStatus,
+  type FilterOptionsStatus,
+  type WellCountState,
+} from './filter-panel';
 import { LazyWellMap } from './lazy-well-map';
 import type { WellColorMode } from './well-colors';
 import type { WellAtPoint } from './well-map';
@@ -59,6 +65,43 @@ function useFieldOptions(): {
   return { status: state.status, fields: state.items, operators };
 }
 
+interface CumulativeState {
+  key: string | null;
+  status: BubbleStatus;
+  items: WellCumulative[];
+}
+
+function useCumulativeWells(
+  query: string,
+  fluid: BubbleFluid | null,
+): { status: BubbleStatus; items: readonly WellCumulative[] } {
+  const key = fluid === null ? null : `${fluid}|${query}`;
+  const [state, setState] = useState<CumulativeState>({
+    key: null,
+    status: 'idle',
+    items: [],
+  });
+
+  useEffect(() => {
+    if (key === null) return;
+    const controller = new AbortController();
+    fetchCumulativeWells(query, controller.signal)
+      .then((items) => {
+        if (!controller.signal.aborted) setState({ key, status: 'ready', items });
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setState({ key, status: 'error', items: [] });
+      });
+    return () => {
+      controller.abort();
+    };
+  }, [key, query]);
+
+  if (key === null) return { status: 'idle', items: [] };
+  if (state.key !== key) return { status: 'loading', items: state.items };
+  return { status: state.status, items: state.items };
+}
+
 function useWellCount(query: string): WellCountState {
   const [state, setState] = useState<CountState>({
     status: 'loading',
@@ -96,6 +139,7 @@ export function MapExplorer() {
   const [view, setView] = useState<MapView>(initialUrlState.view);
   const [sheetTab, setSheetTab] = useState<SheetTab>(initialUrlState.tab);
   const [unitSystem, setUnitSystem] = useState<UnitSystem>(initialUrlState.unitSystem);
+  const [bubbleFluid, setBubbleFluid] = useState<BubbleFluid | null>(null);
   const [wellsAtPoint, setWellsAtPoint] = useState<readonly WellAtPoint[]>([]);
   const [selectedWell, setSelectedWell] = useState<WellSelection | null>(
     initialUrlState.wellSlug === null
@@ -105,6 +149,18 @@ export function MapExplorer() {
   const filterQuery = useMemo(() => toWellQuery(filters), [filters]);
   const options = useFieldOptions();
   const count = useWellCount(filterQuery);
+  const cumulative = useCumulativeWells(filterQuery, bubbleFluid);
+  const bubbleMax = useMemo(
+    () => (bubbleFluid === null ? 0 : bubbleMaximum(cumulative.items, bubbleFluid)),
+    [bubbleFluid, cumulative.items],
+  );
+  const bubbleLayer = useMemo(
+    () =>
+      bubbleFluid === null || cumulative.status !== 'ready'
+        ? null
+        : { fluid: bubbleFluid, items: cumulative.items },
+    [bubbleFluid, cumulative.items, cumulative.status],
+  );
   const selectedWellSlug = selectedWell?.slug ?? null;
 
   useEffect(() => {
@@ -144,14 +200,19 @@ export function MapExplorer() {
         optionsStatus={options.status}
         count={count}
         colorMode={colorMode}
+        bubbleFluid={bubbleFluid}
+        bubbleMax={bubbleMax}
+        bubbleStatus={cumulative.status}
         onFiltersChange={setFilters}
         onColorModeChange={setColorMode}
+        onBubbleFluidChange={setBubbleFluid}
       />
       <div className="map-explorer__map">
         <LazyWellMap
           colorMode={colorMode}
           filtersQuery={filterQuery}
           initialView={initialUrlState.view}
+          bubbles={bubbleLayer}
           onSelectWells={handleSelectWells}
           onViewChange={handleViewChange}
         />

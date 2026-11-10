@@ -2,10 +2,14 @@
  * Sources and layers drawn on top of the basemap: field outlines, well clusters and wells, all
  * from the vector tiles of the API (docs/06, "Teselas de pozos" and "Teselas de campos").
  */
+import type { WellCumulative } from '@petroatlas/shared-types';
 import type { ExpressionSpecification, Map as MapLibreMap } from 'maplibre-gl';
+
+import { bubbleMaximum, bubbleRadius, bubbleValue, type BubbleFluid } from '@/lib/bubble';
 
 import { mapConfig } from './map-config';
 import {
+  BUBBLE_COLORS,
   CLUSTER_COLOR,
   CLUSTER_TEXT_COLOR,
   FIELD_FILL_COLOR,
@@ -20,6 +24,8 @@ import {
 
 export const WELL_SOURCE_ID = 'wells';
 export const FIELD_SOURCE_ID = 'fields';
+export const CUMULATIVE_SOURCE_ID = 'cumulative';
+export const CUMULATIVE_LAYER_ID = 'cumulative-bubbles';
 
 export const WELL_LAYER_ID = 'wells-points';
 export const CLUSTER_LAYER_ID = 'clusters-circles';
@@ -187,4 +193,65 @@ export function setWellFilters(
     if (map.getSource(sourceId) !== undefined) map.removeSource(sourceId);
   }
   addWellLayers(map, colorMode, filterQuery);
+}
+
+export interface BubbleLayerState {
+  fluid: BubbleFluid;
+  items: readonly WellCumulative[];
+}
+
+function setDataLayersVisibility(map: MapLibreMap, visible: boolean): void {
+  for (const layerId of [WELL_LAYER_ID, CLUSTER_LAYER_ID, CLUSTER_COUNT_LAYER_ID]) {
+    if (map.getLayer(layerId) !== undefined) {
+      map.setLayoutProperty(layerId, 'visibility', visible ? 'visible' : 'none');
+    }
+  }
+}
+
+/** Replaces the well points with cumulative-production bubbles, or removes them. */
+export function setBubbleLayer(map: MapLibreMap, bubbles: BubbleLayerState | null): void {
+  if (map.getLayer(CUMULATIVE_LAYER_ID) !== undefined) map.removeLayer(CUMULATIVE_LAYER_ID);
+  if (map.getSource(CUMULATIVE_SOURCE_ID) !== undefined) map.removeSource(CUMULATIVE_SOURCE_ID);
+  if (bubbles === null) {
+    setDataLayersVisibility(map, true);
+    return;
+  }
+
+  const maximum = bubbleMaximum(bubbles.items, bubbles.fluid);
+  const features = bubbles.items.flatMap((item) => {
+    const value = bubbleValue(item, bubbles.fluid);
+    if (value === null || value <= 0) return [];
+    return [
+      {
+        type: 'Feature' as const,
+        geometry: {
+          type: 'Point' as const,
+          coordinates: [item.lonDeg, item.latDeg] as [number, number],
+        },
+        properties: {
+          name: item.name,
+          value,
+          radius: bubbleRadius(value, maximum),
+        },
+      },
+    ];
+  });
+
+  map.addSource(CUMULATIVE_SOURCE_ID, {
+    type: 'geojson',
+    data: { type: 'FeatureCollection', features },
+  });
+  map.addLayer({
+    id: CUMULATIVE_LAYER_ID,
+    type: 'circle',
+    source: CUMULATIVE_SOURCE_ID,
+    paint: {
+      'circle-radius': ['get', 'radius'],
+      'circle-color': BUBBLE_COLORS[bubbles.fluid],
+      'circle-opacity': 0.55,
+      'circle-stroke-color': WELL_OUTLINE_COLOR,
+      'circle-stroke-width': 1,
+    },
+  });
+  setDataLayersVisibility(map, false);
 }
