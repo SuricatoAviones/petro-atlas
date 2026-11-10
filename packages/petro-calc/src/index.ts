@@ -27,3 +27,28 @@ export {
   type ArpsFitOptions,
   type ArpsModel,
 } from './dca.ts';
+export {
+  composite,
+  fetkovich,
+  vogel,
+  type CompositeResult,
+  type FetkovichResult,
+  type IprPoint,
+  type VogelResult,
+} from './ipr.ts';
+export {
+  beggsRobinson,
+  beggsRobinsonDeadOil,
+  oilSpecificGravity,
+  standing,
+  standingBubblePoint,
+  standingOilVolumeFactor,
+  standingSolutionGas,
+  vasquezBeggs,
+  vasquezBeggsBubblePoint,
+  vasquezBeggsOilVolumeFactor,
+  vasquezBeggsSolutionGas,
+  type PvtInput,
+  type PvtResult,
+  type SolutionGasInput,
+} from './pvt.ts';
