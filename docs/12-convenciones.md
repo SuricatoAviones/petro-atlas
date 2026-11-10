@@ -49,6 +49,12 @@ Reglas que sigue todo cambio en el repositorio, lo escriba una persona o un agen
 - Un PR hace una cosa. Si el título necesita una "y", son dos PR.
 - No se sube a `main` sin que pase el CI.
 
+## Publicación
+
+- Solo se publica `petro-calc`, y solo desde `main` con el CI en verde.
+- La versión y el changelog se preparan en el PR; el tag se crea después de verificar la publicación. El procedimiento está en `13-publicacion.md`.
+- La publicación es manual: el CI no tiene credenciales de npm.
+
 ## Pruebas
 
 | Capa | Herramienta | Qué se prueba |

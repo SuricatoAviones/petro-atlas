@@ -2,7 +2,7 @@
 
 Explorador web de campos petroleros, de código abierto: un mapa de pozos como entrada, fichas con gráficas de producción y presión, y herramientas de ingeniería que calculan sobre los datos del pozo seleccionado. El nombre es provisional.
 
-> **Estado: fase 2 funcionalmente completa.** El mapa muestra los pozos y campos públicos de Sodir con clustering, filtros, ficha de pozo, estado en la URL, series de producción y operación de Volve, mapa de burbujas y alertas. Queda publicar la demo. El plan completo está en [docs/11-plan-de-fases.md](docs/11-plan-de-fases.md).
+> **Estado: fase 3 funcionalmente completa.** El mapa muestra los pozos y campos públicos de Sodir con clustering, filtros, ficha de pozo, estado en la URL, series de producción y operación, mapa de burbujas, alertas, ajuste de declinación, calculadoras IPR y PVT, y diagnóstico de Chan. `petro-calc` supera el 90 % de cobertura. Quedan la publicación del paquete en npm y la demo pública. El plan completo está en [docs/11-plan-de-fases.md](docs/11-plan-de-fases.md).
 
 ## Arranque rápido
 

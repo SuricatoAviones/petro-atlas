@@ -69,7 +69,7 @@ Objetivo: calcular sobre los datos del pozo.
 - [x] Pestaña Ingeniería con parámetros editables y curvas que responden al instante.
 - [x] Pestaña Diagnóstico: Chan, tasa vs acumulado e índice de productividad.
 - [x] Ventana de ajuste reflejada en la URL.
-- [ ] Publicar `petro-calc` en npm con su propio README.
+- [ ] Publicar `petro-calc` en npm con su propio README. El paquete está preparado en `0.1.0`, con README, LICENSE, CHANGELOG y umbral de cobertura; falta autenticar npm y confirmar el ámbito `@petroatlas`.
 
 Cierre: cobertura de 90% o más en `petro-calc` y cada fórmula con al menos una prueba contra un valor publicado.
 
