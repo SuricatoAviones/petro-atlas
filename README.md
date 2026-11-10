@@ -1,8 +1,10 @@
 # PetroAtlas
 
-Explorador web de pozos petroleros, de código abierto: un mapa como entrada, fichas con series de producción y presión, herramientas de ingeniería que calculan en el navegador e importación de datos propios en CSV.
+Explorador web de pozos petroleros, de código abierto: un mapa como entrada, fichas con series de producción y presión, herramientas de ingeniería que calculan en el navegador e importación de datos propios en CSV. Disponible en español e inglés.
 
-> **Estado: fase 4 completa.** Mapa con clustering, filtros y estado en la URL; fichas con producción, operación, trayectoria, registros, ingeniería y diagnóstico; alertas; comparación de pozos; importación CSV en IndexedDB; exportación CSV y PNG; páginas legales y revisión de accesibilidad con axe. `petro-calc` supera el 90 % de cobertura y está publicado en npm como [`@petroatlas/petro-calc`](https://www.npmjs.com/package/@petroatlas/petro-calc). Queda decidir el alojamiento de la demo. El plan completo está en [docs/11-plan-de-fases.md](docs/11-plan-de-fases.md).
+**Demo:** <https://petroatlas-web.onrender.com> · **API:** <https://petroatlas-api.onrender.com/api/health>
+
+> **Estado: fase 4 completa.** Mapa con clustering, filtros y estado en la URL; fichas con producción, operación, trayectoria, registros, ingeniería y diagnóstico; alertas; comparación de pozos; importación CSV en IndexedDB; exportación CSV y PNG; páginas legales y revisión de accesibilidad con axe. `petro-calc` supera el 90 % de cobertura y está publicado en npm como [`@petroatlas/petro-calc`](https://www.npmjs.com/package/@petroatlas/petro-calc). La demo pública corre en Render. El plan completo está en [docs/11-plan-de-fases.md](docs/11-plan-de-fases.md).
 
 ![Mapa de pozos con filtros, clustering y alertas](docs/images/mapa.png)
 
@@ -30,11 +32,12 @@ Para empezar de cero, borrando la base de datos: `docker compose down --volumes`
 
 ## Cómo se usa
 
-1. **Explora el mapa.** Filtra por campo, operadora, estado, tipo o año de perforación; cambia el color de los pozos y activa el mapa de burbujas de acumulados. La vista queda en la URL y se puede compartir.
-2. **Abre un pozo.** La ficha reúne metadatos, ubicación, series de producción y operación sincronizadas, trayectoria, registros por pistas, ajuste de declinación, IPR, PVT y diagnóstico de Chan.
-3. **Compara pozos.** En la pestaña Producción añade otros pozos del mismo campo. Cada pozo usa un estilo de línea distinto, el color sigue indicando el fluido y la selección viaja en el parámetro `comparar`.
-4. **Importa tus datos.** En el panel de filtros, elige un CSV con el formato de [docs/09](docs/09-alertas-importacion-url.md). El archivo se valida fila a fila y se guarda en IndexedDB: no se sube al servidor. Los pozos importados aparecen en el mapa con otro símbolo y usan las mismas gráficas, alertas y calculadoras.
-5. **Exporta.** Cada gráfica ofrece tabla, CSV de los datos visibles y PNG. La ficha descarga la serie completa del pozo en el mismo formato que acepta la importación.
+1. **Elige idioma.** La cabecera alterna entre español e inglés; la elección se guarda en una cookie funcional y se aplica a toda la interfaz y a las páginas legales.
+2. **Explora el mapa.** Filtra por campo, operadora, estado, tipo o año de perforación; cambia el color de los pozos y activa el mapa de burbujas de acumulados. La vista queda en la URL y se puede compartir.
+3. **Abre un pozo.** La ficha reúne metadatos, ubicación, series de producción y operación sincronizadas, trayectoria, registros por pistas, ajuste de declinación, IPR, PVT y diagnóstico de Chan.
+4. **Compara pozos.** En la pestaña Producción añade otros pozos del mismo campo. Cada pozo usa un estilo de línea distinto, el color sigue indicando el fluido y la selección viaja en el parámetro `comparar`.
+5. **Importa tus datos.** En el panel de filtros, elige un CSV con el formato de [docs/09](docs/09-alertas-importacion-url.md). El archivo se valida fila a fila y se guarda en IndexedDB: no se sube al servidor. Los pozos importados aparecen en el mapa con otro símbolo y usan las mismas gráficas, alertas y calculadoras.
+6. **Exporta.** Cada gráfica ofrece tabla, CSV de los datos visibles y PNG. La ficha descarga la serie completa del pozo en el mismo formato que acepta la importación.
 
 ![Ficha de un pozo con producción y presión](docs/images/produccion.png)
 

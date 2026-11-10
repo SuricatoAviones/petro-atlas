@@ -95,5 +95,5 @@ Autenticación, edición de datos públicos, tiempo real, simulación de yacimie
 ## Preguntas abiertas
 
 - [x] Nombre definitivo: **PetroAtlas**. El repositorio, la web y el paquete usan `@petroatlas`.
-- [ ] Dónde se aloja la demo pública.
-- [ ] Idioma de la interfaz en la demo: solo español o español e inglés.
+- [x] La demo pública se aloja en Render: <https://petroatlas-web.onrender.com>.
+- [x] La interfaz es bilingüe, español e inglés, con una cookie funcional `petroatlas-locale` que recuerda la elección.
