@@ -1,9 +1,21 @@
 {
   "name": "@petroatlas/petro-calc",
   "version": "0.0.0",
-  "private": true,
   "description": "Petroleum engineering calculations: decline curves, IPR, PVT, diagnostics and unit conversions.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SuricatoAviones/petro-atlas.git",
+    "directory": "packages/petro-calc"
+  },
+  "keywords": [
+    "petroleum-engineering",
+    "decline-curve",
+    "arps",
+    "ipr",
+    "pvt",
+    "petro-calc"
+  ],
   "type": "module",
   "sideEffects": false,
   "exports": {
@@ -16,8 +28,12 @@
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm build"
   }
 }
