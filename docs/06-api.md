@@ -42,10 +42,26 @@ Todos los errores usan la misma forma:
 | --- | --- | --- |
 | 400 | `INVALID_PARAMS` | Un parámetro no pasa la validación |
 | 404 | `WELL_NOT_FOUND`, `FIELD_NOT_FOUND` | El recurso no existe |
+| 404 | `ROUTE_NOT_FOUND` | La ruta no existe |
 | 429 | `RATE_LIMITED` | Se superó el límite de peticiones |
 | 500 | `INTERNAL` | Error no previsto; el detalle va al log, no a la respuesta |
+| 503 | `DATABASE_UNAVAILABLE` | La base de datos no responde; lo devuelve `GET /api/health` |
 
 ## Ejemplos de respuesta
+
+`GET /api/health`
+
+Responde 200 cuando la API puede consultar la base de datos con su usuario de solo lectura. No lleva caché (`Cache-Control: no-store`).
+
+```json
+{ "status": "ok", "database": "ok" }
+```
+
+Si la base de datos no responde, devuelve 503 con el formato común de error:
+
+```json
+{ "error": { "code": "DATABASE_UNAVAILABLE", "message": "La base de datos no responde" } }
+```
 
 `GET /api/wells?bbox=1.8,58.4,2.0,58.5`
 

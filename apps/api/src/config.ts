@@ -1,0 +1,32 @@
+import { z } from 'zod';
+
+const envSchema = z.object({
+  // Read-only role (petroatlas_api, docs/05).
+  API_DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
+  API_PORT: z.coerce.number().int().min(1).max(65_535).default(4000),
+  WEB_ORIGIN: z.url().default('http://localhost:3000'),
+  RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(300),
+});
+
+export interface ApiConfig {
+  databaseUrl: string;
+  port: number;
+  webOrigin: string;
+  rateLimitPerMinute: number;
+}
+
+/** Validates the environment at startup, so a bad configuration fails fast with a clear error. */
+export function loadConfig(env: NodeJS.ProcessEnv): ApiConfig {
+  const parsed = envSchema.safeParse(env);
+  if (!parsed.success) {
+    throw new Error(
+      `Invalid API configuration (see .env.example):\n${z.prettifyError(parsed.error)}`,
+    );
+  }
+  return {
+    databaseUrl: parsed.data.API_DATABASE_URL,
+    port: parsed.data.API_PORT,
+    webOrigin: parsed.data.WEB_ORIGIN,
+    rateLimitPerMinute: parsed.data.RATE_LIMIT_PER_MINUTE,
+  };
+}

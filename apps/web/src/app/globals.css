@@ -1,0 +1,100 @@
+:root {
+  --color-ink: #13212b;
+  --color-ink-muted: #4b5d69;
+  --color-surface: #f7f8f6;
+  --color-header: #12303a;
+  --color-header-text: #f2f5f3;
+  --color-header-muted: #a9c0c4;
+  --color-accent: #e0a526;
+  --color-error: #9b1c1c;
+  --header-height: 3.5rem;
+  --font-sans:
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-rows: var(--header-height) 1fr;
+  height: 100dvh;
+}
+
+.app-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0 1rem;
+  background: var(--color-header);
+  color: var(--color-header-text);
+  border-bottom: 3px solid var(--color-accent);
+  line-height: var(--header-height);
+}
+
+.app-header__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.app-header__tagline {
+  margin: 0;
+  color: var(--color-header-muted);
+  font-size: 0.875rem;
+}
+
+.app-main {
+  min-height: 0;
+}
+
+.base-map {
+  position: relative;
+  height: 100%;
+}
+
+/* Sized with width and height: MapLibre sets `position: relative` on its container. */
+.base-map__canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.base-map__notice {
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 0.5rem 0.875rem;
+  border-radius: 0.375rem;
+  background: rgb(255 255 255 / 92%);
+  color: var(--color-ink-muted);
+  font-size: 0.875rem;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 20%);
+}
+
+.base-map__notice--error {
+  color: var(--color-error);
+  font-weight: 600;
+}

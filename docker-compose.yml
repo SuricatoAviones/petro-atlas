@@ -1,0 +1,81 @@
+# `docker compose up` starts the database, loads the synthetic seed, and serves the API and the web.
+# Every value has a development default; override them in .env (see .env.example).
+name: petroatlas
+
+services:
+  db:
+    image: postgis/postgis:16-3.7
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-petroatlas}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres_dev_password}
+      PETROATLAS_ETL_PASSWORD: ${PETROATLAS_ETL_PASSWORD:-etl_dev_password}
+      PETROATLAS_API_PASSWORD: ${PETROATLAS_API_PASSWORD:-api_dev_password}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./db/init/20-petroatlas-roles.sh:/docker-entrypoint-initdb.d/20-petroatlas-roles.sh:ro
+    ports:
+      - '127.0.0.1:${DB_PORT:-55432}:5432'
+    healthcheck:
+      # Over TCP on purpose: the temporary server used during initialization only listens on a
+      # socket, so the service is not healthy until the init scripts have finished.
+      test: ['CMD-SHELL', 'pg_isready -h 127.0.0.1 -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  # Runs the migrations and the seed as petroatlas_etl, then exits.
+  db-setup:
+    build:
+      context: .
+      target: db-setup
+    environment:
+      ETL_DATABASE_URL: postgres://petroatlas_etl:${PETROATLAS_ETL_PASSWORD:-etl_dev_password}@db:5432/${POSTGRES_DB:-petroatlas}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: 'no'
+
+  api:
+    build:
+      context: .
+      target: api
+    environment:
+      # Read-only role (docs/05).
+      API_DATABASE_URL: postgres://petroatlas_api:${PETROATLAS_API_PASSWORD:-api_dev_password}@db:5432/${POSTGRES_DB:-petroatlas}
+      API_PORT: 4000
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:3000}
+      RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-300}
+    ports:
+      - '${API_PORT:-4000}:4000'
+    depends_on:
+      db-setup:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ['CMD', 'wget', '-qO', '/dev/null', 'http://127.0.0.1:4000/api/health']
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  web:
+    build:
+      context: .
+      target: web
+      args:
+        # Passed only when set in the environment or in .env; the Dockerfile has the default.
+        - NEXT_PUBLIC_MAP_STYLE_URL
+    ports:
+      - '${WEB_PORT:-3000}:3000'
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '-qO', '/dev/null', 'http://127.0.0.1:3000/']
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+volumes:
+  db-data:

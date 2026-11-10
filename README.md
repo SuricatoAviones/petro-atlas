@@ -1,40 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# PetroAtlas
 
-## Getting Started
+Explorador web de campos petroleros, de código abierto: un mapa de pozos como entrada, fichas con gráficas de producción y presión, y herramientas de ingeniería que calculan sobre los datos del pozo seleccionado. El nombre es provisional.
 
-First, run the development server:
+> **Estado: fase 0 (andamiaje).** Hoy el repositorio levanta la base de datos con datos sintéticos, una API con `GET /api/health` y una web con el mapa base. Los pozos en el mapa llegan en la fase 1. El plan completo está en [docs/11-plan-de-fases.md](docs/11-plan-de-fases.md).
+
+## Arranque rápido
+
+Requisito: [Docker](https://docs.docker.com/get-docker/) con Docker Compose.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <url-del-repositorio> petroatlas
+cd petroatlas
+docker compose up --build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Cuando termina de arrancar:
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+| Qué                  | Dónde                                         |
+| -------------------- | --------------------------------------------- |
+| Web con el mapa      | <http://localhost:3000>                       |
+| Estado de la API     | <http://localhost:4000/api/health>            |
+| PostgreSQL + PostGIS | `localhost:55432`, base de datos `petroatlas` |
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+`docker compose up` crea los usuarios de base de datos, aplica las migraciones y carga un campo sintético con 20 pozos y un año de producción diaria. No hace falta ningún archivo `.env`: todos los valores tienen un valor por defecto de desarrollo. Para cambiarlos (puertos, contraseñas), copia `.env.example` a `.env`.
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+Para empezar de cero, borrando la base de datos: `docker compose down --volumes`.
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Desarrollo local
 
-## Learn More
+Requisitos: Node 26 (LTS, ver `.nvmrc`), pnpm 12 y Docker para la base de datos.
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+pnpm install
+cp .env.example .env
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+docker compose up --detach db db-setup   # base de datos, migraciones y datos sintéticos
+pnpm dev                                 # API en :4000 y web en :3000, con recarga
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Comando           | Qué hace                                                       |
+| ----------------- | -------------------------------------------------------------- |
+| `pnpm dev`        | API y web en modo desarrollo                                   |
+| `pnpm lint`       | ESLint y comprobación de formato con Prettier                  |
+| `pnpm format`     | Aplica el formato de Prettier                                  |
+| `pnpm typecheck`  | `tsc --noEmit` en todos los paquetes                           |
+| `pnpm test`       | Pruebas unitarias con Vitest                                   |
+| `pnpm build`      | Compila paquetes, API y web                                    |
+| `pnpm db:migrate` | Aplica las migraciones pendientes de `db/migrations`           |
+| `pnpm db:seed`    | Carga los datos sintéticos; se puede repetir sin duplicar nada |
 
-## Deploy on Vercel
+Un cambio está terminado cuando `pnpm lint`, `pnpm typecheck`, `pnpm test` y `pnpm build` pasan. El resto de reglas está en [docs/12-convenciones.md](docs/12-convenciones.md).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Estructura
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+```text
+apps/web/               Next.js: mapa, ficha de pozo, herramientas
+apps/api/               Express: API REST de solo lectura
+packages/petro-calc/    Cálculos de ingeniería en TypeScript puro
+packages/shared-types/  Tipos y esquemas Zod compartidos
+etl/                    Ingesta de datos públicos (fase 1)
+db/migrations/          SQL versionado
+db/seed/                Generador de datos sintéticos
+db/init/                Creación de usuarios al inicializar PostgreSQL
+docs/                   Diseño: la fuente de verdad del proyecto
+```
+
+La web pide datos a la API y calcula en el navegador con `petro-calc`. La API lee la base de datos con un usuario de solo lectura. Solo el ETL, las migraciones y el seed escriben. El detalle está en [docs/03-arquitectura.md](docs/03-arquitectura.md) y las decisiones, en [docs/adr/](docs/adr/README.md).
+
+## Datos y licencias
+
+- El código se publica bajo licencia [MIT](LICENSE).
+- El repositorio **no incluye datos de terceros**. Los datos de `db/seed` son sintéticos: los genera un script, llevan nombres ficticios (`SYNTHETIC ALPHA`, `SYN-A-01`…) y no representan ningún campo real.
+- A partir de la fase 1, el ETL descargará los datos públicos de Sodir y de Volve (Equinor) a `data/`, que Git ignora. Las fuentes y sus condiciones están en [docs/10-fuentes-de-datos.md](docs/10-fuentes-de-datos.md).
+- El mapa base usa las teselas de [OpenFreeMap](https://openfreemap.org/), con datos de © OpenMapTiles y © OpenStreetMap. Se puede cambiar con `NEXT_PUBLIC_MAP_STYLE_URL`.
+
+## Documentación
+
+Todo el diseño vive en [docs/](docs/README.md). Si el código y la documentación no coinciden, uno de los dos está mal y se corrige en el mismo PR.
