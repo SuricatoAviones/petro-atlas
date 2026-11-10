@@ -38,7 +38,7 @@ Objetivo: explorar pozos y campos reales.
 - [x] Panel de filtros con conteo de resultados, indicador de carga y leyenda.
 - [x] Ficha del pozo con metadatos y ubicación.
 - [x] Estado en la URL: filtros, pozo abierto y vista del mapa.
-- [ ] Página "Fuentes y licencias".
+- [x] Página "Fuentes y licencias".
 - [ ] Prueba de extremo a extremo: abrir el mapa, filtrar, abrir un pozo, recargar y ver la misma vista.
 
 Cierre: demo pública con todos los pozos de Sodir, fluida al navegar.
