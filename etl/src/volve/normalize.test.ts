@@ -114,6 +114,19 @@ describe('normalizeProduction', () => {
     });
   });
 
+  it('treats a zero pressure or temperature as a missing reading', () => {
+    const { records, report } = normalizeProduction(
+      [productionRecord({ AVG_DOWNHOLE_PRESSURE: 0, AVG_WHT_P: 0 })],
+      KNOWN,
+    );
+
+    expect(records[0]).toMatchObject({ bhpBar: null, whtC: null });
+    expect(report.discarded).toMatchObject({
+      non_positive_pressure: 1,
+      non_positive_temperature: 1,
+    });
+  });
+
   it('discards a row with no measurements at all', () => {
     const { records, report } = normalizeProduction(
       [

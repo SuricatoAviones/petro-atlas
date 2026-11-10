@@ -131,6 +131,20 @@ function measurement(report: NormalizationReport, value: unknown, reason: string
   return parsed;
 }
 
+/** Volve writes 0 for a pressure or temperature without a reading, so it becomes null. */
+function positiveMeasurement(
+  report: NormalizationReport,
+  value: unknown,
+  reason: string,
+): number | null {
+  const parsed = numberOrNull(value);
+  if (parsed !== null && parsed <= 0) {
+    discard(report, reason);
+    return null;
+  }
+  return parsed;
+}
+
 /** Normalizes the `Daily Production Data` sheet. Only wells that exist in Sodir are kept. */
 export function normalizeProduction(
   records: readonly VolveRecord[],
@@ -169,10 +183,14 @@ export function normalizeProduction(
       waterSm3: volume(report, record.BORE_WAT_VOL, 'negative_water'),
       waterInjSm3: volume(report, record.BORE_WI_VOL, 'negative_injection'),
       onStreamH: normalizedOnStream,
-      bhpBar: measurement(report, record.AVG_DOWNHOLE_PRESSURE, 'negative_bhp'),
-      whpBar: measurement(report, record.AVG_WHP_P, 'negative_whp'),
-      bhtC: measurement(report, record.AVG_DOWNHOLE_TEMPERATURE, 'negative_bht'),
-      whtC: measurement(report, record.AVG_WHT_P, 'negative_wht'),
+      bhpBar: positiveMeasurement(report, record.AVG_DOWNHOLE_PRESSURE, 'non_positive_pressure'),
+      whpBar: positiveMeasurement(report, record.AVG_WHP_P, 'non_positive_pressure'),
+      bhtC: positiveMeasurement(
+        report,
+        record.AVG_DOWNHOLE_TEMPERATURE,
+        'non_positive_temperature',
+      ),
+      whtC: positiveMeasurement(report, record.AVG_WHT_P, 'non_positive_temperature'),
       chokePct: measurement(report, record.AVG_CHOKE_SIZE_P, 'negative_choke'),
     };
 
