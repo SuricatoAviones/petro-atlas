@@ -3,7 +3,12 @@
  * computes the ones of the public wells with the view `well_alert`, and the browser computes
  * the ones of the imported wells with `petro-calc/alerts`. Both use the same thresholds.
  */
-import { alertIndicators, evaluate, type AlertKind, type AlertLevel } from '@petroatlas/petro-calc';
+import {
+  alertIndicators,
+  evaluate,
+  type AlertKind,
+  type AlertLevel,
+} from '@suricatoaviones/petro-calc';
 import type { AlertItem } from '@petroatlas/shared-types';
 
 import type { ImportedWell } from './imported-wells';

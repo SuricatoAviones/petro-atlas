@@ -46,7 +46,7 @@ projects:
             runtime: node
             plan: free
             region: virginia
-            buildCommand: pnpm install --frozen-lockfile && pnpm --filter @petroatlas/shared-types build && pnpm --filter @petroatlas/petro-calc build && pnpm --filter @petroatlas/web build
+            buildCommand: pnpm install --frozen-lockfile && pnpm --filter @petroatlas/shared-types build && pnpm --filter @suricatoaviones/petro-calc build && pnpm --filter @petroatlas/web build
             # Next start must bind to the port Render assigns; the package script fixes 3000.
             startCommand: pnpm --filter @petroatlas/web exec next start --port $PORT
             healthCheckPath: /

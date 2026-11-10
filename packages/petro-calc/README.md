@@ -1,13 +1,13 @@
-# `@petroatlas/petro-calc`
+# `@suricatoaviones/petro-calc`
 
 Cálculos de ingeniería de petróleo en TypeScript puro, sin dependencias. Se ejecuta igual en el navegador, en Node o en un worker, y no conoce la interfaz ni la base de datos.
 
-> **Estado:** publicado en npm como `@petroatlas/petro-calc@0.2.0`.
+> **Estado:** versión `0.2.0` preparada para publicarse como `@suricatoaviones/petro-calc`.
 
 ## Instalación
 
 ```bash
-pnpm add @petroatlas/petro-calc
+pnpm add @suricatoaviones/petro-calc
 ```
 
 El paquete es un módulo ESM con tipos incluidos.
@@ -26,7 +26,7 @@ El paquete es un módulo ESM con tipos incluidos.
 Todo se importa desde la raíz del paquete:
 
 ```ts
-import { fitArps, forecast, eur, vogel, standing, chan } from '@petroatlas/petro-calc';
+import { fitArps, forecast, eur, vogel, standing, chan } from '@suricatoaviones/petro-calc';
 ```
 
 ## Ejemplos
@@ -34,7 +34,7 @@ import { fitArps, forecast, eur, vogel, standing, chan } from '@petroatlas/petro
 ### Declinación de Arps
 
 ```ts
-import { eur, fitArps, forecast } from '@petroatlas/petro-calc';
+import { eur, fitArps, forecast } from '@suricatoaviones/petro-calc';
 
 const days = [0, 30, 60, 90, 120, 150];
 const oilSm3PerDay = [1000, 970, 941, 913, 886, 860];
@@ -49,7 +49,7 @@ const recovery = eur(fit, 5, 120_000); // tasa límite 5 Sm3/d
 ### IPR
 
 ```ts
-import { composite, fetkovich, vogel } from '@petroatlas/petro-calc';
+import { composite, fetkovich, vogel } from '@suricatoaviones/petro-calc';
 
 const fromOneTest = vogel(250, { pwf: 180, q: 50 }); // bar y Sm3/d
 const fromTwoTests = fetkovich(250, [
@@ -64,7 +64,7 @@ const withBubblePoint = composite(250, 150, 0.5); // Pr, Pb y J
 Las correlaciones PVT usan unidades de campo: psia, °F, scf/STB y cP.
 
 ```ts
-import { standing, vasquezBeggs } from '@petroatlas/petro-calc';
+import { standing, vasquezBeggs } from '@suricatoaviones/petro-calc';
 
 const input = {
   api: 35,
@@ -80,7 +80,7 @@ const vasquezResult = vasquezBeggs(input);
 ### Diagnóstico
 
 ```ts
-import { chan, productivityIndex } from '@petroatlas/petro-calc';
+import { chan, productivityIndex } from '@suricatoaviones/petro-calc';
 
 const diagnostic = chan(waterSm3PerDay, oilSm3PerDay); // RAP y su derivada
 const j = productivityIndex(50, 250, 180); // Sm3/d/bar
@@ -91,7 +91,7 @@ const j = productivityIndex(50, 250, 180); // Sm3/d/bar
 Las reglas miran hacia atrás desde la última fecha de la serie, no desde hoy.
 
 ```ts
-import { defaultThresholds, evaluate } from '@petroatlas/petro-calc';
+import { defaultThresholds, evaluate } from '@suricatoaviones/petro-calc';
 
 const alerts = evaluate({
   dates, // fechas ISO, una por muestra
@@ -115,9 +115,9 @@ const stricter = evaluate(series, { ...defaultThresholds, dropWarningFraction: 0
 
 ```bash
 pnpm install
-pnpm --filter @petroatlas/petro-calc typecheck
+pnpm --filter @suricatoaviones/petro-calc typecheck
 pnpm test --project petro-calc
-pnpm --filter @petroatlas/petro-calc build
+pnpm --filter @suricatoaviones/petro-calc build
 ```
 
 ## Licencia

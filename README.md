@@ -4,7 +4,7 @@ Explorador web de pozos petroleros, de código abierto: un mapa como entrada, fi
 
 **Demo:** <https://petroatlas-web.onrender.com> · **API:** <https://petroatlas-api.onrender.com/api/health>
 
-> **Estado: fase 4 completa.** Mapa con clustering, filtros y estado en la URL; fichas con producción, operación, trayectoria, registros, ingeniería y diagnóstico; alertas; comparación de pozos; importación CSV en IndexedDB; exportación CSV y PNG; páginas legales y revisión de accesibilidad con axe. `petro-calc` supera el 90 % de cobertura y está publicado en npm como [`@petroatlas/petro-calc`](https://www.npmjs.com/package/@petroatlas/petro-calc). La demo pública corre en Render. El plan completo está en [docs/11-plan-de-fases.md](docs/11-plan-de-fases.md).
+> **Estado: fase 4 completa.** Mapa con clustering, filtros y estado en la URL; fichas con producción, operación, trayectoria, registros, ingeniería y diagnóstico; alertas; comparación de pozos; importación CSV en IndexedDB; exportación CSV y PNG; páginas legales y revisión de accesibilidad con axe. `petro-calc` supera el 90 % de cobertura. Su versión `0.2.0` está preparada para publicarse como [`@suricatoaviones/petro-calc`](https://www.npmjs.com/package/@suricatoaviones/petro-calc). La demo pública corre en Render. El plan completo está en [docs/11-plan-de-fases.md](docs/11-plan-de-fases.md).
 
 ![Mapa de pozos con filtros, clustering y alertas](docs/images/mapa.png)
 

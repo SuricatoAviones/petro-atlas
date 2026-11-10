@@ -15,7 +15,7 @@ import {
   vasquezBeggsSolutionGas,
   vogel,
   type IprPoint,
-} from '@petroatlas/petro-calc';
+} from '@suricatoaviones/petro-calc';
 import { useMemo, useState } from 'react';
 
 import { downloadCsv } from '@/lib/export';

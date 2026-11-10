@@ -11,7 +11,7 @@
     "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
-    "@petroatlas/petro-calc": "workspace:*",
+    "@suricatoaviones/petro-calc": "workspace:*",
     "@petroatlas/shared-types": "workspace:*",
     "echarts": "6.1.0",
     "maplibre-gl": "6.17.0",

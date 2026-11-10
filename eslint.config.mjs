@@ -95,7 +95,7 @@ export default defineConfig([
   {
     files: ['apps/api/**/*.ts'],
     rules: restrictImports(
-      '^@petroatlas/petro-calc(/|$)',
+      '^@suricatoaviones/petro-calc(/|$)',
       'The API only serves data; engineering calculations run in the browser (ADR 0001).',
     ),
   },

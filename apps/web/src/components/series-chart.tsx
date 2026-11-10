@@ -1,7 +1,7 @@
 'use client';
 
 import type { SourceRef } from '@petroatlas/shared-types';
-import { toField, type Quantity } from '@petroatlas/petro-calc';
+import { toField, type Quantity } from '@suricatoaviones/petro-calc';
 import * as echarts from 'echarts/core';
 import { LineChart } from 'echarts/charts';
 import {

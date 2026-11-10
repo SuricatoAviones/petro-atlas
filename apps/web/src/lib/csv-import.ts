@@ -3,7 +3,7 @@
  * CSV"). The file is untrusted input: every row is validated, invalid rows are reported with
  * their line and the valid ones are kept. Nothing here touches the network or the DOM.
  */
-import { toSI } from '@petroatlas/petro-calc';
+import { toSI } from '@suricatoaviones/petro-calc';
 import { z } from 'zod';
 
 /** Files above this size are rejected before reading them. */

@@ -1,6 +1,6 @@
 # Changelog
 
-Todas las versiones notables de `@petroatlas/petro-calc`. El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y el versionado, [SemVer](https://semver.org/lang/es/).
+Todas las versiones notables de `@suricatoaviones/petro-calc`. El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y el versionado, [SemVer](https://semver.org/lang/es/).
 
 ## [0.2.0] - 2026-11-10
 
