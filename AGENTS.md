@@ -33,7 +33,7 @@ pnpm dev                                 # API en :4000 y web en :3000
 
 pnpm lint         # ESLint + Prettier
 pnpm typecheck
-pnpm test         # Vitest; un proyecto: pnpm test --project api
+pnpm test         # Vitest; necesita la base de datos del paso anterior. Un proyecto: pnpm test --project api
 pnpm build
 pnpm db:migrate
 pnpm db:seed

@@ -32,7 +32,7 @@ Cierre: en una máquina limpia, `docker compose up` deja la web en el navegador 
 Objetivo: explorar pozos y campos reales.
 
 - [x] ETL de Sodir: campos con polígonos y pozos con coordenadas.
-- [ ] `GET /api/fields`, `GET /api/fields/:id`, `GET /api/wells`, `GET /api/wells/:id`, `GET /api/meta/sources`.
+- [x] `GET /api/fields`, `GET /api/fields/:id`, `GET /api/wells`, `GET /api/wells/:id`, `GET /api/meta/sources`.
 - [ ] Teselas vectoriales de pozos con `ST_AsMVT`.
 - [ ] Mapa con clustering, color por estado o tipo, y capa de campos visible según el zoom.
 - [ ] Panel de filtros con conteo de resultados, indicador de carga y leyenda.
