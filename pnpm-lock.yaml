@@ -248,6 +248,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@petroatlas/shared-types':
+        specifier: workspace:*
+        version: link:../../packages/shared-types
       maplibre-gl:
         specifier: 6.17.0
         version: 6.17.0

@@ -10,6 +10,12 @@ export const messages = {
     label: 'Mapa de pozos',
     loading: 'Cargando el mapa base…',
     loadError: 'No se pudo cargar el mapa base. Revisa la conexión y recarga la página.',
+    dataError: 'No se pudieron cargar los pozos. Inténtalo de nuevo en unos minutos.',
+    colorMode: {
+      legend: 'Color de los pozos',
+      status: 'Estado',
+      type: 'Tipo',
+    },
     /** Overrides for MapLibre's built-in control texts. */
     controls: {
       'NavigationControl.ZoomIn': 'Acercar',
