@@ -194,6 +194,28 @@ export const wellTrajectoryResponseSchema = z.object({
 });
 export type WellTrajectoryResponse = z.infer<typeof wellTrajectoryResponseSchema>;
 
+/**
+ * One log curve. Samples sit at a constant depth step: sample `i` is at `topM + i * stepM`.
+ * A sample the tool did not record is null.
+ */
+export const logCurveSchema = z.object({
+  mnemonic: z.string(),
+  unit: z.string().nullable(),
+  topM: z.number(),
+  baseM: z.number(),
+  stepM: z.number(),
+  values: z.array(z.number().nullable()),
+});
+export type LogCurve = z.infer<typeof logCurveSchema>;
+
+/** `GET /api/wells/:id/logs` */
+export const wellLogsResponseSchema = z.object({
+  wellId: z.number().int(),
+  curves: z.array(logCurveSchema),
+  source: sourceRefSchema,
+});
+export type WellLogsResponse = z.infer<typeof wellLogsResponseSchema>;
+
 const fieldProductionUnitsSchema = z.object({
   oil: z.literal('Sm3'),
   gas: z.literal('Sm3'),

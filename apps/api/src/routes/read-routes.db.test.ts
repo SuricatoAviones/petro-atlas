@@ -12,6 +12,7 @@ import {
   wellCollectionResponseSchema,
   wellCumulativeResponseSchema,
   wellDetailSchema,
+  wellLogsResponseSchema,
   wellProductionResponseSchema,
   wellTrajectoryResponseSchema,
 } from '@petroatlas/shared-types';
@@ -228,7 +229,7 @@ describe('GET /api/wells/:id', () => {
       series: {
         daily: { from: '2025-01-01', to: '2025-12-31', days: 365 },
         hasTrajectory: true,
-        logCurves: [],
+        logCurves: ['GR', 'NPHI', 'RHOB', 'RT'],
       },
       source: { name: 'PetroAtlas synthetic seed' },
     });
@@ -310,6 +311,123 @@ describe('GET /api/wells/:id/trajectory', () => {
 
   it('responds 404 WELL_NOT_FOUND for an unknown well', async () => {
     await expectError('/wells/NO-SUCH-WELL/trajectory', 404, 'WELL_NOT_FOUND');
+  });
+});
+
+describe('GET /api/wells/:id/logs', () => {
+  it('returns every curve with its depth range, step and source', async () => {
+    const well = wellDetailSchema.parse((await get('/wells/SYN-A-01')).body);
+    const { status, body, headers } = await get('/wells/SYN-A-01/logs');
+    const logs = wellLogsResponseSchema.parse(body);
+
+    expect(status).toBe(200);
+    expect(headers.get('cache-control')).toBe('public, max-age=300');
+    expect(logs).toMatchObject({ wellId: well.id, source: { name: 'PetroAtlas synthetic seed' } });
+    expect(logs.curves.map((curve) => curve.mnemonic)).toEqual(['GR', 'NPHI', 'RHOB', 'RT']);
+    for (const curve of logs.curves) {
+      expect(curve.baseM).toBe(well.totalDepthM);
+      expect(curve.stepM).toBeCloseTo(1, 6);
+      expect(curve.values).toHaveLength(401);
+    }
+    expect(logs.curves[0]?.unit).toBe('gAPI');
+    // The density tool misses a stretch of SYN-A-01: the gap stays null.
+    const density = logs.curves.find((curve) => curve.mnemonic === 'RHOB');
+    expect(density?.values[130]).toBeNull();
+    expect(density?.values[100]).not.toBeNull();
+  });
+
+  it('filters by mnemonic, ignoring case, and crops to a depth window', async () => {
+    const all = wellLogsResponseSchema.parse((await get('/wells/SYN-A-01/logs')).body);
+    const topM = (all.curves[0]?.topM ?? 0) + 10;
+    const baseM = topM + 20;
+    const cropped = wellLogsResponseSchema.parse(
+      (await get(`/wells/SYN-A-01/logs?curves=gr,RT&top=${String(topM)}&base=${String(baseM)}`))
+        .body,
+    );
+
+    expect(cropped.curves.map((curve) => curve.mnemonic)).toEqual(['GR', 'RT']);
+    for (const curve of cropped.curves) {
+      expect(curve.topM).toBeCloseTo(topM, 6);
+      expect(curve.baseM).toBeCloseTo(baseM, 6);
+      expect(curve.values).toHaveLength(21);
+    }
+    expect(cropped.curves[0]?.values).toEqual(all.curves[0]?.values.slice(10, 31));
+  });
+
+  it('returns no curves for a well without logs or a window outside the logged interval', async () => {
+    const withoutLogs = wellLogsResponseSchema.parse((await get('/wells/SYN-A-20/logs')).body);
+    const outside = wellLogsResponseSchema.parse(
+      (await get('/wells/SYN-A-01/logs?top=0&base=10')).body,
+    );
+
+    expect(withoutLogs.curves).toEqual([]);
+    expect(withoutLogs.source.name).toBe('PetroAtlas synthetic seed');
+    expect(outside.curves).toEqual([]);
+  });
+
+  it.each([
+    '/wells/SYN-A-01/logs?top=abc',
+    '/wells/SYN-A-01/logs?top=-5',
+    '/wells/SYN-A-01/logs?top=3000&base=2000',
+    '/wells/SYN-A-01/logs?curves=',
+  ])('responds 400 INVALID_PARAMS for %s', async (path) => {
+    await expectError(path, 400, 'INVALID_PARAMS');
+  });
+
+  it('responds 404 WELL_NOT_FOUND for an unknown well', async () => {
+    await expectError('/wells/NO-SUCH-WELL/logs', 404, 'WELL_NOT_FOUND');
+  });
+});
+
+describe('GET /api/wells/:id/export.csv', () => {
+  async function getCsv(path: string) {
+    const baseUrl = await startApi({ database });
+    const response = await fetch(`${baseUrl}/api${path}`);
+    return { status: response.status, headers: response.headers, text: await response.text() };
+  }
+
+  it('downloads the daily series as CSV with the source in every row', async () => {
+    const well = wellDetailSchema.parse((await get('/wells/SYN-A-01')).body);
+    const production = wellProductionResponseSchema.parse(
+      (await get('/wells/SYN-A-01/production?from=2025-01-01&to=2025-01-03')).body,
+    );
+    const { status, headers, text } = await getCsv(
+      '/wells/SYN-A-01/export.csv?from=2025-01-01&to=2025-01-03',
+    );
+    const lines = text.trimEnd().split('\r\n');
+    const firstRow = lines[1]?.split(',') ?? [];
+
+    expect(status).toBe(200);
+    expect(headers.get('content-type')).toBe('text/csv; charset=utf-8');
+    expect(headers.get('content-disposition')).toBe('attachment; filename="SYN-A-01.csv"');
+    expect(lines[0]).toBe(
+      'well,date,lat,lon,oil_sm3,gas_sm3,water_sm3,water_inj_sm3,on_stream_h,' +
+        'bhp_bar,whp_bar,bht_c,wht_c,choke_pct,source,license',
+    );
+    expect(lines).toHaveLength(4);
+    expect(firstRow.slice(0, 2)).toEqual(['SYN-A-01', '2025-01-01']);
+    expect(Number(firstRow[2])).toBeCloseTo(well.location.latDeg, 5);
+    expect(Number(firstRow[3])).toBeCloseTo(well.location.lonDeg, 5);
+    expect(Number(firstRow[4])).toBeCloseTo(production.series.oil[0] ?? Number.NaN, 3);
+    // A producer injects nothing: the cell is empty, not zero.
+    expect(firstRow[7]).toBe('');
+    expect(lines[1]).toContain('PetroAtlas synthetic seed');
+  });
+
+  it('returns only the header for a well without daily data', async () => {
+    const { status, text } = await getCsv('/wells/SYN-A-20/export.csv');
+
+    expect(status).toBe(200);
+    expect(text.trimEnd().split('\r\n')).toHaveLength(1);
+  });
+
+  it('responds 400 INVALID_PARAMS for an inverted range and 404 for an unknown well', async () => {
+    await expectError(
+      '/wells/SYN-A-01/export.csv?from=2025-02-01&to=2025-01-01',
+      400,
+      'INVALID_PARAMS',
+    );
+    await expectError('/wells/NO-SUCH-WELL/export.csv', 404, 'WELL_NOT_FOUND');
   });
 });
 

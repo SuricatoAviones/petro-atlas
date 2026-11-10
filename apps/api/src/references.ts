@@ -6,7 +6,10 @@ import { splitIdOrSlug } from './params.ts';
 
 export interface WellReference {
   id: number;
+  slug: string;
   name: string;
+  lonDeg: number;
+  latDeg: number;
   source: SourceRef;
 }
 
@@ -23,12 +26,15 @@ export async function findWell(
   const { id, slug } = splitIdOrSlug(reference);
   const { rows } = await database.query<{
     id: number;
+    slug: string;
     name: string;
+    lon_deg: number;
+    lat_deg: number;
     source_name: string;
     source_license: string;
     source_url: string;
   }>(
-    `SELECT w.id, w.name,
+    `SELECT w.id, w.slug, w.name, ST_X(w.geom) AS lon_deg, ST_Y(w.geom) AS lat_deg,
             s.name AS source_name, s.license AS source_license, s.url AS source_url
      FROM well w
      JOIN data_source s ON s.id = w.source_id
@@ -41,7 +47,10 @@ export async function findWell(
   if (row === undefined) return null;
   return {
     id: row.id,
+    slug: row.slug,
     name: row.name,
+    lonDeg: row.lon_deg,
+    latDeg: row.lat_deg,
     source: { name: row.source_name, license: row.source_license, url: row.source_url },
   };
 }
