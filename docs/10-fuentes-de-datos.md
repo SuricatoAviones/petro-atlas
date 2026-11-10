@@ -74,25 +74,31 @@ Primera carga completa: 142 campos (141 con polígono) y 8.357 pozos de 8.492 le
 
 ## Volve
 
-Los datos de producción vienen en un archivo Excel con una hoja diaria y otra mensual. Mapeo previsto de la hoja diaria a `production_daily`:
+Equinor distribuye el conjunto completo a través de Databricks Marketplace, con una descarga autenticada. Por eso el ETL no intenta descargar el paquete entero: espera el libro de producción en `data/volve/Volve production data.xlsx` y los XML de trayectorias en `data/volve/trajectories/`. Si se dispone de una URL directa al libro, `VOLVE_PRODUCTION_URL` permite descargarlo en la etapa de preparación. Las trayectorias se descargan del mismo conjunto y se copian a esa carpeta.
+
+El libro tiene una hoja `Daily Production Data` y otra `Monthly Production Data`. Columnas comprobadas contra el archivo real el 2026-11-10:
 
 | Columna de origen | Columna destino | Unidad |
 | --- | --- | --- |
-| `DATEPRD` | `date` | |
+| `DATEPRD` | `date` | fecha de Excel |
 | `NPD_WELL_BORE_NAME` | clave de cruce con `well.name` | |
 | `ON_STREAM_HRS` | `on_stream_h` | h |
 | `AVG_DOWNHOLE_PRESSURE` | `bhp_bar` | bar |
 | `AVG_DOWNHOLE_TEMPERATURE` | `bht_c` | °C |
 | `AVG_WHP_P` | `whp_bar` | bar |
 | `AVG_WHT_P` | `wht_c` | °C |
-| `AVG_CHOKE_SIZE_P` | `choke_pct` | % |
+| `AVG_CHOKE_SIZE_P` | `choke_pct` | % (`AVG_CHOKE_UOM` es `%`) |
 | `BORE_OIL_VOL` | `oil_sm3` | Sm³ |
 | `BORE_GAS_VOL` | `gas_sm3` | Sm³ |
 | `BORE_WAT_VOL` | `water_sm3` | Sm³ |
 | `BORE_WI_VOL` | `water_inj_sm3` | Sm³ |
-| `WELL_TYPE` | `well.well_type` | |
 
-Esta tabla se escribió de memoria. El primer paso del ETL de Volve es abrir el archivo real y corregirla si algún nombre o unidad difiere. La unidad del choke viene en una columna aparte y hay que comprobarla.
+- `WELL_TYPE` de la hoja diaria usa `OP`/`WI` y no se copia a `well.well_type`: el tipo del pozo se toma de Sodir.
+- La hoja mensual (`Wellbore name`, `Year`, `Month`, `Oil`, `Gas`, `Water`, `GI`, `WI`) se agrega por mes para llenar `field_production_monthly` del campo VOLVE.
+- Las horas en línea de 25 h o más se descartan y se cuentan; algunos días de cambio de horario de verano vienen así en la fuente.
+- Los volúmenes negativos se descartan y se cuentan; no se convierten en cero.
+
+Las trayectorias son XML WITSML 1.4.1.1 con estaciones `md`/`tvd` en metros e `incl`/`azi` en radianes. El ETL las convierte a metros y grados y se queda con la trayectoria más reciente de cada pozo. Los nombres de pozo de WITSML llevan el prefijo `NO `; se cruzan con Sodir después de quitarlo.
 
 Las coordenadas de los pozos de Volve no están en el archivo de producción: se obtienen cruzando el nombre oficial del pozo con Sodir.
 
@@ -121,4 +127,3 @@ pnpm db:seed       # datos sintéticos para desarrollo, sin descargar nada
 - [ ] Confirmar el texto exacto de la licencia de Sodir antes de publicar la demo.
 - [ ] Confirmar si la licencia de Volve permite que la demo pública sirva los datos tal cual, o si conviene limitarla a datos agregados.
 - [ ] Decidir si la demo pública incluye la producción mensual por pozo de Diskos.
-- [ ] Comprobar los nombres reales de columnas de Volve y corregir este documento. Los de Sodir ya están comprobados.
