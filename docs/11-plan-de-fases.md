@@ -49,8 +49,8 @@ Objetivo: ver cómo se comporta un pozo en el tiempo.
 
 - [x] ETL de Volve: producción diaria y trayectorias, cruzadas con los pozos de Sodir.
 - [x] `GET /api/wells/:id/production`, `/trajectory`, `GET /api/fields/:id/production`.
-- [ ] Pestañas Producción y Operación con las gráficas de `07-graficas.md`, sincronizadas.
-- [ ] Selector de unidades SI y de campo.
+- [x] Pestañas Producción y Operación con las gráficas de `07-graficas.md`, sincronizadas.
+- [x] Selector de unidades SI y de campo.
 - [x] `petro-calc/units` y `petro-calc/diagnostics` (corte de agua y RGP) con pruebas.
 - [ ] Mapa de burbujas de acumulados.
 - [ ] Vista `well_alert`, `GET /api/alerts`, borde de alerta en el mapa, lista en la ficha y panel lateral.
