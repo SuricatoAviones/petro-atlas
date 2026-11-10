@@ -3,7 +3,6 @@
 import type { SourceRef } from '@petroatlas/shared-types';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 
-import { messages } from '@/messages/es';
 import { fetchFieldWellsWithProduction } from '@/lib/api';
 import type { ImportedWell } from '@/lib/imported-wells';
 import { MAX_COMPARED_WELLS, type UnitSystem } from '@/lib/sheet-state';
@@ -15,6 +14,7 @@ import {
 } from '@/lib/well-repository';
 
 import { CHART_COLORS } from './chart-colors';
+import { useMessages } from './locale-provider';
 import {
   SeriesChart,
   convertSeries,
@@ -89,6 +89,7 @@ export function WellComparison({
   unitSystem,
   groupId,
 }: WellComparisonProps) {
+  const messages = useMessages();
   const selectId = useId();
   const [fluid, setFluid] = useState<ComparisonFluid>('oil');
   const [publicCandidates, setPublicCandidates] = useState<{

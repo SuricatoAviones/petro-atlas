@@ -8,6 +8,9 @@ export const messages = {
     navigation: 'Navegación principal',
     map: 'Mapa',
     sources: 'Fuentes y licencias',
+    language: 'Idioma',
+    spanish: 'Español',
+    english: 'English',
   },
   map: {
     label: 'Mapa de pozos',
@@ -187,10 +190,14 @@ export const messages = {
         {
           title: 'Titular',
           paragraphs: [
-            'El titular y mantenedor del proyecto es LuisAngel, la persona que figura en el aviso de copyright del archivo LICENSE del repositorio. El nombre PetroAtlas es provisional.',
-            'La vía de contacto disponible es el repositorio del proyecto en GitHub.',
+            'El titular y mantenedor del proyecto es Luis Angel Gutierrez, con sitio web luisangelgutierrez.com y residencia en Venezuela. PetroAtlas es el nombre definitivo del proyecto.',
+            'Las vías de contacto disponibles son su sitio web y el repositorio del proyecto en GitHub.',
           ],
           links: [
+            {
+              href: 'https://luisangelgutierrez.com',
+              label: 'Sitio web de Luis Angel Gutierrez',
+            },
             {
               href: 'https://github.com/SuricatoAviones/petro-atlas',
               label: 'Repositorio de PetroAtlas',
@@ -226,10 +233,10 @@ export const messages = {
           ],
         },
         {
-          title: 'Modificaciones',
+          title: 'Modificaciones y jurisdicción',
           paragraphs: [
             'Este aviso puede actualizarse cuando cambie la aplicación o la normativa aplicable. La fecha de actualización indica la versión vigente.',
-            'Las controversias se someterán a los tribunales que resulten competentes según la normativa aplicable.',
+            'Las controversias se someterán a los tribunales competentes de Venezuela, sin perjuicio de las normas imperativas que resulten aplicables.',
           ],
         },
       ],
@@ -242,10 +249,14 @@ export const messages = {
         {
           title: 'Responsable',
           paragraphs: [
-            'El responsable del proyecto es LuisAngel, la persona que figura en el aviso de copyright del archivo LICENSE del repositorio. El nombre PetroAtlas es provisional.',
-            'Para cualquier consulta sobre privacidad, utiliza el repositorio del proyecto en GitHub.',
+            'El responsable del proyecto es Luis Angel Gutierrez, con sitio web luisangelgutierrez.com y residencia en Venezuela. PetroAtlas es el nombre definitivo del proyecto.',
+            'Para cualquier consulta sobre privacidad, utiliza su sitio web o el repositorio del proyecto en GitHub.',
           ],
           links: [
+            {
+              href: 'https://luisangelgutierrez.com',
+              label: 'Sitio web de Luis Angel Gutierrez',
+            },
             {
               href: 'https://github.com/SuricatoAviones/petro-atlas',
               label: 'Repositorio de PetroAtlas',
@@ -255,7 +266,7 @@ export const messages = {
         {
           title: 'Datos que se tratan',
           paragraphs: [
-            'La aplicación no tiene cuentas de usuario, formularios de contacto ni cookies. No se recogen nombres, correos electrónicos ni datos de perfil.',
+            'La aplicación no tiene cuentas de usuario, formularios de contacto ni cookies de seguimiento. Guarda una cookie técnica para recordar el idioma elegido. No se recogen nombres, correos electrónicos ni datos de perfil.',
             'El servidor que aloja la aplicación puede registrar direcciones IP, fecha, ruta solicitada, agente de usuario y código de respuesta en sus registros de acceso. Son datos técnicos necesarios para la seguridad y el diagnóstico.',
             'El mapa solicita teselas a OpenFreeMap, que recibe la dirección IP y los datos técnicos necesarios para servir las teselas.',
           ],
@@ -282,7 +293,7 @@ export const messages = {
         {
           title: 'Derechos',
           paragraphs: [
-            'Puedes solicitar el acceso, la rectificación, la supresión, la oposición, la limitación y la portabilidad de tus datos. Para ejercerlos, contacta a través del repositorio de GitHub.',
+            'Puedes solicitar el acceso, la rectificación, la supresión, la oposición, la limitación y la portabilidad de tus datos. Para ejercerlos, contacta a través del sitio web luisangelgutierrez.com o del repositorio de GitHub.',
             'También puedes presentar una reclamación ante la autoridad de protección de datos competente.',
           ],
         },
@@ -356,8 +367,8 @@ export const messages = {
         {
           title: 'Cookies que usamos',
           paragraphs: [
-            'Actualmente PetroAtlas no utiliza cookies propias ni de terceros, ni herramientas de analítica, publicidad o seguimiento.',
-            'Por ese motivo no se muestra un panel de consentimiento de cookies.',
+            'PetroAtlas utiliza una cookie técnica, petroatlas-locale, para recordar si elegiste español o inglés. No contiene datos personales y no se usa para seguimiento.',
+            'No utiliza cookies de analítica, publicidad ni seguimiento de terceros. Por ese motivo no se muestra un panel de consentimiento de cookies.',
           ],
         },
         {
@@ -370,6 +381,7 @@ export const messages = {
           title: 'Almacenamiento local',
           paragraphs: [
             'Si importas un CSV, los pozos se guardan en IndexedDB dentro de tu navegador. El archivo no se envía al servidor y esos datos no se comparten con otras personas. Puedes borrarlos desde el panel de datos propios o eliminando los datos del sitio en la configuración del navegador.',
+            'La cookie petroatlas-locale solo guarda el idioma de la interfaz y puedes borrarla desde la configuración del navegador.',
           ],
         },
         {
@@ -587,4 +599,7 @@ export const messages = {
     exploration: 'Exploración',
     observation: 'Observación',
   },
-} as const;
+};
+
+/** Shape of every interface dictionary; `en.ts` must provide all of it. */
+export type Messages = typeof messages;

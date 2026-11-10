@@ -9,7 +9,8 @@ Reglas que sigue todo cambio en el repositorio, lo escriba una persona o un agen
 | Código, identificadores, nombres de archivo, comentarios | Inglés |
 | Mensajes de commit y títulos de PR | Inglés |
 | Documentación en `docs/` | Español |
-| Textos de la interfaz | Español, centralizados en archivos de mensajes para poder traducirlos |
+| Textos de la interfaz | Español e inglés, con un diccionario por idioma en `apps/web/src/messages/` |
+| Documentación en inglés | Solo identificadores técnicos y nombres propios que no se traducen |
 
 ## TypeScript
 

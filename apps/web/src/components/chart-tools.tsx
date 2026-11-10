@@ -1,12 +1,11 @@
 'use client';
 
 import type { SourceRef } from '@petroatlas/shared-types';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { downloadCsv, downloadDataUrl, safeFileName, type TableData } from '@/lib/export';
-import { messages } from '@/messages/es';
 
-const NUMBER_FORMAT = new Intl.NumberFormat('es', { maximumFractionDigits: 4 });
+import { useLocale, useMessages } from './locale-provider';
 
 /** Options of the PNG a chart exports: twice the screen resolution, on a white background. */
 export const PNG_EXPORT_OPTIONS = {
@@ -17,6 +16,7 @@ export const PNG_EXPORT_OPTIONS = {
 
 /** Source and licence under a chart (docs/07, rule 7). A source without address is plain text. */
 export function ChartSource({ source }: { source: SourceRef | readonly SourceRef[] }) {
+  const messages = useMessages();
   const sources: readonly SourceRef[] = Array.isArray(source) ? source : [source];
   return (
     <p className="chart-card__source">
@@ -51,8 +51,14 @@ interface ChartToolsProps {
 
 /** Table view and CSV/PNG export of a chart (docs/07, rules 8 and 12). */
 export function ChartTools({ title, table, getCsvTable, getImage }: ChartToolsProps) {
+  const messages = useMessages();
+  const { locale } = useLocale();
   const [showTable, setShowTable] = useState(false);
   const fileName = safeFileName(title);
+  const numberFormat = useMemo(
+    () => new Intl.NumberFormat(locale, { maximumFractionDigits: 4 }),
+    [locale],
+  );
 
   return (
     <>
@@ -117,7 +123,7 @@ export function ChartTools({ title, table, getCsvTable, getImage }: ChartToolsPr
                       cell === null
                         ? '—'
                         : typeof cell === 'number'
-                          ? NUMBER_FORMAT.format(cell)
+                          ? numberFormat.format(cell)
                           : cell;
                     return cellIndex === 0 ? (
                       <th key={cellIndex} scope="row">

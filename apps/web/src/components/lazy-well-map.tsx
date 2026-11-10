@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 
-import { messages } from '@/messages/es';
+import { MapLoading } from './lazy-loading';
 
 /**
  * MapLibre weighs about 1 MB and needs the browser, so it is loaded after the page shell
@@ -10,11 +10,5 @@ import { messages } from '@/messages/es';
  */
 export const LazyWellMap = dynamic(() => import('./well-map').then((module) => module.WellMap), {
   ssr: false,
-  loading: () => (
-    <div className="well-map">
-      <p className="well-map__notice" role="status">
-        {messages.map.loading}
-      </p>
-    </div>
-  ),
+  loading: MapLoading,
 });

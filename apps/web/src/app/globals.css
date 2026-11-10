@@ -88,6 +88,32 @@ body {
   color: var(--color-header-text);
 }
 
+.app-header__language {
+  display: flex;
+  gap: 0.25rem;
+  margin-left: 0.5rem;
+}
+
+.app-header__language button {
+  padding: 0.1rem 0.4rem;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+  background: none;
+  color: var(--color-header-muted);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.app-header__language button:hover {
+  color: var(--color-header-text);
+}
+
+.app-header__language button[aria-pressed='true'] {
+  border-color: var(--color-accent);
+  color: var(--color-header-text);
+}
+
 .app-main {
   min-height: 0;
   overflow: hidden;

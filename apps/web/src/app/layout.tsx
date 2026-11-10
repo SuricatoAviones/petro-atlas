@@ -3,17 +3,25 @@ import './globals.css';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
-import { messages } from '@/messages/es';
+import { LocaleProvider } from '@/components/locale-provider';
+import { getRequestLocale } from '@/lib/locale';
+import { getMessages } from '@/messages';
 
-export const metadata: Metadata = {
-  title: messages.app.name,
-  description: messages.app.description,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const messages = getMessages(await getRequestLocale());
+  return {
+    title: messages.app.name,
+    description: messages.app.description,
+  };
+}
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const locale = await getRequestLocale();
   return (
-    <html lang="es">
-      <body>{children}</body>
+    <html lang={locale}>
+      <body>
+        <LocaleProvider locale={locale}>{children}</LocaleProvider>
+      </body>
     </html>
   );
 }

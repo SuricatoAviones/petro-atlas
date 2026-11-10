@@ -1,3 +1,5 @@
+'use client';
+
 import {
   wellStatusSchema,
   wellTypeSchema,
@@ -8,11 +10,11 @@ import {
 import { useId, type ReactNode } from 'react';
 
 import { BUBBLE_FLUIDS, bubbleRadius, formatVolume, type BubbleFluid } from '@/lib/bubble';
-import { messages } from '@/messages/es';
 import type { WellAlert } from '@/lib/well-alerts';
 import { EMPTY_WELL_FILTERS, hasActiveWellFilters, type WellFilters } from '@/lib/well-filters';
 
 import { AlertsList } from './alerts-list';
+import { useLocale, useMessages } from './locale-provider';
 import {
   BUBBLE_COLORS,
   WELL_STATUS_COLORS,
@@ -75,6 +77,8 @@ export function FilterPanel({
   onOpenWell,
   children,
 }: FilterPanelProps) {
+  const messages = useMessages();
+  const { locale } = useLocale();
   const fieldId = useId();
   const operatorId = useId();
   const spudFromId = useId();
@@ -281,7 +285,7 @@ export function FilterPanel({
                           }}
                           aria-hidden="true"
                         />
-                        {formatVolume(value)}
+                        {formatVolume(value, locale)}
                       </li>
                     );
                   })}

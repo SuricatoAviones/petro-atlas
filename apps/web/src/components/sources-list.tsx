@@ -3,8 +3,9 @@
 import type { SourceListResponse } from '@petroatlas/shared-types';
 import { useEffect, useState } from 'react';
 
-import { messages } from '@/messages/es';
 import { fetchSources } from '@/lib/api';
+
+import { useLocale, useMessages } from './locale-provider';
 
 type Source = SourceListResponse['items'][number];
 
@@ -15,14 +16,12 @@ interface SourcesState {
   items: readonly Source[];
 }
 
-const INGEST_DATE_FORMATTER = new Intl.DateTimeFormat('es', {
-  dateStyle: 'medium',
-  timeStyle: 'short',
-  timeZone: 'UTC',
-});
-
-function formatIngestDate(isoDate: string): string {
-  return `${INGEST_DATE_FORMATTER.format(new Date(isoDate))} UTC`;
+function formatIngestDate(isoDate: string, locale: string): string {
+  return `${new Intl.DateTimeFormat(locale, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: 'UTC',
+  }).format(new Date(isoDate))} UTC`;
 }
 
 function isHttpUrl(url: string): boolean {
@@ -31,6 +30,8 @@ function isHttpUrl(url: string): boolean {
 
 /** Source list of the "Fuentes y licencias" page (docs/10). */
 export function SourcesList() {
+  const messages = useMessages();
+  const { locale } = useLocale();
   const [requestKey, setRequestKey] = useState(0);
   const [state, setState] = useState<SourcesState>({
     status: 'loading',
@@ -94,7 +95,9 @@ export function SourcesList() {
             {source.ingestedAt === null ? (
               messages.sources.neverIngested
             ) : (
-              <time dateTime={source.ingestedAt}>{formatIngestDate(source.ingestedAt)}</time>
+              <time dateTime={source.ingestedAt}>
+                {formatIngestDate(source.ingestedAt, locale)}
+              </time>
             )}
           </p>
           {isHttpUrl(source.url) ? (

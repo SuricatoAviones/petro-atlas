@@ -9,23 +9,24 @@ Las páginas legales son estáticas y viven en la aplicación web:
 | `/datos` | Datos | Origen de los datos, conjunto sintético, cálculos y licencias |
 | `/cookies` | Cookies | Ausencia de cookies propias, servicios externos y almacenamiento local |
 
-Las cuatro están enlazadas desde el pie de página de todas las pantallas. Los textos se mantienen en `apps/web/src/messages/es.ts` y se renderizan con `components/legal-page.tsx`.
+Las cuatro están enlazadas desde el pie de página de todas las pantallas. Los textos se mantienen en `apps/web/src/messages/es.ts` y `apps/web/src/messages/en.ts`, y se renderizan con `components/legal-page.tsx`.
 
 ## Estado
 
-- El contenido describe la aplicación tal como está construida hoy: sin cuentas, sin formularios, sin cookies y sin analítica.
+- El contenido describe la aplicación tal como está construida hoy: sin cuentas, sin formularios, sin cookies de seguimiento, con una cookie funcional de idioma y sin analítica.
 - La privacidad menciona los registros técnicos del alojamiento y las peticiones de teselas a OpenFreeMap.
 - La página de datos remite a `10-fuentes-de-datos.md` y a `/fuentes`.
-- La política de cookies describe el uso de IndexedDB por la importación CSV: los datos se quedan en el navegador, no se suben al servidor y se pueden borrar desde la propia interfaz o desde el navegador.
+- La política de cookies describe la cookie funcional `petroatlas-locale` y el uso de IndexedDB por la importación CSV: los datos se quedan en el navegador, no se suben al servidor y se pueden borrar desde la propia interfaz o desde el navegador.
 
 ## Revisión pendiente antes de la explotación pública
 
 El texto actual es un borrador técnico, no asesoramiento jurídico. Antes de publicar la demo con un dominio propio hay que completar y revisar:
 
-- [ ] Identidad legal completa del titular: nombre o razón social, NIF y domicilio.
-- [ ] Correo electrónico o formulario de contacto dedicado; el repositorio de GitHub no basta para todas las obligaciones de información.
-- [ ] País y jurisdicción aplicables, y texto de resolución de conflictos.
-- [ ] Proveedor de alojamiento, ubicación de los servidores y contrato de encargo de tratamiento si trata datos personales.
+- [x] Nombre del titular: Luis Angel Gutierrez, con sitio web <https://luisangelgutierrez.com>.
+- [x] País y jurisdicción: Venezuela; las controversias se someten a los tribunales competentes de Venezuela.
+- [ ] NIF y domicilio completo del titular.
+- [ ] Correo electrónico o formulario de contacto dedicado; el sitio web y el repositorio de GitHub no cubren por sí solos todas las obligaciones de información.
+- [ ] Proveedor de alojamiento, ubicación de los servidores y contrato de encargo de tratamiento si trata datos personales. La demo usa Render, en la región de Virginia.
 - [ ] Plazo concreto de conservación de los registros de acceso.
 - [ ] Revisión de la política de cookies si se añade analítica, publicidad o cualquier tecnología no esencial.
 - [ ] Revisión por una persona con conocimientos jurídicos antes de la puesta en producción.
