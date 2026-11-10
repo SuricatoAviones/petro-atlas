@@ -27,3 +27,6 @@ data/
 Thumbs.db
 .vscode/
 .idea/
+
+# Local agent state. Skills are versioned in .agents/skills (pnpm skills:link)
+.claude/
