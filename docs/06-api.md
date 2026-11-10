@@ -81,12 +81,12 @@ Si la base de datos no responde, devuelve 503 con el formato común de error:
       "id": 12,
       "geometry": { "type": "Point", "coordinates": [1.8876, 58.4415] },
       "properties": {
-        "name": "15/9-F-12",
+        "name": "VE-01",
         "slug": "15-9-F-12",
         "wellType": "producer",
         "status": "shut_in",
         "fieldId": 3,
-        "fieldName": "VOLVE",
+        "fieldName": "CAMPO ESCUELA VENEZUELA",
         "alertLevel": null,
         "hasDailyData": true
       }
@@ -99,7 +99,7 @@ Si la base de datos no responde, devuelve 503 con el formato común de error:
 
 `alertLevel` es siempre `null` hasta que exista la vista de alertas (fase 2).
 
-`GET /api/wells/cumulative?field=volve`
+`GET /api/wells/cumulative?field=campo-escuela-venezuela`
 
 Devuelve una fila por pozo con los volúmenes acumulados de toda su serie diaria. Un fluido sin datos es `null`, no cero.
 
@@ -108,7 +108,7 @@ Devuelve una fila por pozo con los volúmenes acumulados de toda su serie diaria
   "items": [
     {
       "wellId": 1447,
-      "name": "15/9-F-12",
+      "name": "VE-01",
       "lonDeg": 1.8859,
       "latDeg": 58.441,
       "oilSm3": 10037078,
@@ -127,19 +127,19 @@ Devuelve una fila por pozo con los volúmenes acumulados de toda su serie diaria
 {
   "id": 12,
   "slug": "15-9-F-12",
-  "name": "15/9-F-12",
+  "name": "VE-01",
   "wellType": "producer",
   "status": "shut_in",
   "spudDate": "2007-06-14",
   "totalDepthM": 3520,
   "location": { "lonDeg": 1.8859, "latDeg": 58.441 },
-  "field": { "id": 3, "slug": "volve", "name": "VOLVE", "operator": "Equinor Energy AS" },
+  "field": { "id": 3, "slug": "campo-escuela-venezuela", "name": "CAMPO ESCUELA VENEZUELA", "operator": "Equinor Energy AS" },
   "series": {
     "daily": { "from": "2008-02-12", "to": "2016-09-17", "days": 3056 },
     "hasTrajectory": true,
     "logCurves": ["GR", "RHOB"]
   },
-  "source": { "name": "Sodir FactPages", "license": "…", "url": "https://factpages.sodir.no/" }
+  "source": { "name": "PetroAtlas Venezuela synthetic seed", "license": "…", "url": "db/seed/generate.ts" }
 }
 ```
 
@@ -150,8 +150,8 @@ Devuelve una fila por pozo con los volúmenes acumulados de toda su serie diaria
   "items": [
     {
       "id": 3,
-      "slug": "volve",
-      "name": "VOLVE",
+      "slug": "campo-escuela-venezuela",
+      "name": "CAMPO ESCUELA VENEZUELA",
       "operator": "Equinor Energy AS",
       "status": "shut_down",
       "wellCount": 25
@@ -161,7 +161,7 @@ Devuelve una fila por pozo con los volúmenes acumulados de toda su serie diaria
 }
 ```
 
-`GET /api/fields/volve` devuelve lo mismo para un campo y añade `geometry` (MultiPolygon GeoJSON o `null`), `totals` (`oilSm3`, `gasSm3`, `waterSm3` acumulados de la serie mensual del campo, `null` si no hay serie cargada) y `source`.
+`GET /api/fields/campo-escuela-venezuela` devuelve lo mismo para un campo y añade `geometry` (MultiPolygon GeoJSON o `null`), `totals` (`oilSm3`, `gasSm3`, `waterSm3` acumulados de la serie mensual del campo, `null` si no hay serie cargada) y `source`.
 
 `GET /api/meta/sources`
 
@@ -170,9 +170,9 @@ Devuelve una fila por pozo con los volúmenes acumulados de toda su serie diaria
   "items": [
     {
       "id": 2,
-      "name": "Sodir FactPages",
+      "name": "PetroAtlas Venezuela synthetic seed",
       "license": "…",
-      "url": "https://factpages.sodir.no/",
+      "url": "db/seed/generate.ts",
       "ingestedAt": "2026-11-10T00:53:45.658Z"
     }
   ]
@@ -205,7 +205,7 @@ Las series van en columnas, no en filas, para reducir el tamaño de la respuesta
     "choke": [52.0, 52.0, 52.0],
     "onStream": [24, 24, 24]
   },
-  "source": { "name": "Volve (Equinor)", "license": "Equinor Open Data Licence: attribution required, not for resale" }
+  "source": { "name": "PetroAtlas Venezuela synthetic seed", "license": "MIT. Datos sintéticos; no son mediciones reales." }
 }
 ```
 
@@ -220,7 +220,7 @@ Los valores del ejemplo son ilustrativos. `interval=month` suma los volúmenes y
     { "mdM": 0, "tvdM": 0, "inclDeg": 0, "azimDeg": 0 },
     { "mdM": 100, "tvdM": 95.2, "inclDeg": 10.4, "azimDeg": 42.0 }
   ],
-  "source": { "name": "Volve (Equinor)", "license": "Equinor Open Data Licence: attribution required, not for resale" }
+  "source": { "name": "PetroAtlas Venezuela synthetic seed", "license": "MIT. Datos sintéticos; no son mediciones reales." }
 }
 ```
 
@@ -239,7 +239,7 @@ La serie del campo es siempre mensual.
     "gas": [6100000, 5900000, 5800000],
     "water": [2100, 2400, 2800]
   },
-  "source": { "name": "Volve (Equinor)", "license": "Equinor Open Data Licence: attribution required, not for resale" }
+  "source": { "name": "PetroAtlas Venezuela synthetic seed", "license": "MIT. Datos sintéticos; no son mediciones reales." }
 }
 ```
 

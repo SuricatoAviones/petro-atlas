@@ -54,7 +54,7 @@ Las líneas continuas son asociaciones del actor con cada caso. Las flechas punt
 | Calcular IPR y PVT | Ingeniero | Abre la pestaña Ingeniería | Curvas que responden al mover los parámetros | RF-08 |
 | Ajustar declinación | Ingeniero | Selecciona una ventana en la gráfica de tasa | Ajuste de Arps, pronóstico y EUR | RF-07 |
 | Diagnosticar agua | Ingeniero | Abre la pestaña Diagnóstico | Gráfico de Chan en log-log | RF-09 |
-| Ejecutar ingesta | Mantenedor | Corre el ETL | Datos públicos actualizados; registro de la corrida | — |
+
 
 ## Flujo principal: ajuste de declinación
 

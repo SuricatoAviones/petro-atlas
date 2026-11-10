@@ -1,131 +1,48 @@
-# Fuentes de datos
+# Datos de ejemplo
 
-Dos fuentes públicas noruegas cubren el diseño: Sodir da la cobertura geográfica del mapa y Volve da el detalle diario por pozo, incluidas las presiones.
+PetroAtlas usa **datos sintéticos de Venezuela** para la demo pública. No proceden de Sodir, Volve ni Diskos, y no representan ningún yacimiento, operadora o pozo real.
 
-## Fuentes
+## Por qué datos sintéticos
 
-| Fuente | Qué aporta | Granularidad | Condiciones |
-| --- | --- | --- | --- |
-| [Sodir FactPages](https://factpages.sodir.no/en/wellbore/Attributes) | Pozos con coordenadas y atributos, polígonos de campos, producción | Producción mensual y anual por campo | Datos abiertos del Norwegian Offshore Directorate |
-| [Diskos](https://www.sodir.no/en/diskos/production/) | Producción por pozo | Mensual, pública dos años después del mes reportado | Portal público de Diskos |
-| [Volve, Equinor](https://equinor.com/energy/volve-data-sharing) | Producción con presión y temperatura de fondo y de cabezal, choke, registros y datos de perforación | Diaria por pozo, 2008 a 2016, un solo campo | Equinor Open Data Licence: sin reventa y con atribución |
+Se revisaron las fuentes públicas venezolanas disponibles: portales de datos abiertos, publicaciones del ministerio y de PDVSA, y conjuntos internacionales de campos petroleros. No se encontró un conjunto abierto con **producción diaria por pozo, presiones y trayectorias** y una licencia que permita redistribuirlo. Por eso el proyecto no carga datos de terceros y usa un conjunto ficticio.
 
-## Reglas de licencia
+El repositorio no incluye datos de terceros. Cualquier dato que se añada en el futuro debe documentar su licencia y su atribución en esta página y en `/fuentes`.
 
-- El repositorio no incluye datos de terceros. El ETL los descarga a `data/`, que está en `.gitignore`.
-- `db/seed/` contiene solo datos sintéticos, generados por un script, para desarrollo y pruebas.
-- La interfaz muestra la atribución de cada fuente al pie de las gráficas y en una página "Fuentes y licencias".
-- El `README.md` enlaza las licencias y explica cómo obtener los datos.
-- Antes de publicar la demo se confirma el texto exacto de cada licencia. Ver preguntas abiertas.
+## Conjunto incluido
 
-## Sodir FactPages
+`db/seed/generate.ts` genera de forma determinista:
 
-Comprobado contra las exportaciones reales el 2026-11-09. El ETL (`pnpm etl:sodir`) descarga cuatro archivos a `data/sodir/`:
-
-| Archivo | Origen | Contenido |
-| --- | --- | --- |
-| `wellbore_exploration_all.csv` | Vista de tabla de FactPages | Pozos de exploración |
-| `wellbore_development_all.csv` | Vista de tabla de FactPages | Pozos de desarrollo |
-| `field.csv` | Vista de tabla de FactPages | Campos, operadora y estado |
-| `field_outlines.geojson` | Servicio de mapas de Sodir, capa 7100 | Polígonos de los campos |
-
-Columnas que se usan:
-
-| Columna de origen | Destino | Nota |
-| --- | --- | --- |
-| `wlbWellboreName` | `well.name` | Nombre oficial |
-| `wlbNsDecDeg`, `wlbEwDecDeg` | `well.geom` | Grados decimales en **ED50** (EPSG:4230); se transforman a EPSG:4326 al cargar, unos 100 m de diferencia |
-| `wlbEntryDate` | `well.spud_date` | Formato `DD.MM.AAAA`. `wlbCompletionDate` es la fecha de terminación y no se usa |
-| `wlbTotalDepth` | `well.total_depth_m` | m |
-| `wlbField` | `well.field_id` | Se cruza con `fldName` |
-| `wlbPurpose` | `well.well_type` | Ver traducción abajo |
-| `wlbStatus` | `well.status` | Ver traducción abajo |
-| `fldName` | `field.name` | |
-| `cmpLongName` | `field.operator` | Operadora actual del campo |
-| `fldCurrentActivitySatus` | `field.status` | El nombre de la columna viene así escrito en la fuente |
-| `fldNpdidField` | cruce con los polígonos | |
-
-Traducción a las enumeraciones de `04-modelo-de-dominio.md`:
-
-| Valor de Sodir | Valor en PetroAtlas |
+| Elemento | Contenido |
 | --- | --- |
-| Archivo de exploración (cualquier `wlbPurpose`) | tipo `exploration` |
-| `PRODUCTION` | tipo `producer` |
-| `INJECTION`, `INJECTION-CCS` | tipo `injector` |
-| `OBSERVATION` | tipo `observation` |
-| Otro propósito o vacío | tipo `NULL` |
-| `PRODUCING` | estado `producing` |
-| `INJECTING` | estado `injecting` |
-| `PRODUCING/INJECTING` | `injecting` si el pozo es inyector; si no, `producing` |
-| `CLOSED`, `SUSPENDED` | estado `shut_in` |
-| `PLUGGED`, `P&A`, `JUNKED` | estado `abandoned` |
-| Cualquier otro o vacío | estado `unknown` |
-| Campo `Producing` / `Shut down` / `Approved for production` | `producing` / `shut_down` / `approved` |
+| Campo | `CAMPO ESCUELA VENEZUELA`, en una zona ficticia del este de Venezuela |
+| Pozos | `VE-01` a `VE-20`: productores, inyectores, un abandonado y uno de observación |
+| Producción | Un año de datos diarios: petróleo, gas, agua, inyección, presiones, temperatura, choke y horas en línea |
+| Trayectorias | Estaciones sintéticas para todos los pozos |
+| Registros | Curvas GR, NPHI, RHOB y RT en parte de los pozos, con un hueco de densidad |
+| Serie mensual | Producción mensual del campo para la ficha del campo |
 
-Decisiones:
+Todo lleva la fuente `PetroAtlas Venezuela synthetic seed` y la licencia MIT del repositorio, con la nota de que son datos generados y no mediciones reales.
 
-- No se cargan los pozos "otros" de Sodir (`wellbore_other_all`: sondeos de suelo, gas somero, científicos). No son pozos petroleros y no encajan en `well_type`.
-- Los pozos con estado `WILL NEVER BE DRILLED` se descartan y se cuentan en el informe.
-- La operadora de un pozo es la de su campo. Los pozos sin campo no tienen operadora.
-- Algunos polígonos publicados tienen anillos que se cruzan; se reparan al cargar con `ST_MakeValid`.
-- Un campo sin polígono publicado se carga con geometría `NULL`.
+## Reglas
 
-Primera carga completa: 142 campos (141 con polígono) y 8.357 pozos de 8.492 leídos; 135 descartados por no haberse perforado nunca.
+1. **Nada de datos reales en Git.** El seed no descarga archivos ni usa servicios externos.
+2. **Determinista.** La misma versión del generador produce siempre el mismo conjunto.
+3. **Idempotente.** `pnpm db:seed` se puede ejecutar varias veces sin duplicar filas.
+4. **Sin ceros inventados.** Un dato ausente es `null`, nunca `0`.
+5. **Unidades SI.** Volúmenes en Sm³, presiones en bar, temperaturas en °C y profundidades en m.
+6. **Atribución visible.** La fuente sintética aparece al pie de las gráficas y en `/fuentes`.
 
-## Volve
-
-Equinor distribuye el conjunto completo a través de Databricks Marketplace, con una descarga autenticada. Por eso el ETL no intenta descargar el paquete entero: espera el libro de producción en `data/volve/Volve production data.xlsx` y los XML de trayectorias en `data/volve/trajectories/`. Si se dispone de una URL directa al libro, `VOLVE_PRODUCTION_URL` permite descargarlo en la etapa de preparación. Las trayectorias se descargan del mismo conjunto y se copian a esa carpeta.
-
-El libro tiene una hoja `Daily Production Data` y otra `Monthly Production Data`. Columnas comprobadas contra el archivo real el 2026-11-10:
-
-| Columna de origen | Columna destino | Unidad |
-| --- | --- | --- |
-| `DATEPRD` | `date` | fecha de Excel |
-| `NPD_WELL_BORE_NAME` | clave de cruce con `well.name` | |
-| `ON_STREAM_HRS` | `on_stream_h` | h |
-| `AVG_DOWNHOLE_PRESSURE` | `bhp_bar` | bar |
-| `AVG_DOWNHOLE_TEMPERATURE` | `bht_c` | °C |
-| `AVG_WHP_P` | `whp_bar` | bar |
-| `AVG_WHT_P` | `wht_c` | °C |
-| `AVG_CHOKE_SIZE_P` | `choke_pct` | % (`AVG_CHOKE_UOM` es `%`) |
-| `BORE_OIL_VOL` | `oil_sm3` | Sm³ |
-| `BORE_GAS_VOL` | `gas_sm3` | Sm³ |
-| `BORE_WAT_VOL` | `water_sm3` | Sm³ |
-| `BORE_WI_VOL` | `water_inj_sm3` | Sm³ |
-
-- `WELL_TYPE` de la hoja diaria usa `OP`/`WI` y no se copia a `well.well_type`: el tipo del pozo se toma de Sodir.
-- La hoja mensual (`Wellbore name`, `Year`, `Month`, `Oil`, `Gas`, `Water`, `GI`, `WI`) se agrega por mes para llenar `field_production_monthly` del campo VOLVE.
-- Las horas en línea de 25 h o más se descartan y se cuentan; algunos días de cambio de horario de verano vienen así en la fuente.
-- Los volúmenes negativos se descartan y se cuentan; no se convierten en cero.
-
-Las trayectorias son XML WITSML 1.4.1.1 con estaciones `md`/`tvd` en metros e `incl`/`azi` en radianes. El ETL las convierte a metros y grados y se queda con la trayectoria más reciente de cada pozo. Los nombres de pozo de WITSML llevan el prefijo `NO `; se cruzan con Sodir después de quitarlo.
-
-Las coordenadas de los pozos de Volve no están en el archivo de producción: se obtienen cruzando el nombre oficial del pozo con Sodir.
-
-Verificación de cierre de la fase 2 (2026-11-10), pozo `15/9-F-12`, presión de fondo contra el archivo original: 2010-01-01 248.2708796 bar, 2010-06-15 280.0132563 bar y 2010-10-11 253.8519828 bar. La API devuelve los mismos valores redondeados a la precisión de `real` (248.27087, 280.01324 y 253.85199) con la fuente de Volve al pie.
-
-## Reglas del ETL
-
-1. **Idempotente.** Correrlo dos veces deja la base de datos igual. Se usa `INSERT ... ON CONFLICT DO UPDATE`.
-2. **Por etapas.** Descargar, validar, normalizar y cargar son pasos separados. Un fallo en uno no deja datos a medias: cada fuente se carga dentro de una transacción.
-3. **Unidades.** Todo se convierte a SI antes de cargar. La conversión usa las mismas constantes que `petro-calc/units`.
-4. **Ausentes.** Una celda vacía se carga como `NULL`. No se inventan ceros.
-5. **Valores imposibles.** Volúmenes negativos, horas fuera de 0 a 24 y coordenadas fuera de rango se descartan y se cuentan en el informe.
-6. **Nombres de pozo.** Se guardan con el nombre oficial de la fuente. El identificador legible para la URL se deriva de él sustituyendo `/` y espacios por `-`.
-7. **Registro.** Cada corrida escribe un resumen: filas leídas, cargadas, descartadas y por qué. `data_source.ingested_at` se actualiza al terminar bien.
-8. **Sin datos en Git.** Los archivos descargados quedan en `data/`.
-
-### Comandos previstos
+## Comandos
 
 ```bash
-pnpm etl:sodir     # campos y pozos
-pnpm etl:volve     # producción diaria, trayectorias y registros de Volve
-pnpm etl:all       # todo, en orden
-pnpm db:seed       # datos sintéticos para desarrollo, sin descargar nada
+pnpm db:migrate   # aplica el esquema y retira los conjuntos antiguos
+pnpm db:seed      # carga CAMPO ESCUELA VENEZUELA
 ```
 
-## Preguntas abiertas
+La migración `0006_remove_norway_sources.sql` elimina de bases existentes los datos de Sodir, Volve y el antiguo campo sintético noruego. En una instalación nueva no hay nada que borrar.
 
-- [ ] Confirmar el texto exacto de la licencia de Sodir antes de publicar la demo.
-- [ ] Confirmar si la licencia de Volve permite que la demo pública sirva los datos tal cual, o si conviene limitarla a datos agregados.
-- [ ] Decidir si la demo pública incluye la producción mensual por pozo de Diskos.
+## Preguntas cerradas
+
+- No se usan datos de Sodir ni de Volve.
+- No se incluye Diskos.
+- No hay ETL de datos públicos en este repositorio.

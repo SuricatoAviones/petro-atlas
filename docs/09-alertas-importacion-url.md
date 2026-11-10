@@ -71,7 +71,7 @@ La web no distingue de dónde viene un pozo. Una interfaz `WellRepository` tiene
 La pestaña Producción permite añadir otros pozos a la gráfica de tasas:
 
 - Los candidatos son los demás pozos con producción diaria del mismo campo y los pozos importados en ese navegador.
-- Se pueden comparar hasta cuatro pozos además del abierto. Cada uno usa un estilo de línea distinto y el color sigue indicando el fluido (docs/07, regla 11).
+- Se pueden comparar hasta ocho pozos además del abierto. Cada uno usa un estilo de línea distinto y el color sigue indicando el fluido (docs/07, regla 11).
 - La selección de pozos públicos se guarda en `comparar`; los pozos importados solo viven en memoria, porque no existen fuera del navegador.
 - Un pozo abierto puede cambiar mientras la comparación sigue activa; el pozo abierto se excluye de la lista.
 
@@ -80,12 +80,12 @@ La pestaña Producción permite añadir otros pozos a la gráfica de tasas:
 Filtros, pozo abierto, rango de fechas y pestaña activa viven en los parámetros de la URL. Copiar la dirección comparte exactamente la misma vista.
 
 ```text
-/mapa?campo=volve&estado=productor&pozo=15-9-F-12&desde=2010-01-01&hasta=2012-12-31&tab=operacion
+/es?campo=campo-escuela-venezuela&estado=productor&pozo=VE-01&desde=2025-01-01&hasta=2025-12-31&tab=operacion
 ```
 
 | Parámetro | Contenido | Ejemplo |
 | --- | --- | --- |
-| `campo` | Identificador legible del campo | `volve` |
+| `campo` | Identificador legible del campo | `campo-escuela-venezuela` |
 | `estado`, `tipo`, `operadora` | Filtros del mapa; admiten varios valores separados por coma | `productor,cerrado` |
 | `perforadoDesde`, `perforadoHasta` | Año de perforación, en cuatro cifras | `1950` |
 | `pozo` | Identificador legible del pozo abierto | `15-9-F-12` |

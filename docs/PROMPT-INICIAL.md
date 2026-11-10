@@ -24,7 +24,7 @@ TU TAREA: SOLO LA FASE 0 (ANDAMIAJE)
 Implementa las tareas de la sección "Fase 0 — Andamiaje" de
 docs/11-plan-de-fases.md, ni más ni menos:
 - Monorepo con pnpm workspaces: apps/web, apps/api, packages/petro-calc,
-  packages/shared-types, etl, db.
+  packages/shared-types, db.
 - TypeScript estricto, ESLint y Prettier compartidos desde la raíz.
 - docker-compose.yml con PostgreSQL + PostGIS, API y web.
 - db/migrations/0001_init.sql con exactamente el DDL de docs/05-base-de-datos.md
@@ -46,7 +46,7 @@ REGLAS
 - Usa la versión LTS vigente de Node y las últimas versiones estables de cada
   librería. Comprueba las versiones reales; no las asumas.
 - No descargues ni incluyas datos de terceros en el repositorio.
-- No adelantes trabajo de la fase 1: nada de ETL real, rutas de pozos ni filtros.
+- No adelantes trabajo de la fase 1: nada de datos reales, rutas de pozos ni filtros.
 - Si crees que algo del diseño está mal, dímelo y propón un ADR en docs/adr/.
   No lo cambies por tu cuenta.
 - Haz commits pequeños, uno por tarea.
@@ -85,5 +85,5 @@ Continuamos con PetroAtlas. La fase anterior está cerrada.
 
 - Antes del primer prompt, crear el repositorio vacío y copiar dentro la carpeta `docs/`.
 - Revisar la respuesta del paso "antes de escribir código". Es más barato corregir un malentendido ahí que en el código.
-- En la fase 2, el primer paso es abrir los archivos reales de Volve y corregir la tabla de mapeo de `10-fuentes-de-datos.md`.
+- En la fase 2, amplía el seed sintético con producción diaria y trayectorias.
 - En la fase 3, pedir explícitamente que cada fórmula se contraste con su referencia y tenga una prueba contra un valor publicado. Las de `08-motor-de-calculos.md` son un punto de partida, no un resultado verificado.
