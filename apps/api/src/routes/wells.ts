@@ -1,8 +1,6 @@
 import {
   wellCollectionResponseSchema,
   wellDetailSchema,
-  wellStatusSchema,
-  wellTypeSchema,
   type WellCollectionResponse,
   type WellDetail,
 } from '@petroatlas/shared-types';
@@ -13,7 +11,6 @@ import type { Database } from '../database.ts';
 import { HttpError } from '../http-errors.ts';
 import {
   bboxParam,
-  commaSeparated,
   idOrSlugParam,
   paginate,
   paginationParams,
@@ -22,17 +19,11 @@ import {
   splitIdOrSlug,
 } from '../params.ts';
 import { createSqlFilter } from '../sql-filter.ts';
+import { WELL_FILTER_FROM, addWellFilters, wellFilterParams } from '../well-filters.ts';
 
 const listQuerySchema = z.object({
   bbox: bboxParam.optional(),
-  /** Field ids or slugs. */
-  field: commaSeparated.pipe(z.array(idOrSlugParam).min(1)).optional(),
-  status: commaSeparated.pipe(z.array(wellStatusSchema).min(1)).optional(),
-  type: commaSeparated.pipe(z.array(wellTypeSchema).min(1)).optional(),
-  /** Operator of the well's field; wells have no operator of their own (docs/10). */
-  operator: commaSeparated.pipe(z.array(z.string().min(1)).min(1)).optional(),
-  spudFrom: z.iso.date().optional(),
-  spudTo: z.iso.date().optional(),
+  ...wellFilterParams,
   ...paginationParams,
 });
 
@@ -86,17 +77,9 @@ export function createWellsRouter(database: Database): Router {
       const corner = (index: number): string => `(${placeholder}::float8[])[${String(index)}]`;
       return `w.geom && ST_MakeEnvelope(${corner(1)}, ${corner(2)}, ${corner(3)}, ${corner(4)}, 4326)`;
     }, query.bbox);
-    filter.add(
-      (placeholder) => `(f.slug = ANY(${placeholder}) OR f.id::text = ANY(${placeholder}))`,
-      query.field,
-    );
-    filter.add((placeholder) => `w.status = ANY(${placeholder})`, query.status);
-    filter.add((placeholder) => `w.well_type = ANY(${placeholder})`, query.type);
-    filter.add((placeholder) => `f.operator = ANY(${placeholder})`, query.operator);
-    filter.add((placeholder) => `w.spud_date >= ${placeholder}`, query.spudFrom);
-    filter.add((placeholder) => `w.spud_date <= ${placeholder}`, query.spudTo);
+    addWellFilters(filter, query);
 
-    const from = 'FROM well w LEFT JOIN field f ON f.id = w.field_id';
+    const from = `FROM ${WELL_FILTER_FROM}`;
     // Counted before the cursor is added, so it covers every page.
     const count = await database.query<{ total: number }>(
       `SELECT count(*)::int AS total ${from} ${filter.where()}`,

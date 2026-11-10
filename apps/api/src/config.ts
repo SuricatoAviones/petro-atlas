@@ -5,7 +5,7 @@ const envSchema = z.object({
   API_DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
   API_PORT: z.coerce.number().int().min(1).max(65_535).default(4000),
   WEB_ORIGIN: z.url().default('http://localhost:3000'),
-  RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(300),
+  RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(1200),
 });
 
 export interface ApiConfig {
