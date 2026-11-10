@@ -180,7 +180,9 @@ export function WellMap({
   }, [status, colorMode]);
 
   useEffect(() => {
-    if (status === 'ready' && mapRef.current !== null) setWellFilters(mapRef.current, filtersQuery);
+    if (status === 'ready' && mapRef.current !== null) {
+      setWellFilters(mapRef.current, filtersQuery, latestColorMode.current);
+    }
   }, [status, filtersQuery]);
 
   return (

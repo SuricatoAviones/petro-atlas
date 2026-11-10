@@ -2,7 +2,7 @@
  * Sources and layers drawn on top of the basemap: field outlines, well clusters and wells, all
  * from the vector tiles of the API (docs/06, "Teselas de pozos" and "Teselas de campos").
  */
-import type { ExpressionSpecification, Map as MapLibreMap, VectorTileSource } from 'maplibre-gl';
+import type { ExpressionSpecification, Map as MapLibreMap } from 'maplibre-gl';
 
 import { mapConfig } from './map-config';
 import {
@@ -160,7 +160,31 @@ export function setWellColorMode(map: MapLibreMap, colorMode: WellColorMode): vo
   map.setPaintProperty(WELL_LAYER_ID, 'circle-color', wellColorExpression(colorMode));
 }
 
-/** Points the well source at the tile URL of the new filter set. */
-export function setWellFilters(map: MapLibreMap, filterQuery: string): void {
-  map.getSource<VectorTileSource>(WELL_SOURCE_ID)?.setTiles([wellTilesUrl(filterQuery)]);
+const DATA_LAYER_IDS: readonly string[] = [
+  FIELD_LABEL_LAYER_ID,
+  WELL_LAYER_ID,
+  CLUSTER_COUNT_LAYER_ID,
+  CLUSTER_LAYER_ID,
+  FIELD_OUTLINE_LAYER_ID,
+  FIELD_FILL_LAYER_ID,
+];
+const DATA_SOURCE_IDS: readonly string[] = [FIELD_SOURCE_ID, WELL_SOURCE_ID];
+
+/**
+ * Points the data sources at the tile URL of the new filter set. MapLibre keeps the cached
+ * tiles of a source whose `tiles` change, so the layers and sources are rebuilt instead of
+ * calling `setTiles`: otherwise the map would keep drawing the previous filter's wells.
+ */
+export function setWellFilters(
+  map: MapLibreMap,
+  filterQuery: string,
+  colorMode: WellColorMode,
+): void {
+  for (const layerId of DATA_LAYER_IDS) {
+    if (map.getLayer(layerId) !== undefined) map.removeLayer(layerId);
+  }
+  for (const sourceId of DATA_SOURCE_IDS) {
+    if (map.getSource(sourceId) !== undefined) map.removeSource(sourceId);
+  }
+  addWellLayers(map, colorMode, filterQuery);
 }
