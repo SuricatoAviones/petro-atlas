@@ -2,13 +2,15 @@
 
 Cálculos de ingeniería de petróleo en TypeScript puro, sin dependencias. Se ejecuta igual en el navegador, en Node o en un worker, y no conoce la interfaz ni la base de datos.
 
+> **Estado:** versión `0.1.0` preparada. La publicación en npm está pendiente de confirmar el ámbito `@petroatlas` y de autenticar la cuenta que publica; hasta entonces, el paquete se consume desde el monorepo.
+
 ## Instalación
 
 ```bash
 pnpm add @petroatlas/petro-calc
 ```
 
-El paquete se publica como módulo ESM con tipos incluidos.
+El paquete es un módulo ESM con tipos incluidos.
 
 ## Módulos
 
