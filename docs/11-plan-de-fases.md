@@ -62,14 +62,14 @@ Cierre: la presión de fondo de un pozo de Volve se ve en la ficha, con su fuent
 
 Objetivo: calcular sobre los datos del pozo.
 
-- [ ] `petro-calc/dca`: ajuste de Arps, pronóstico y EUR, con pruebas.
-- [ ] Selección de ventana sobre la gráfica y curva de ajuste superpuesta.
-- [ ] `petro-calc/ipr`: Vogel, Fetkovich y compuesta, con pruebas.
-- [ ] `petro-calc/pvt`: Standing, Vasquez y Beggs, Beggs y Robinson, con pruebas.
-- [ ] Pestaña Ingeniería con parámetros editables y curvas que responden al instante.
-- [ ] Pestaña Diagnóstico: Chan, tasa vs acumulado e índice de productividad.
-- [ ] Ventana de ajuste reflejada en la URL.
-- [ ] Publicar `petro-calc` en npm con su propio README.
+- [x] `petro-calc/dca`: ajuste de Arps, pronóstico y EUR, con pruebas.
+- [x] Selección de ventana sobre la gráfica y curva de ajuste superpuesta.
+- [x] `petro-calc/ipr`: Vogel, Fetkovich y compuesta, con pruebas.
+- [x] `petro-calc/pvt`: Standing, Vasquez y Beggs, Beggs y Robinson, con pruebas.
+- [x] Pestaña Ingeniería con parámetros editables y curvas que responden al instante.
+- [x] Pestaña Diagnóstico: Chan, tasa vs acumulado e índice de productividad.
+- [x] Ventana de ajuste reflejada en la URL.
+- [ ] Publicar `petro-calc` en npm con su propio README. El paquete está preparado en `0.1.0`, con README, LICENSE, CHANGELOG y umbral de cobertura; falta autenticar npm y confirmar el ámbito `@petroatlas`.
 
 Cierre: cobertura de 90% o más en `petro-calc` y cada fórmula con al menos una prueba contra un valor publicado.
 

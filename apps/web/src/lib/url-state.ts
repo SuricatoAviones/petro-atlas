@@ -12,6 +12,7 @@ import {
   parseSheetTab,
   parseUnitSystem,
   SHEET_TAB_PARAM,
+  type FitWindow,
   type SheetTab,
   type UnitSystem,
 } from './sheet-state';
@@ -31,6 +32,7 @@ export interface MapUrlState {
   view: MapView;
   tab: SheetTab;
   unitSystem: UnitSystem;
+  fitWindow: FitWindow | null;
 }
 
 interface SearchParamsReader {
@@ -44,7 +46,25 @@ export const DEFAULT_MAP_VIEW: MapView = {
 };
 
 const SPUD_YEAR_PATTERN = /^\d{4}$/;
+const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const WELL_SLUG_PATTERN = /^[A-Za-z0-9._-]{1,200}$/;
+
+function parseIsoDate(value: string): string | null {
+  if (!ISO_DATE_PATTERN.test(value)) return null;
+  const date = new Date(`${value}T00:00:00Z`);
+  if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value) return null;
+  return value;
+}
+
+function parseFitWindow(value: string | null): FitWindow | null {
+  if (value === null) return null;
+  const [start, end, extra] = value.split(',');
+  if (start === undefined || end === undefined || extra !== undefined) return null;
+  const parsedStart = parseIsoDate(start);
+  const parsedEnd = parseIsoDate(end);
+  if (parsedStart === null || parsedEnd === null || parsedStart > parsedEnd) return null;
+  return { start: parsedStart, end: parsedEnd };
+}
 
 function parseSpudYear(value: string | null): string {
   if (value === null || !SPUD_YEAR_PATTERN.test(value)) return '';
@@ -112,12 +132,13 @@ export function parseMapUrlState(params: SearchParamsReader): MapUrlState {
     view: parseView(params.get('vista')),
     tab: parseSheetTab(params.get('tab')),
     unitSystem: parseUnitSystem(params.get('unidades')),
+    fitWindow: parseFitWindow(params.get('ajuste')),
   };
 }
 
 export function toMapSearchParams(state: MapUrlState): URLSearchParams {
   const params = new URLSearchParams();
-  const { filters, wellSlug, view, tab, unitSystem } = state;
+  const { filters, wellSlug, view, tab, unitSystem, fitWindow } = state;
 
   if (filters.field !== '') params.set('campo', filters.field);
   if (filters.operator !== '') params.set('operadora', filters.operator);
@@ -132,6 +153,9 @@ export function toMapSearchParams(state: MapUrlState): URLSearchParams {
   if (wellSlug !== null) params.set('pozo', wellSlug);
   if (tab !== 'summary') params.set('tab', SHEET_TAB_PARAM[tab]);
   if (unitSystem === 'field') params.set('unidades', 'campo');
+  if (fitWindow !== null) {
+    params.set('ajuste', `${fitWindow.start},${fitWindow.end}`);
+  }
   params.set('vista', `${view.lat.toFixed(5)},${view.lon.toFixed(5)},${view.zoom.toFixed(2)}`);
 
   return params;

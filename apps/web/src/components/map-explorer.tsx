@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { fetchAlerts, fetchCumulativeWells, fetchFields, fetchWellCount } from '@/lib/api';
 import { bubbleMaximum, type BubbleFluid } from '@/lib/bubble';
-import type { SheetTab, UnitSystem } from '@/lib/sheet-state';
+import type { FitWindow, SheetTab, UnitSystem } from '@/lib/sheet-state';
 import { parseMapUrlState, writeMapUrlState, type MapView } from '@/lib/url-state';
 import { toWellQuery, type WellFilters } from '@/lib/well-filters';
 
@@ -164,6 +164,7 @@ export function MapExplorer() {
   const [view, setView] = useState<MapView>(initialUrlState.view);
   const [sheetTab, setSheetTab] = useState<SheetTab>(initialUrlState.tab);
   const [unitSystem, setUnitSystem] = useState<UnitSystem>(initialUrlState.unitSystem);
+  const [fitWindow, setFitWindow] = useState<FitWindow | null>(initialUrlState.fitWindow);
   const [bubbleFluid, setBubbleFluid] = useState<BubbleFluid | null>(null);
   const [wellsAtPoint, setWellsAtPoint] = useState<readonly WellAtPoint[]>([]);
   const [selectedWell, setSelectedWell] = useState<WellSelection | null>(
@@ -196,8 +197,9 @@ export function MapExplorer() {
       view,
       tab: sheetTab,
       unitSystem,
+      fitWindow,
     });
-  }, [filters, selectedWellSlug, sheetTab, unitSystem, view]);
+  }, [filters, fitWindow, selectedWellSlug, sheetTab, unitSystem, view]);
 
   const handleSelectWells = useCallback((wells: readonly WellAtPoint[]) => {
     const first = wells[0];
@@ -255,10 +257,12 @@ export function MapExplorer() {
             selectedWell={selectedWell}
             tab={sheetTab}
             unitSystem={unitSystem}
+            fitWindow={fitWindow}
             alerts={alerts.items}
             onSelectWell={handleSelectWell}
             onTabChange={setSheetTab}
             onUnitSystemChange={setUnitSystem}
+            onFitWindowChange={setFitWindow}
             onClose={closeWellSheet}
           />
         )}

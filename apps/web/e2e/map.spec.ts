@@ -51,10 +51,23 @@ test('filters the map, opens a well and keeps the view after a reload', async ({
   await sheet.getByRole('tab', { name: 'Producción' }).click();
   await expect(sheet.getByRole('heading', { name: 'Tasas de producción' })).toBeVisible();
   await expect(sheet.getByRole('img', { name: 'Tasas de producción' })).toBeVisible();
+  await sheet.getByRole('button', { name: 'Usar la ventana visible' }).click();
+  await expect(sheet.getByRole('heading', { name: 'Ajuste de Arps' })).toBeVisible();
+  await expect
+    .poll(() => new URL(page.url()).searchParams.get('ajuste'), { timeout: 5_000 })
+    .toMatch(/^\d{4}-\d{2}-\d{2},\d{4}-\d{2}-\d{2}$/);
   await sheet.getByRole('radio', { name: 'Campo' }).check();
   await expect(sheet.getByRole('radio', { name: 'Campo' })).toBeChecked();
   await sheet.getByRole('tab', { name: 'Trayectoria' }).click();
   await expect(sheet.getByRole('img', { name: 'Trayectoria' })).toBeVisible();
+  await sheet.getByRole('tab', { name: 'Ingeniería' }).click();
+  await expect(sheet.getByRole('heading', { name: 'Curva IPR' })).toBeVisible();
+  await expect(sheet.getByRole('img', { name: 'Presión de fondo frente a caudal' })).toBeVisible();
+  await expect(sheet.getByRole('img', { name: 'Bo frente a presión' })).toBeVisible();
+  await sheet.getByRole('tab', { name: 'Diagnóstico' }).click();
+  await expect(sheet.getByRole('img', { name: 'Chan: RAP' })).toBeVisible();
+  await expect(sheet.getByRole('img', { name: 'Chan: derivada del RAP' })).toBeVisible();
+  await expect(sheet.getByRole('img', { name: 'Tasa frente a acumulado' })).toBeVisible();
   await sheet.getByRole('tab', { name: 'Operación' }).click();
   await expect(sheet.getByRole('heading', { name: 'Presiones' })).toBeVisible();
 
@@ -73,6 +86,13 @@ test('filters the map, opens a well and keeps the view after a reload', async ({
     'true',
   );
   await expect(sheet.getByRole('radio', { name: 'Campo' })).toBeChecked();
+
+  await sheet.getByRole('tab', { name: 'Producción' }).click();
+  await expect(sheet.getByRole('heading', { name: 'Ajuste de Arps' })).toBeVisible();
+  await sheet.getByRole('button', { name: 'Quitar ajuste' }).click();
+  await expect
+    .poll(() => new URL(page.url()).searchParams.get('ajuste'), { timeout: 5_000 })
+    .toBeNull();
 
   const afterView = parseView(new URL(page.url()).searchParams.get('vista'));
   expect(afterView[0]).toBeCloseTo(beforeView[0], 3);

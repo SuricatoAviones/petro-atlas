@@ -1,7 +1,7 @@
 'use client';
 
 import type { SourceRef, WellProductionResponse } from '@petroatlas/shared-types';
-import { toField, type Quantity } from '@petroatlas/petro-calc';
+import { fitArps, rateAt, toField, type Quantity } from '@petroatlas/petro-calc';
 import * as echarts from 'echarts/core';
 import { LineChart } from 'echarts/charts';
 import {
@@ -12,11 +12,11 @@ import {
   TooltipComponent,
 } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { messages } from '@/messages/es';
 
-import type { UnitSystem } from '@/lib/sheet-state';
+import type { FitWindow, UnitSystem } from '@/lib/sheet-state';
 
 import { CHART_COLORS } from './chart-colors';
 
@@ -38,6 +38,7 @@ interface ChartSeries {
   values: readonly (number | null)[];
   /** Index into `axes`; defaults to the left axis. */
   axis?: number;
+  dashed?: boolean;
 }
 
 interface ChartAxis {
@@ -53,6 +54,7 @@ interface SeriesChartProps {
   source: SourceRef;
   closedDates: readonly string[];
   groupId: string;
+  onSelectVisibleRange?: (startDate: string, endDate: string) => void;
 }
 
 function formatValue(value: number | null): string {
@@ -107,7 +109,7 @@ function chartOption({
       data: dates.map((date, dateIndex) => [`${date} 00:00:00`, item.values[dateIndex] ?? null]),
       showSymbol: false,
       connectNulls: false,
-      lineStyle: { width: 1.5, color: item.color },
+      lineStyle: { width: 1.5, color: item.color, type: item.dashed === true ? 'dashed' : 'solid' },
       itemStyle: { color: item.color },
       yAxisIndex: item.axis ?? 0,
       markArea:
@@ -130,6 +132,7 @@ function SeriesChart({
   source,
   closedDates,
   groupId,
+  onSelectVisibleRange,
 }: SeriesChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<ReturnType<typeof echarts.init> | null>(null);
@@ -157,9 +160,40 @@ function SeriesChart({
     chartRef.current?.setOption(chartOption({ dates, series, axes, closedDates }), true);
   }, [axes, closedDates, dates, series]);
 
+  const useVisibleRange = (): void => {
+    if (onSelectVisibleRange === undefined) return;
+    const option: unknown = chartRef.current?.getOption();
+    const root =
+      typeof option === 'object' && option !== null ? (option as Record<string, unknown>) : null;
+    const dataZoom = root?.dataZoom;
+    const zooms: unknown[] = Array.isArray(dataZoom) ? dataZoom : [];
+    const first = zooms[0];
+    const zoom =
+      typeof first === 'object' && first !== null ? (first as Record<string, unknown>) : null;
+    const startPercent = typeof zoom?.start === 'number' ? zoom.start : 0;
+    const endPercent = typeof zoom?.end === 'number' ? zoom.end : 100;
+    const lastIndex = Math.max(0, dates.length - 1);
+    const startIndex = Math.min(
+      lastIndex,
+      Math.max(0, Math.round((startPercent / 100) * lastIndex)),
+    );
+    const endIndex = Math.min(lastIndex, Math.max(0, Math.round((endPercent / 100) * lastIndex)));
+    const startDate = dates[Math.min(startIndex, endIndex)];
+    const endDate = dates[Math.max(startIndex, endIndex)];
+    if (startDate === undefined || endDate === undefined) return;
+    onSelectVisibleRange(startDate, endDate);
+  };
+
   return (
     <section className="chart-card">
-      <h4>{title}</h4>
+      <div className="chart-card__header">
+        <h4>{title}</h4>
+        {onSelectVisibleRange !== undefined && (
+          <button type="button" className="chart-card__action" onClick={useVisibleRange}>
+            {messages.wellSheet.fit.useView}
+          </button>
+        )}
+      </div>
       <div ref={containerRef} className="chart-card__canvas" role="img" aria-label={title} />
       <p className="chart-card__source">
         {messages.wellSheet.charts.source}:{' '}
@@ -250,6 +284,49 @@ function hasAny(values: readonly (number | null)[]): boolean {
   return values.some((value) => value !== null);
 }
 
+function daysBetween(startDate: string, endDate: string): number {
+  return Math.round(
+    (Date.parse(`${endDate}T00:00:00Z`) - Date.parse(`${startDate}T00:00:00Z`)) / 86_400_000,
+  );
+}
+
+interface FitResult {
+  status: 'ready' | 'error';
+  qi: number;
+  di: number;
+  b: number;
+  r2: number;
+  values: (number | null)[];
+}
+
+function fitWindowResult(
+  data: WellProductionResponse,
+  window: FitWindow,
+  unitSystem: UnitSystem,
+): FitResult {
+  const oil = convertSeries(data.series.oil, 'liquidVolume', unitSystem);
+  const t: number[] = [];
+  const q: number[] = [];
+  data.dates.forEach((date, index) => {
+    if (date < window.start || date > window.end) return;
+    const value = oil[index] ?? null;
+    if (value !== null && value > 0) {
+      t.push(daysBetween(window.start, date));
+      q.push(value);
+    }
+  });
+  try {
+    const fit = fitArps(t, q);
+    const values = data.dates.map((date) => {
+      if (date < window.start || date > window.end) return null;
+      return rateAt(fit, daysBetween(window.start, date));
+    });
+    return { status: 'ready', qi: fit.qi, di: fit.di, b: fit.b, r2: fit.r2, values };
+  } catch {
+    return { status: 'error', qi: 0, di: 0, b: 0, r2: 0, values: [] };
+  }
+}
+
 function waterCutSeries(data: WellProductionResponse): (number | null)[] {
   return data.series.oil.map((oil, index) => {
     const water = data.series.water[index] ?? null;
@@ -271,15 +348,27 @@ export interface ProductionChartsProps {
   data: WellProductionResponse;
   unitSystem: UnitSystem;
   section: ChartSection;
+  fitWindow: FitWindow | null;
+  onFitWindowChange: (fitWindow: FitWindow | null) => void;
 }
 
 /** Charts of the Production and Operation tabs (docs/07). All charts share a time zoom. */
-export function ProductionCharts({ data, unitSystem, section }: ProductionChartsProps) {
+export function ProductionCharts({
+  data,
+  unitSystem,
+  section,
+  fitWindow,
+  onFitWindowChange,
+}: ProductionChartsProps) {
   const groupId = useId();
   const source = data.source;
   const closedDates = data.dates.filter((_, index) => data.series.onStream[index] === 0);
   const liquidUnit = unitOf('liquidVolume', unitSystem);
   const gasUnit = unitOf('gasVolume', unitSystem);
+  const fit = useMemo(
+    () => (fitWindow === null ? null : fitWindowResult(data, fitWindow, unitSystem)),
+    [data, fitWindow, unitSystem],
+  );
 
   if (data.dates.length === 0) {
     return (
@@ -291,7 +380,7 @@ export function ProductionCharts({ data, unitSystem, section }: ProductionCharts
     );
   }
 
-  const rates = [
+  const rates: ChartSeries[] = [
     {
       name: messages.wellSheet.production.oil,
       color: CHART_COLORS.oil,
@@ -309,6 +398,14 @@ export function ProductionCharts({ data, unitSystem, section }: ProductionCharts
       values: convertSeries(data.series.water, 'liquidVolume', unitSystem),
     },
   ];
+  if (fit?.status === 'ready') {
+    rates.push({
+      name: messages.wellSheet.fit.title,
+      color: '#7a4fa3',
+      values: fit.values,
+      dashed: true,
+    });
+  }
   const waterCut = waterCutSeries(data);
   const gor = convertSeries(gorSeries(data), 'gasOilRatio', unitSystem);
   const cumulativeOil = convertSeries(cumulative(data.series.oil), 'liquidVolume', unitSystem);
@@ -390,7 +487,48 @@ export function ProductionCharts({ data, unitSystem, section }: ProductionCharts
             source={source}
             closedDates={closedDates}
             groupId={groupId}
+            onSelectVisibleRange={(start, end) => {
+              onFitWindowChange({ start, end });
+            }}
           />
+          {fit !== null && (
+            <section className="fit-summary">
+              <div className="chart-card__header">
+                <h4>{messages.wellSheet.fit.title}</h4>
+                <button
+                  type="button"
+                  className="chart-card__action"
+                  onClick={() => {
+                    onFitWindowChange(null);
+                  }}
+                >
+                  {messages.wellSheet.fit.clear}
+                </button>
+              </div>
+              {fit.status === 'error' ? (
+                <p className="well-sheet__notice">{messages.wellSheet.fit.noFit}</p>
+              ) : (
+                <>
+                  <p>
+                    {messages.wellSheet.fit.window}: {fitWindow?.start} – {fitWindow?.end}
+                  </p>
+                  <dl>
+                    <dt>{messages.wellSheet.fit.qi}</dt>
+                    <dd>
+                      {NUMBER_FORMAT.format(fit.qi)} {liquidUnit}/d
+                    </dd>
+                    <dt>{messages.wellSheet.fit.di}</dt>
+                    <dd>{NUMBER_FORMAT.format(fit.di)} 1/d</dd>
+                    <dt>{messages.wellSheet.fit.b}</dt>
+                    <dd>{NUMBER_FORMAT.format(fit.b)}</dd>
+                    <dt>{messages.wellSheet.fit.r2}</dt>
+                    <dd>{NUMBER_FORMAT.format(fit.r2)}</dd>
+                  </dl>
+                  <p className="fit-summary__note">{messages.wellSheet.fit.loadedFrom}</p>
+                </>
+              )}
+            </section>
+          )}
           {hasAny(waterCut) || hasAny(gor) ? (
             <SeriesChart
               title={messages.wellSheet.production.waterCutGor}

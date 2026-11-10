@@ -92,4 +92,5 @@ Reglas:
 - La URL es la fuente de verdad del estado de la vista. Los componentes leen de ella y escriben en ella; no hay un estado paralelo.
 - Los cambios continuos, como mover el mapa, reemplazan la entrada del historial en lugar de añadir una nueva.
 - Un parámetro inválido se ignora y se usa el valor por defecto. No rompe la página.
+- `ajuste` se escribe como dos fechas ISO separadas por coma; un rango inválido se descarta y, si la ventana no tiene puntos suficientes, la ficha lo explica y no dibuja el ajuste.
 - Los pozos importados no se pueden compartir por URL, porque no existen fuera del navegador de quien los cargó. La interfaz lo indica.

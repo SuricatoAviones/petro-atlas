@@ -73,4 +73,15 @@ describe('volume and ratio conversions', () => {
   it('rejects incompatible quantities', () => {
     expect(() => convert(1, 'bar', 'm')).toThrow('Cannot convert bar to m');
   });
+
+  it('converts pressures through the generic helpers', () => {
+    expect(convert(1, 'bar', 'psi')).toBeCloseTo(PSI_PER_BAR, 10);
+    expect(convert(1, 'psi', 'bar')).toBeCloseTo(1 / PSI_PER_BAR, 10);
+    expect(toField(1, 'pressure')).toBeCloseTo(PSI_PER_BAR, 10);
+    expect(toSI(PSI_PER_BAR, 'pressure')).toBeCloseTo(1, 10);
+  });
+
+  it('converts standard cubic feet back to cubic metres', () => {
+    expect(convert(SCF_PER_SM3, 'scf', 'Sm3')).toBeCloseTo(1, 10);
+  });
 });

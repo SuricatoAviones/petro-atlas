@@ -49,6 +49,12 @@ Reglas que sigue todo cambio en el repositorio, lo escriba una persona o un agen
 - Un PR hace una cosa. Si el título necesita una "y", son dos PR.
 - No se sube a `main` sin que pase el CI.
 
+## Publicación
+
+- Solo se publica `petro-calc`, y solo desde `main` con el CI en verde.
+- La versión y el changelog se preparan en el PR; el tag se crea después de verificar la publicación. El procedimiento está en `13-publicacion.md`.
+- La publicación es manual: el CI no tiene credenciales de npm.
+
 ## Pruebas
 
 | Capa | Herramienta | Qué se prueba |
@@ -61,6 +67,7 @@ Reglas que sigue todo cambio en el repositorio, lo escriba una persona o un agen
 
 - Una corrección de error llega con la prueba que lo habría detectado.
 - Las pruebas no dependen de la red ni de los datos reales. Usan los datos sintéticos de `db/seed`.
+- La cobertura de `petro-calc` se comprueba con `pnpm test:coverage`; el umbral es 90% en sentencias, ramas, funciones y líneas.
 - Las pruebas de rutas de la API consultan la base de datos de desarrollo con el usuario de solo lectura, así que necesitan `docker compose up --detach db db-setup`. Solo comprueban el campo sintético, de modo que los datos que haya cargado el ETL no las afectan.
 - Las pruebas de extremo a extremo (`pnpm test:e2e`) levantan su propia API y su propia web en los puertos 4100 y 3100, y usan un estilo de mapa local sin red. También necesitan la base de datos de desarrollo en marcha.
 - Los números se comparan con tolerancia explícita, no con igualdad exacta.

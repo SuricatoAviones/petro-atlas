@@ -87,7 +87,7 @@ Recuperación final estimada hasta la tasa límite económica, sumando el acumul
 EUR = N_{p,0} + N_p\left(t \mid q = q_{lim}\right)
 ```
 
-**Ajuste.** Mínimos cuadrados no lineales (Levenberg-Marquardt) sobre el logaritmo de la tasa. Con `model: 'auto'` se ajusta el modelo hiperbólico con b limitado a [0, `bMax`], con `bMax` igual a 1 por defecto. Los días con el pozo cerrado y las tasas nulas se excluyen antes de ajustar. Se necesitan al menos 6 puntos; con menos, la función devuelve un error explicado.
+**Ajuste.** Mínimos cuadrados no lineales sobre el logaritmo de la tasa, resolviendo `qi` y `di` por regresión lineal para cada `b` y buscando `b` en [0, `bMax`] (perfil sobre `b`). Es el mismo óptimo que buscaría Levenberg-Marquardt, sin depender de una librería externa ni de un Jacobiano numérico. Con `model: 'auto'` se ajusta el modelo hiperbólico con `b` limitado a [0, `bMax`], con `bMax` igual a 1 por defecto. Los días con el pozo cerrado y las tasas nulas se excluyen antes de ajustar. Se necesitan al menos 6 puntos; con menos, la función devuelve un error explicado.
 
 ### IPR
 

@@ -10,9 +10,11 @@ import { useEffect, useId, useRef, useState } from 'react';
 
 import { messages } from '@/messages/es';
 import { fetchWellDetail, fetchWellProduction, fetchWellTrajectory } from '@/lib/api';
-import type { SheetTab, UnitSystem } from '@/lib/sheet-state';
+import type { FitWindow, SheetTab, UnitSystem } from '@/lib/sheet-state';
 
 import { AlertsList } from './alerts-list';
+import { LazyDiagnosticsTab } from './lazy-diagnostics-tab';
+import { LazyEngineeringTab } from './lazy-engineering-tab';
 import { LazyProductionCharts } from './lazy-production-charts';
 import { LazyTrajectoryChart } from './lazy-trajectory-chart';
 import type { WellAtPoint } from './well-map';
@@ -30,10 +32,12 @@ interface WellSheetProps {
   selectedWell: WellSelection;
   tab: SheetTab;
   unitSystem: UnitSystem;
+  fitWindow: FitWindow | null;
   alerts: readonly AlertItem[];
   onSelectWell: (well: WellAtPoint) => void;
   onTabChange: (tab: SheetTab) => void;
   onUnitSystemChange: (unitSystem: UnitSystem) => void;
+  onFitWindowChange: (fitWindow: FitWindow | null) => void;
   onClose: () => void;
 }
 
@@ -44,7 +48,14 @@ interface DetailState {
 }
 
 const IDLE_STATE: DetailState = { status: 'idle', slug: null, detail: null };
-const TABS: readonly SheetTab[] = ['summary', 'production', 'operation', 'trajectory'];
+const TABS: readonly SheetTab[] = [
+  'summary',
+  'production',
+  'operation',
+  'trajectory',
+  'engineering',
+  'diagnostics',
+];
 
 interface ProductionState {
   status: 'idle' | 'loading' | 'ready' | 'error';
@@ -86,10 +97,12 @@ export function WellSheet({
   selectedWell,
   tab,
   unitSystem,
+  fitWindow,
   alerts,
   onSelectWell,
   onTabChange,
   onUnitSystemChange,
+  onFitWindowChange,
   onClose,
 }: WellSheetProps) {
   const headingId = useId();
@@ -268,24 +281,26 @@ export function WellSheet({
 
         {tab !== 'summary' && (
           <>
-            <fieldset className="well-sheet__units">
-              <legend>{messages.wellSheet.units.legend}</legend>
-              {(['si', 'field'] as const).map((system) => (
-                <label key={system}>
-                  <input
-                    type="radio"
-                    name="well-sheet-units"
-                    value={system}
-                    checked={unitSystem === system}
-                    onChange={() => {
-                      onUnitSystemChange(system);
-                    }}
-                  />
-                  {messages.wellSheet.units[system]}
-                </label>
-              ))}
-            </fieldset>
-            {tab === 'trajectory' ? (
+            {(tab === 'production' || tab === 'operation' || tab === 'trajectory') && (
+              <fieldset className="well-sheet__units">
+                <legend>{messages.wellSheet.units.legend}</legend>
+                {(['si', 'field'] as const).map((system) => (
+                  <label key={system}>
+                    <input
+                      type="radio"
+                      name="well-sheet-units"
+                      value={system}
+                      checked={unitSystem === system}
+                      onChange={() => {
+                        onUnitSystemChange(system);
+                      }}
+                    />
+                    {messages.wellSheet.units[system]}
+                  </label>
+                ))}
+              </fieldset>
+            )}
+            {tab === 'trajectory' && (
               <>
                 {isTrajectoryLoading && (
                   <p className="well-sheet__notice" role="status">
@@ -301,7 +316,8 @@ export function WellSheet({
                   <LazyTrajectoryChart data={trajectoryData} unitSystem={unitSystem} />
                 )}
               </>
-            ) : (
+            )}
+            {(tab === 'production' || tab === 'operation') && (
               <>
                 {isProductionLoading && (
                   <p className="well-sheet__notice" role="status">
@@ -315,11 +331,34 @@ export function WellSheet({
                 )}
                 {productionData !== null && (
                   <LazyProductionCharts
+                    key={productionData.wellId}
                     data={productionData}
                     unitSystem={unitSystem}
                     section={tab}
+                    fitWindow={fitWindow}
+                    onFitWindowChange={onFitWindowChange}
                   />
                 )}
+              </>
+            )}
+            {(tab === 'engineering' || tab === 'diagnostics') && (
+              <>
+                {isProductionLoading && (
+                  <p className="well-sheet__notice" role="status">
+                    {messages.wellSheet.loading}
+                  </p>
+                )}
+                {isProductionError && (
+                  <p className="well-sheet__notice well-sheet__notice--error" role="alert">
+                    {messages.wellSheet.seriesError}
+                  </p>
+                )}
+                {productionData !== null &&
+                  (tab === 'engineering' ? (
+                    <LazyEngineeringTab data={productionData} />
+                  ) : (
+                    <LazyDiagnosticsTab data={productionData} />
+                  ))}
               </>
             )}
           </>
