@@ -34,7 +34,7 @@ Las series de presión, temperatura y choke solo existen donde la fuente las pub
 1. **Eje de tiempo compartido.** Todas las gráficas de una ficha están enlazadas: zoom, desplazamiento y cursor se sincronizan.
 2. **Huecos.** Un `null` corta la línea. No se interpola ni se dibuja como cero.
 3. **Días cerrados.** Los días con `on_stream_h = 0` se sombrean en gris en todas las gráficas de tiempo.
-4. **Unidades.** Un selector global alterna SI y unidades de campo. La conversión se hace al dibujar, con `petro-calc/units`; los datos en memoria siguen en SI.
+4. **Unidades.** Un selector global alterna SI y unidades de campo en Producción, Operación y Trayectoria. La conversión se hace al dibujar, con `petro-calc/units`; los datos en memoria siguen en SI. Ingeniería y Diagnóstico muestran sus propias unidades fijas (bar, Sm³/d, psia, °F, scf/STB), porque las correlaciones empíricas se publicaron en esas unidades.
 5. **Ejes.** La tasa admite eje lineal o logarítmico. Chan es siempre log-log. La declinación es semilog por defecto.
 6. **Colores fijos por fluido.** Petróleo verde, gas rojo, agua azul, inyección azul oscuro. No cambian entre gráficas. Las presiones y temperaturas usan otra familia de colores para no confundirse con fluidos.
 7. **Fuente visible.** Cada gráfica lleva al pie la fuente y la licencia del dato.
