@@ -9,6 +9,7 @@ import {
 import { mapConfig } from '@/components/map-config';
 
 import {
+  MAX_COMPARED_WELLS,
   parseSheetTab,
   parseUnitSystem,
   SHEET_TAB_PARAM,
@@ -33,6 +34,8 @@ export interface MapUrlState {
   tab: SheetTab;
   unitSystem: UnitSystem;
   fitWindow: FitWindow | null;
+  /** Slugs of the public wells added to the comparison (`comparar`). */
+  compareSlugs: string[];
 }
 
 interface SearchParamsReader {
@@ -95,6 +98,15 @@ function parseWellSlug(value: string | null): string | null {
   return WELL_SLUG_PATTERN.test(slug) ? slug : null;
 }
 
+function parseCompareSlugs(value: string | null): string[] {
+  const slugs: string[] = [];
+  for (const item of value?.split(',') ?? []) {
+    const slug = parseWellSlug(item);
+    if (slug !== null && !slugs.includes(slug)) slugs.push(slug);
+  }
+  return slugs.slice(0, MAX_COMPARED_WELLS);
+}
+
 function parseView(value: string | null): MapView {
   const [lat, lon, zoom] = (value ?? '').split(',').map(Number);
   if (
@@ -133,12 +145,13 @@ export function parseMapUrlState(params: SearchParamsReader): MapUrlState {
     tab: parseSheetTab(params.get('tab')),
     unitSystem: parseUnitSystem(params.get('unidades')),
     fitWindow: parseFitWindow(params.get('ajuste')),
+    compareSlugs: parseCompareSlugs(params.get('comparar')),
   };
 }
 
 export function toMapSearchParams(state: MapUrlState): URLSearchParams {
   const params = new URLSearchParams();
-  const { filters, wellSlug, view, tab, unitSystem, fitWindow } = state;
+  const { filters, wellSlug, view, tab, unitSystem, fitWindow, compareSlugs } = state;
 
   if (filters.field !== '') params.set('campo', filters.field);
   if (filters.operator !== '') params.set('operadora', filters.operator);
@@ -156,6 +169,7 @@ export function toMapSearchParams(state: MapUrlState): URLSearchParams {
   if (fitWindow !== null) {
     params.set('ajuste', `${fitWindow.start},${fitWindow.end}`);
   }
+  if (compareSlugs.length > 0) params.set('comparar', compareSlugs.join(','));
   params.set('vista', `${view.lat.toFixed(5)},${view.lon.toFixed(5)},${view.zoom.toFixed(2)}`);
 
   return params;

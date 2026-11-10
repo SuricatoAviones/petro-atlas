@@ -265,7 +265,8 @@ body {
   background: var(--color-panel);
   box-shadow: -2px 0 8px rgb(0 0 0 / 12%);
   font-size: 0.875rem;
-  z-index: 1;
+  /* Above MapLibre's controls, which use z-index 2: the sheet must not be covered by them. */
+  z-index: 5;
 }
 
 .well-sheet__header {
@@ -1039,6 +1040,15 @@ body {
   background: rgb(224 165 38 / 18%);
 }
 
+.legend__imported {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #13212b;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff 0 28%, #b45309 30% 100%);
+}
+
 @media (max-width: 48rem) {
   .app-header {
     gap: 0.5rem;
@@ -1092,4 +1102,240 @@ body {
 .well-map__notice--error {
   color: var(--color-error);
   font-weight: 600;
+}
+
+.chart-card__tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.35rem;
+}
+
+.chart-card__tool {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-header);
+  font: inherit;
+  font-size: 0.75rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.chart-card__note {
+  margin: 0.25rem 0;
+  color: var(--color-ink-muted);
+  font-size: 0.8rem;
+}
+
+.chart-card__note--error {
+  color: var(--color-error);
+}
+
+.chart-card__canvas--logs {
+  height: 20rem;
+}
+
+.comparison {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.comparison__fluid {
+  margin: 0;
+}
+
+.comparison__add {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.comparison__add select {
+  max-width: 100%;
+  padding: 0.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.25rem;
+  font: inherit;
+}
+
+.comparison__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.comparison__chips li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.4rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+
+.comparison__style {
+  width: 1.5rem;
+  border-top-width: 2px;
+}
+
+.comparison__remove {
+  padding: 0 0.2rem;
+  border: 0;
+  background: none;
+  color: var(--color-ink-muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.alert-item__origin {
+  margin: 0.25rem 0 0;
+  color: var(--color-ink-muted);
+  font-size: 0.7rem;
+}
+
+.well-sheet__export {
+  display: grid;
+  gap: 0.15rem;
+  margin: 0.75rem 0;
+  font-size: 0.8rem;
+}
+
+.well-sheet__export a,
+.well-sheet__export button {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-header);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.well-sheet__export button:disabled {
+  color: var(--color-ink-muted);
+  cursor: default;
+}
+
+.well-sheet__export span {
+  color: var(--color-ink-muted);
+}
+
+.import-panel {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.import-panel h3,
+.import-panel h4 {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.import-panel__form {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.import-panel__form input[type='file'] {
+  max-width: 100%;
+  font-size: 0.75rem;
+}
+
+.import-panel__review,
+.import-panel__summary {
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.25rem;
+  background: var(--color-surface);
+  font-size: 0.8rem;
+}
+
+.import-panel__review p,
+.import-panel__summary p {
+  margin: 0;
+}
+
+.import-panel__review button,
+.import-panel__clear {
+  justify-self: start;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.25rem;
+  background: var(--color-panel);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.import-panel__errors {
+  font-size: 0.75rem;
+}
+
+.import-panel__errors table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.import-panel__errors th,
+.import-panel__errors td {
+  padding: 0.15rem 0.25rem;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.import-panel__list {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.import-panel__list ul {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.import-panel__well {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 0.35rem;
+  align-items: center;
+  padding: 0.35rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+}
+
+.import-panel__well div {
+  display: grid;
+  min-width: 0;
+}
+
+.import-panel__well span {
+  color: var(--color-ink-muted);
+}
+
+.import-panel__well button {
+  padding: 0.1rem 0.35rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.25rem;
+  background: var(--color-panel);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
 }

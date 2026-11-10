@@ -45,6 +45,15 @@ export default defineConfig({
       {
         extends: true,
         test: {
+          name: 'web',
+          root: './apps/web',
+          // Only the pure modules of the web; its flows are covered by Playwright (docs/12).
+          include: ['src/lib/**/*.test.ts'],
+        },
+      },
+      {
+        extends: true,
+        test: {
           name: 'etl',
           root: './etl',
           include: ['src/**/*.test.ts'],

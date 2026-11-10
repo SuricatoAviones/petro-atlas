@@ -23,6 +23,7 @@ export const messages = {
       title: 'Leyenda',
       cluster: 'Grupo de pozos',
       field: 'Campo',
+      imported: 'Pozo importado',
       unknownType: 'Sin tipo',
     },
     bubbles: {
@@ -87,6 +88,72 @@ export const messages = {
       waterCut7d: 'Corte de agua 7 d',
       prod3d: 'Producción 3 d',
     },
+  },
+  importWells: {
+    title: 'Datos propios',
+    intro:
+      'Importa un CSV de producción con el formato de la documentación. El archivo se valida y se guarda solo en este navegador: nunca se sube al servidor.',
+    file: 'Archivo CSV',
+    units: 'Unidades del archivo',
+    unitsSi: 'SI (Sm³, bar)',
+    unitsField: 'Campo (bbl, Mscf, psi)',
+    import: 'Importar',
+    importing: 'Importando…',
+    sourceName: 'Datos importados por el usuario',
+    sourceLicense: 'Datos propios; no se redistribuyen',
+    readError: 'No se pudo leer el archivo. Comprueba que sea un CSV de texto.',
+    saveError: 'No se pudieron guardar los pozos en el navegador. Revisa el espacio disponible.',
+    storageUnavailable:
+      'Este navegador no permite IndexedDB, así que la importación no está disponible.',
+    limits:
+      'Límite orientativo: 50 pozos y 200.000 filas por archivo. Por encima, la importación puede tardar y ocupar mucho espacio.',
+    softLimit: (wells: number, rows: number) =>
+      `El archivo tiene ${String(wells)} pozos y ${String(rows)} filas. ¿Quieres continuar?`,
+    confirmImport: 'Continuar',
+    cancel: 'Cancelar',
+    summary: (wells: number, rows: number, skipped: number) =>
+      `Se importaron ${String(rows)} días en ${String(wells)} pozos. ${String(skipped)} días ya estaban cargados y se omitieron.`,
+    nothingImported: 'No se añadió ningún día nuevo.',
+    totalRows: (rows: number, invalid: number) =>
+      `${String(rows)} filas leídas; ${String(invalid)} con errores.`,
+    errorsTitle: 'Filas con errores',
+    errorsTruncated: (shown: number) =>
+      `Se muestran las primeras ${String(shown)} filas con error.`,
+    line: 'Línea',
+    reason: 'Motivo',
+    fatal: {
+      empty: 'El archivo está vacío o no tiene cabecera.',
+      missing_columns: (columns: readonly string[]) =>
+        `Faltan columnas obligatorias: ${columns.join(', ')}.`,
+      no_volume_column:
+        'El archivo debe incluir al menos una columna de volumen: oil_sm3, gas_sm3 o water_sm3.',
+    },
+    error: {
+      well_required: 'Falta el nombre del pozo.',
+      well_too_long: 'El nombre del pozo supera los 64 caracteres.',
+      invalid_date: 'La fecha no es válida; usa AAAA-MM-DD.',
+      not_a_number: 'El valor no es un número.',
+      negative: 'El valor no puede ser negativo.',
+      lat_out_of_range: 'La latitud debe estar entre -90 y 90.',
+      lon_out_of_range: 'La longitud debe estar entre -180 y 180.',
+      on_stream_out_of_range: 'Las horas en línea deben estar entre 0 y 24.',
+      no_volume: 'La fila no trae petróleo, gas ni agua.',
+      coordinates_required: 'La primera fila de cada pozo debe traer latitud y longitud.',
+      duplicate_date: 'La fecha está repetida en el archivo para este pozo.',
+      column_count: 'La fila tiene más celdas que la cabecera.',
+    },
+    listTitle: 'Pozos importados',
+    empty: 'Todavía no hay pozos importados.',
+    wellSummary: (rows: number, from: string, to: string) =>
+      `${String(rows)} días · ${from} – ${to}`,
+    open: 'Abrir',
+    delete: 'Borrar',
+    deleteLabel: (name: string) => `Borrar el pozo importado ${name}`,
+    clear: 'Borrar todos los pozos importados',
+    clearConfirm:
+      '¿Borrar todos los pozos importados de este navegador? Esta acción no se puede deshacer.',
+    notice: 'Estos pozos viven solo en este navegador. Si borras los datos del sitio, se pierden.',
+    shareNote: 'Los pozos importados no se pueden compartir por URL.',
   },
   sources: {
     title: 'Fuentes y licencias',
@@ -302,7 +369,7 @@ export const messages = {
         {
           title: 'Almacenamiento local',
           paragraphs: [
-            'La aplicación no usa almacenamiento local en esta versión. La importación de CSV prevista utilizará IndexedDB solo en el navegador y no enviará el archivo al servidor; esta página se actualizará antes de activar esa función.',
+            'Si importas un CSV, los pozos se guardan en IndexedDB dentro de tu navegador. El archivo no se envía al servidor y esos datos no se comparten con otras personas. Puedes borrarlos desde el panel de datos propios o eliminando los datos del sitio en la configuración del navegador.',
           ],
         },
         {
@@ -333,6 +400,7 @@ export const messages = {
       production: 'Producción',
       operation: 'Operación',
       trajectory: 'Trayectoria',
+      logs: 'Registros',
       engineering: 'Ingeniería',
       diagnostics: 'Diagnóstico',
     },
@@ -349,6 +417,9 @@ export const messages = {
       zoomHint: 'Arrastra o rueda sobre una gráfica para hacer zoom; las gráficas se sincronizan.',
       noData: 'Sin datos para esta gráfica.',
       loading: 'Cargando las gráficas…',
+      exportCsv: 'Exportar CSV',
+      exportPng: 'Exportar PNG',
+      tableOf: 'Tabla de',
     },
     production: {
       noData: 'La fuente no publica producción diaria para este pozo.',
@@ -432,6 +503,37 @@ export const messages = {
       inclination: 'Inclinación',
       azimuth: 'Azimut',
     },
+    logs: {
+      title: 'Registros de pozo',
+      noData: 'La fuente no publica registros para este pozo.',
+      loading: 'Cargando los registros…',
+      error: 'No se pudieron cargar los registros del pozo.',
+      depth: 'Profundidad (m)',
+      tracks: 'Pistas de registros',
+      trackLabel: (mnemonic: string, unit: string | null) =>
+        unit === null ? mnemonic : `${mnemonic} (${unit})`,
+      zoomHint:
+        'Arrastra o rueda sobre una pista para hacer zoom en profundidad; las pistas se sincronizan.',
+      unavailableForImported: 'Los pozos importados desde CSV no incluyen registros.',
+    },
+    comparison: {
+      title: 'Comparación de pozos',
+      intro:
+        'Añade otros pozos del mismo campo para comparar sus tasas en la misma gráfica. Cada pozo usa un estilo de línea distinto y el color sigue indicando el fluido.',
+      selectLabel: 'Pozo para comparar',
+      add: 'Añadir',
+      remove: 'Quitar',
+      noCandidates: 'No hay otros pozos con producción diaria en este campo.',
+      loading: 'Cargando pozos del campo…',
+      error: 'No se pudieron cargar los pozos del campo.',
+      importedNote:
+        'Los pozos importados solo existen en este navegador: la comparación no se guarda en la URL.',
+      shareNote:
+        'La lista de pozos comparados se guarda en la URL; los pozos importados no se pueden compartir.',
+      maxReached: (max: number) => `Puedes comparar hasta ${String(max)} pozos a la vez.`,
+      fluid: 'Fluido',
+      chartTitle: 'Tasas comparadas',
+    },
     operation: {
       noData: 'La fuente no publica datos de operación para este pozo.',
       pressures: 'Presiones',
@@ -466,6 +568,11 @@ export const messages = {
     source: 'Fuente',
     license: 'Licencia',
     noData: 'Sin dato',
+    exportCsv: 'Descargar CSV del pozo',
+    exportCsvNote: 'Series diarias en SI, con una fila por día y la fuente en cada fila.',
+    importedNotice:
+      'Pozo importado desde un CSV en este navegador. Los datos no están en el servidor ni se comparten por URL.',
+    importedAlert: 'Alerta calculada en el navegador con las mismas reglas que los pozos públicos.',
   },
   wellStatus: {
     producing: 'Produciendo',

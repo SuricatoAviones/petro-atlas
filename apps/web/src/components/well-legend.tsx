@@ -91,6 +91,10 @@ export function WellLegend({ colorMode, onColorModeChange }: WellLegendProps) {
           <span className="legend__field" aria-hidden="true" />
           {messages.map.legend.field}
         </li>
+        <li>
+          <span className="legend__imported" aria-hidden="true" />
+          {messages.map.legend.imported}
+        </li>
       </ul>
     </section>
   );

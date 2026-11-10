@@ -6,6 +6,7 @@ import {
   wellCollectionResponseSchema,
   wellCumulativeResponseSchema,
   wellDetailSchema,
+  wellLogsResponseSchema,
   wellProductionResponseSchema,
   wellTrajectoryResponseSchema,
   type AlertItem,
@@ -13,6 +14,7 @@ import {
   type SourceListResponse,
   type WellCumulative,
   type WellDetail,
+  type WellLogsResponse,
   type WellProductionResponse,
   type WellTrajectoryResponse,
 } from '@petroatlas/shared-types';
@@ -90,6 +92,50 @@ export async function fetchWellTrajectory(
 ): Promise<WellTrajectoryResponse> {
   const path = typeof reference === 'number' ? String(reference) : encodeURIComponent(reference);
   return wellTrajectoryResponseSchema.parse(await getJson(`/api/wells/${path}/trajectory`, signal));
+}
+
+/** Log curves of one well (docs/06, `GET /api/wells/:id/logs`). */
+export async function fetchWellLogs(
+  reference: number | string,
+  signal?: AbortSignal,
+): Promise<WellLogsResponse> {
+  const path = typeof reference === 'number' ? String(reference) : encodeURIComponent(reference);
+  return wellLogsResponseSchema.parse(await getJson(`/api/wells/${path}/logs`, signal));
+}
+
+export interface FieldWell {
+  slug: string;
+  name: string;
+}
+
+/** Wells of a field that have daily production: the candidates to compare with (RF-10). */
+export async function fetchFieldWellsWithProduction(
+  fieldSlug: string,
+  signal?: AbortSignal,
+): Promise<FieldWell[]> {
+  const wells: FieldWell[] = [];
+  let cursor: string | null = null;
+  do {
+    const suffix = cursor === null ? '' : `&cursor=${encodeURIComponent(cursor)}`;
+    const body = wellCollectionResponseSchema.parse(
+      await getJson(
+        `/api/wells?field=${encodeURIComponent(fieldSlug)}&limit=1000${suffix}`,
+        signal,
+      ),
+    );
+    for (const feature of body.features) {
+      if (feature.properties.hasDailyData) {
+        wells.push({ slug: feature.properties.slug, name: feature.properties.name });
+      }
+    }
+    cursor = body.nextCursor;
+  } while (cursor !== null);
+  return wells.sort((left, right) => left.name.localeCompare(right.name, 'es'));
+}
+
+/** Address of the CSV with the whole daily series of a well (docs/06, `export.csv`). */
+export function wellExportUrl(slug: string): string {
+  return `${mapConfig.apiUrl}/api/wells/${encodeURIComponent(slug)}/export.csv`;
 }
 
 /** Data sources and their licences (docs/06, `GET /api/meta/sources`). */

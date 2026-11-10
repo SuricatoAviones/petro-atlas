@@ -3,7 +3,7 @@
  * from the vector tiles of the API (docs/06, "Teselas de pozos" and "Teselas de campos").
  */
 import type { WellCumulative } from '@petroatlas/shared-types';
-import type { ExpressionSpecification, Map as MapLibreMap } from 'maplibre-gl';
+import type { ExpressionSpecification, GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl';
 
 import { bubbleMaximum, bubbleRadius, bubbleValue, type BubbleFluid } from '@/lib/bubble';
 
@@ -17,6 +17,8 @@ import {
   FIELD_FILL_COLOR,
   FIELD_LABEL_COLOR,
   FIELD_OUTLINE_COLOR,
+  IMPORTED_WELL_CENTER_COLOR,
+  IMPORTED_WELL_COLOR,
   WELL_FALLBACK_COLOR,
   WELL_OUTLINE_COLOR,
   WELL_STATUS_COLORS,
@@ -31,6 +33,9 @@ export const CUMULATIVE_LAYER_ID = 'cumulative-bubbles';
 
 export const WELL_LAYER_ID = 'wells-points';
 export const CLUSTER_LAYER_ID = 'clusters-circles';
+export const IMPORTED_SOURCE_ID = 'imported-wells';
+export const IMPORTED_LAYER_ID = 'imported-wells-points';
+export const IMPORTED_CENTER_LAYER_ID = 'imported-wells-center';
 const CLUSTER_COUNT_LAYER_ID = 'clusters-count';
 const FIELD_FILL_LAYER_ID = 'fields-fill';
 const FIELD_OUTLINE_LAYER_ID = 'fields-outline';
@@ -190,6 +195,58 @@ export function addWellLayers(
       'text-halo-width': 1.5,
     },
   });
+
+  // Imported wells are a GeoJSON layer of their own: an amber ring with a centre dot, so they
+  // read as a different symbol from the public wells (docs/09).
+  map.addSource(IMPORTED_SOURCE_ID, {
+    type: 'geojson',
+    data: { type: 'FeatureCollection', features: [] },
+  });
+  map.addLayer({
+    id: IMPORTED_LAYER_ID,
+    type: 'circle',
+    source: IMPORTED_SOURCE_ID,
+    paint: {
+      'circle-color': IMPORTED_WELL_COLOR,
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 5, 9, 7, 14, 10],
+      'circle-stroke-color': WELL_OUTLINE_COLOR,
+      'circle-stroke-width': 2,
+    },
+  });
+  map.addLayer({
+    id: IMPORTED_CENTER_LAYER_ID,
+    type: 'circle',
+    source: IMPORTED_SOURCE_ID,
+    paint: {
+      'circle-color': IMPORTED_WELL_CENTER_COLOR,
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 1.5, 9, 2, 14, 3],
+    },
+  });
+}
+
+/** A well imported in this browser, as the map needs it. */
+export interface ImportedWellPoint {
+  slug: string;
+  name: string;
+  latDeg: number;
+  lonDeg: number;
+}
+
+/** Replaces the points of the imported wells layer. */
+export function setImportedWells(map: MapLibreMap, wells: readonly ImportedWellPoint[]): void {
+  const source = map.getSource<GeoJSONSource>(IMPORTED_SOURCE_ID);
+  if (source === undefined) return;
+  void source.setData({
+    type: 'FeatureCollection',
+    features: wells.map((well) => ({
+      type: 'Feature' as const,
+      geometry: {
+        type: 'Point' as const,
+        coordinates: [well.lonDeg, well.latDeg] as [number, number],
+      },
+      properties: { slug: well.slug, name: well.name },
+    })),
+  });
 }
 
 export function setWellColorMode(map: MapLibreMap, colorMode: WellColorMode): void {
@@ -197,6 +254,8 @@ export function setWellColorMode(map: MapLibreMap, colorMode: WellColorMode): vo
 }
 
 const DATA_LAYER_IDS: readonly string[] = [
+  IMPORTED_CENTER_LAYER_ID,
+  IMPORTED_LAYER_ID,
   FIELD_LABEL_LAYER_ID,
   WELL_LAYER_ID,
   CLUSTER_COUNT_LAYER_ID,
@@ -204,7 +263,7 @@ const DATA_LAYER_IDS: readonly string[] = [
   FIELD_OUTLINE_LAYER_ID,
   FIELD_FILL_LAYER_ID,
 ];
-const DATA_SOURCE_IDS: readonly string[] = [FIELD_SOURCE_ID, WELL_SOURCE_ID];
+const DATA_SOURCE_IDS: readonly string[] = [IMPORTED_SOURCE_ID, FIELD_SOURCE_ID, WELL_SOURCE_ID];
 
 /**
  * Points the data sources at the tile URL of the new filter set. MapLibre keeps the cached

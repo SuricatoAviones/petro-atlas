@@ -10,9 +10,12 @@ import {
   TooltipComponent,
 } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 import { messages } from '@/messages/es';
+import type { TableData } from '@/lib/export';
+
+import { ChartSource, ChartTools, PNG_EXPORT_OPTIONS } from './chart-tools';
 
 echarts.use([
   LineChart,
@@ -45,6 +48,8 @@ export interface EngineeringChartProps {
   note?: string;
   logX?: boolean;
   logY?: boolean;
+  /** Header of the first CSV column; it defaults to the date for time charts. */
+  xLabel?: string;
 }
 
 /** Small line chart used by the Engineering and Diagnostics tabs. */
@@ -58,9 +63,23 @@ export function EngineeringChart({
   note,
   logX = false,
   logY = false,
+  xLabel,
 }: EngineeringChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<ReturnType<typeof echarts.init> | null>(null);
+  const table = useMemo(
+    (): TableData => ({
+      headers: [
+        xLabel ?? (xType === 'time' ? messages.wellSheet.charts.date : 'x'),
+        ...series.map((item) => item.name),
+      ],
+      rows: xValues.map((value, index) => [
+        value,
+        ...series.map((item) => item.values[index] ?? null),
+      ]),
+    }),
+    [series, xLabel, xType, xValues],
+  );
 
   useEffect(() => {
     const container = containerRef.current;
@@ -122,15 +141,12 @@ export function EngineeringChart({
       <h4>{title}</h4>
       <div ref={containerRef} className="chart-card__canvas" role="img" aria-label={title} />
       {note !== undefined && <p className="chart-card__note">{note}</p>}
-      {source !== undefined && (
-        <p className="chart-card__source">
-          {messages.wellSheet.charts.source}:{' '}
-          <a href={source.url} target="_blank" rel="noreferrer">
-            {source.name}
-          </a>{' '}
-          · {source.license}
-        </p>
-      )}
+      {source !== undefined && <ChartSource source={source} />}
+      <ChartTools
+        title={title}
+        table={table}
+        getImage={() => chartRef.current?.getDataURL(PNG_EXPORT_OPTIONS) ?? null}
+      />
     </section>
   );
 }
