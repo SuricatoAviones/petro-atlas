@@ -1,5 +1,6 @@
 /** Browser calls to the read-only API. Every response is validated with a shared Zod schema. */
 import {
+  alertListResponseSchema,
   fieldListResponseSchema,
   sourceListResponseSchema,
   wellCollectionResponseSchema,
@@ -7,6 +8,7 @@ import {
   wellDetailSchema,
   wellProductionResponseSchema,
   wellTrajectoryResponseSchema,
+  type AlertItem,
   type FieldSummary,
   type SourceListResponse,
   type WellCumulative,
@@ -44,6 +46,11 @@ export async function fetchWellCount(query: string, signal?: AbortSignal): Promi
   const suffix = query === '' ? '' : `&${query}`;
   const body = await getJson(`/api/wells?limit=1${suffix}`, signal);
   return wellCollectionResponseSchema.parse(body).totalCount;
+}
+
+/** Active alerts of the public wells (docs/06, `GET /api/alerts`). */
+export async function fetchAlerts(signal?: AbortSignal): Promise<AlertItem[]> {
+  return alertListResponseSchema.parse(await getJson('/api/alerts', signal)).items;
 }
 
 /** Cumulative volumes per well for the bubble map (docs/06). */

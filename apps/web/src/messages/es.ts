@@ -66,6 +66,28 @@ export const messages = {
     allOperators: 'Todas las operadoras',
     yearPlaceholder: 'AAAA',
   },
+  alerts: {
+    title: 'Alertas',
+    empty: 'Sin alertas activas.',
+    loading: 'Cargando alertas…',
+    loadError: 'No se pudieron cargar las alertas.',
+    asOf: 'Datos al',
+    level: {
+      critical: 'Crítica',
+      warning: 'Advertencia',
+    },
+    kinds: {
+      production_drop: 'Caída de producción',
+      high_water_cut: 'Corte de agua alto',
+      no_production: 'Sin producción',
+    },
+    detail: {
+      oil7d: 'Petróleo 7 d',
+      oilPrev30: 'Petróleo 30 d previos',
+      waterCut7d: 'Corte de agua 7 d',
+      prod3d: 'Producción 3 d',
+    },
+  },
   sources: {
     title: 'Fuentes y licencias',
     intro:

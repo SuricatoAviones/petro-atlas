@@ -9,6 +9,8 @@ import { bubbleMaximum, bubbleRadius, bubbleValue, type BubbleFluid } from '@/li
 
 import { mapConfig } from './map-config';
 import {
+  ALERT_CRITICAL_COLOR,
+  ALERT_WARNING_COLOR,
   BUBBLE_COLORS,
   CLUSTER_COLOR,
   CLUSTER_TEXT_COLOR,
@@ -114,8 +116,22 @@ export function addWellLayers(
     paint: {
       'circle-color': wellColorExpression(colorMode),
       'circle-radius': ['interpolate', ['linear'], ['zoom'], 4, 3, 9, 4.5, 14, 7],
-      'circle-stroke-color': WELL_OUTLINE_COLOR,
-      'circle-stroke-width': 1,
+      'circle-stroke-color': [
+        'case',
+        ['==', ['get', 'alertLevel'], 'critical'],
+        ALERT_CRITICAL_COLOR,
+        ['==', ['get', 'alertLevel'], 'warning'],
+        ALERT_WARNING_COLOR,
+        WELL_OUTLINE_COLOR,
+      ],
+      'circle-stroke-width': [
+        'case',
+        ['==', ['get', 'alertLevel'], 'critical'],
+        2.5,
+        ['==', ['get', 'alertLevel'], 'warning'],
+        1.75,
+        1,
+      ],
     },
   });
 
@@ -128,8 +144,22 @@ export function addWellLayers(
       'circle-color': CLUSTER_COLOR,
       'circle-opacity': 0.88,
       'circle-radius': ['step', ['get', 'pointCount'], 11, 10, 14, 100, 18, 1000, 23],
-      'circle-stroke-color': CLUSTER_TEXT_COLOR,
-      'circle-stroke-width': 1.5,
+      'circle-stroke-color': [
+        'case',
+        ['==', ['get', 'alertLevel'], 'critical'],
+        ALERT_CRITICAL_COLOR,
+        ['==', ['get', 'alertLevel'], 'warning'],
+        ALERT_WARNING_COLOR,
+        CLUSTER_TEXT_COLOR,
+      ],
+      'circle-stroke-width': [
+        'case',
+        ['==', ['get', 'alertLevel'], 'critical'],
+        3,
+        ['==', ['get', 'alertLevel'], 'warning'],
+        2,
+        1.5,
+      ],
     },
   });
   map.addLayer({

@@ -1,6 +1,7 @@
 'use client';
 
 import type {
+  AlertItem,
   WellDetail,
   WellProductionResponse,
   WellTrajectoryResponse,
@@ -11,6 +12,7 @@ import { messages } from '@/messages/es';
 import { fetchWellDetail, fetchWellProduction, fetchWellTrajectory } from '@/lib/api';
 import type { SheetTab, UnitSystem } from '@/lib/sheet-state';
 
+import { AlertsList } from './alerts-list';
 import { LazyProductionCharts } from './lazy-production-charts';
 import { LazyTrajectoryChart } from './lazy-trajectory-chart';
 import type { WellAtPoint } from './well-map';
@@ -28,6 +30,7 @@ interface WellSheetProps {
   selectedWell: WellSelection;
   tab: SheetTab;
   unitSystem: UnitSystem;
+  alerts: readonly AlertItem[];
   onSelectWell: (well: WellAtPoint) => void;
   onTabChange: (tab: SheetTab) => void;
   onUnitSystemChange: (unitSystem: UnitSystem) => void;
@@ -83,6 +86,7 @@ export function WellSheet({
   selectedWell,
   tab,
   unitSystem,
+  alerts,
   onSelectWell,
   onTabChange,
   onUnitSystemChange,
@@ -179,6 +183,7 @@ export function WellSheet({
   const isTrajectoryLoading =
     !isTrajectoryCurrent || trajectory.status === 'idle' || trajectory.status === 'loading';
   const isTrajectoryError = isTrajectoryCurrent && trajectory.status === 'error';
+  const wellAlerts = detail === null ? [] : alerts.filter((alert) => alert.wellId === detail.id);
 
   return (
     <aside className="well-sheet" aria-labelledby={headingId} data-testid="well-sheet">
@@ -252,6 +257,12 @@ export function WellSheet({
               </p>
             )}
             {detail !== null && <WellSheetDetails detail={detail} />}
+            {wellAlerts.length > 0 && (
+              <section className="well-sheet__alerts">
+                <h3>{messages.alerts.title}</h3>
+                <AlertsList alerts={wellAlerts} />
+              </section>
+            )}
           </>
         )}
 

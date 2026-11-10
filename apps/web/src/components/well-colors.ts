@@ -24,6 +24,9 @@ export const WELL_TYPE_COLORS: Record<WellType, string> = {
 };
 
 /** A well whose source gives no type (`wellType` is null) or a value this build does not know. */
+export const ALERT_CRITICAL_COLOR = '#b42318';
+export const ALERT_WARNING_COLOR = '#b26a00';
+
 export const WELL_FALLBACK_COLOR = '#ffffff';
 /** Outline of every well symbol; it keeps the white ones visible on the light basemap. */
 export const WELL_OUTLINE_COLOR = '#13212b';

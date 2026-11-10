@@ -1,6 +1,7 @@
 import {
   wellStatusSchema,
   wellTypeSchema,
+  type AlertItem,
   type FieldSummary,
   type WellStatus,
   type WellType,
@@ -11,6 +12,7 @@ import { BUBBLE_FLUIDS, bubbleRadius, formatVolume, type BubbleFluid } from '@/l
 import { messages } from '@/messages/es';
 import { EMPTY_WELL_FILTERS, hasActiveWellFilters, type WellFilters } from '@/lib/well-filters';
 
+import { AlertsList } from './alerts-list';
 import {
   BUBBLE_COLORS,
   WELL_STATUS_COLORS,
@@ -40,9 +42,12 @@ interface FilterPanelProps {
   bubbleFluid: BubbleFluid | null;
   bubbleMax: number;
   bubbleStatus: BubbleStatus;
+  alerts: readonly AlertItem[];
+  alertsStatus: BubbleStatus;
   onFiltersChange: (filters: WellFilters) => void;
   onColorModeChange: (mode: WellColorMode) => void;
   onBubbleFluidChange: (fluid: BubbleFluid | null) => void;
+  onOpenWell: (alert: AlertItem) => void;
 }
 
 function toggleItem<T>(items: readonly T[], item: T, selected: boolean): T[] {
@@ -60,9 +65,12 @@ export function FilterPanel({
   bubbleFluid,
   bubbleMax,
   bubbleStatus,
+  alerts,
+  alertsStatus,
   onFiltersChange,
   onColorModeChange,
   onBubbleFluidChange,
+  onOpenWell,
 }: FilterPanelProps) {
   const fieldId = useId();
   const operatorId = useId();
@@ -322,6 +330,23 @@ export function FilterPanel({
       </form>
 
       <WellLegend colorMode={colorMode} onColorModeChange={onColorModeChange} />
+
+      <section className="filter-panel__alerts" aria-labelledby="alerts-heading">
+        <h3 id="alerts-heading">
+          {messages.alerts.title} ({alerts.length})
+        </h3>
+        {alertsStatus === 'loading' && (
+          <p className="filter-panel__hint" role="status">
+            {messages.alerts.loading}
+          </p>
+        )}
+        {alertsStatus === 'error' && (
+          <p className="filter-panel__hint filter-panel__hint--error" role="alert">
+            {messages.alerts.loadError}
+          </p>
+        )}
+        {alertsStatus === 'ready' && <AlertsList alerts={alerts} onOpenWell={onOpenWell} />}
+      </section>
     </aside>
   );
 }

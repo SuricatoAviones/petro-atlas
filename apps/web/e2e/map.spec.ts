@@ -82,4 +82,8 @@ test('filters the map, opens a well and keeps the view after a reload', async ({
   const filterPanel = page.getByRole('complementary', { name: 'Filtros de pozos' });
   await filterPanel.getByRole('radio', { name: 'Petróleo' }).check();
   await expect(filterPanel.getByText('Volumen acumulado')).toBeVisible();
+
+  await expect(filterPanel.getByText('Sin producción')).toBeVisible();
+  await filterPanel.getByRole('button', { name: 'SYN-A-14' }).click();
+  await expect(sheet.getByRole('heading', { level: 2 })).toHaveText('SYN-A-14');
 });

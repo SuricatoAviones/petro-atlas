@@ -324,6 +324,116 @@ body {
   color: var(--color-header);
 }
 
+.filter-panel__alerts {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.filter-panel__alerts h3,
+.well-sheet__alerts h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+}
+
+.alerts-empty {
+  margin: 0;
+  color: var(--color-ink-muted);
+  font-size: 0.8rem;
+}
+
+.alerts-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.alert-item {
+  padding: 0.45rem 0.55rem;
+  border-left: 3px solid var(--color-border);
+  border-radius: 0.2rem;
+  background: var(--color-surface);
+  font-size: 0.78rem;
+}
+
+.alert-item--critical {
+  border-left-color: var(--color-error);
+}
+
+.alert-item--warning {
+  border-left-color: var(--color-accent);
+}
+
+.alert-item__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.4rem;
+}
+
+.alert-item__level {
+  color: var(--color-error);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.alert-item--warning .alert-item__level {
+  color: #8a5a00;
+}
+
+.alert-item__well {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-header);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.alert-item__date {
+  margin-left: auto;
+  color: var(--color-ink-muted);
+  font-size: 0.7rem;
+}
+
+.alert-item__kinds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.5rem;
+  margin: 0.25rem 0 0;
+  padding: 0;
+  color: var(--color-ink-muted);
+  list-style: none;
+}
+
+.alert-item__details {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.1rem 0.5rem;
+  margin: 0.3rem 0 0;
+  font-size: 0.7rem;
+}
+
+.alert-item__details dt {
+  color: var(--color-ink-muted);
+}
+
+.alert-item__details dd {
+  margin: 0;
+  text-align: right;
+}
+
+.well-sheet__alerts {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+
 .well-sheet__tabs {
   display: flex;
   gap: 0.25rem;

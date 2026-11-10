@@ -1,10 +1,10 @@
 'use client';
 
-import type { FieldSummary, WellCumulative } from '@petroatlas/shared-types';
+import type { AlertItem, FieldSummary, WellCumulative } from '@petroatlas/shared-types';
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { fetchCumulativeWells, fetchFields, fetchWellCount } from '@/lib/api';
+import { fetchAlerts, fetchCumulativeWells, fetchFields, fetchWellCount } from '@/lib/api';
 import { bubbleMaximum, type BubbleFluid } from '@/lib/bubble';
 import type { SheetTab, UnitSystem } from '@/lib/sheet-state';
 import { parseMapUrlState, writeMapUrlState, type MapView } from '@/lib/url-state';
@@ -102,6 +102,31 @@ function useCumulativeWells(
   return { status: state.status, items: state.items };
 }
 
+function useAlerts(): { status: 'loading' | 'ready' | 'error'; items: readonly AlertItem[] } {
+  const [state, setState] = useState<{ status: 'loading' | 'ready' | 'error'; items: AlertItem[] }>(
+    {
+      status: 'loading',
+      items: [],
+    },
+  );
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchAlerts(controller.signal)
+      .then((items) => {
+        if (!controller.signal.aborted) setState({ status: 'ready', items });
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setState({ status: 'error', items: [] });
+      });
+    return () => {
+      controller.abort();
+    };
+  }, []);
+
+  return state;
+}
+
 function useWellCount(query: string): WellCountState {
   const [state, setState] = useState<CountState>({
     status: 'loading',
@@ -149,6 +174,7 @@ export function MapExplorer() {
   const filterQuery = useMemo(() => toWellQuery(filters), [filters]);
   const options = useFieldOptions();
   const count = useWellCount(filterQuery);
+  const alerts = useAlerts();
   const cumulative = useCumulativeWells(filterQuery, bubbleFluid);
   const bubbleMax = useMemo(
     () => (bubbleFluid === null ? 0 : bubbleMaximum(cumulative.items, bubbleFluid)),
@@ -190,6 +216,10 @@ export function MapExplorer() {
   const handleViewChange = useCallback((nextView: MapView) => {
     setView(nextView);
   }, []);
+  const handleOpenAlert = useCallback((alert: AlertItem) => {
+    setWellsAtPoint([]);
+    setSelectedWell({ id: alert.wellId, slug: alert.wellSlug, name: alert.wellName });
+  }, []);
 
   return (
     <div className="map-explorer">
@@ -203,9 +233,12 @@ export function MapExplorer() {
         bubbleFluid={bubbleFluid}
         bubbleMax={bubbleMax}
         bubbleStatus={cumulative.status}
+        alerts={alerts.items}
+        alertsStatus={alerts.status}
         onFiltersChange={setFilters}
         onColorModeChange={setColorMode}
         onBubbleFluidChange={setBubbleFluid}
+        onOpenWell={handleOpenAlert}
       />
       <div className="map-explorer__map">
         <LazyWellMap
@@ -222,6 +255,7 @@ export function MapExplorer() {
             selectedWell={selectedWell}
             tab={sheetTab}
             unitSystem={unitSystem}
+            alerts={alerts.items}
             onSelectWell={handleSelectWell}
             onTabChange={setSheetTab}
             onUnitSystemChange={setUnitSystem}
