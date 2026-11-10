@@ -1,6 +1,6 @@
 # Documentación de PetroAtlas
 
-PetroAtlas es un explorador web de campos petroleros: un mapa de pozos como entrada, fichas con gráficas de producción y presión, y herramientas de ingeniería que calculan sobre los datos reales del pozo seleccionado. El nombre es provisional.
+PetroAtlas es un explorador web de campos petroleros: un mapa de pozos como entrada, fichas con gráficas de producción y presión, y herramientas de ingeniería que calculan sobre los datos reales del pozo seleccionado.
 
 Esta carpeta es la fuente de verdad del diseño. Si el código y la documentación no coinciden, uno de los dos está mal y se corrige en el mismo PR.
 

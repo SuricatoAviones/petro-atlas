@@ -1,8 +1,8 @@
 # PetroAtlas
 
-Explorador web de pozos petroleros, de código abierto: un mapa como entrada, fichas con series de producción y presión, herramientas de ingeniería que calculan en el navegador e importación de datos propios en CSV. El nombre es provisional.
+Explorador web de pozos petroleros, de código abierto: un mapa como entrada, fichas con series de producción y presión, herramientas de ingeniería que calculan en el navegador e importación de datos propios en CSV.
 
-> **Estado: fase 4 completa.** Mapa con clustering, filtros y estado en la URL; fichas con producción, operación, trayectoria, registros, ingeniería y diagnóstico; alertas; comparación de pozos; importación CSV en IndexedDB; exportación CSV y PNG; páginas legales y revisión de accesibilidad con axe. `petro-calc` supera el 90 % de cobertura. Queda publicar el paquete en npm y decidir el alojamiento de la demo. El plan completo está en [docs/11-plan-de-fases.md](docs/11-plan-de-fases.md).
+> **Estado: fase 4 completa.** Mapa con clustering, filtros y estado en la URL; fichas con producción, operación, trayectoria, registros, ingeniería y diagnóstico; alertas; comparación de pozos; importación CSV en IndexedDB; exportación CSV y PNG; páginas legales y revisión de accesibilidad con axe. `petro-calc` supera el 90 % de cobertura y está publicado en npm como [`@petroatlas/petro-calc`](https://www.npmjs.com/package/@petroatlas/petro-calc). Queda decidir el alojamiento de la demo. El plan completo está en [docs/11-plan-de-fases.md](docs/11-plan-de-fases.md).
 
 ![Mapa de pozos con filtros, clustering y alertas](docs/images/mapa.png)
 

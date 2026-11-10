@@ -2,7 +2,7 @@
 
 Cálculos de ingeniería de petróleo en TypeScript puro, sin dependencias. Se ejecuta igual en el navegador, en Node o en un worker, y no conoce la interfaz ni la base de datos.
 
-> **Estado:** versión `0.2.0` preparada. El ámbito `@petroatlas` está confirmado; falta completar la verificación en dos pasos de npm (OTP o token granular) para publicar. Hasta entonces, el paquete se consume desde el monorepo.
+> **Estado:** publicado en npm como `@petroatlas/petro-calc@0.2.0`.
 
 ## Instalación
 
