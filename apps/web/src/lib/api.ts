@@ -5,10 +5,12 @@ import {
   wellCollectionResponseSchema,
   wellDetailSchema,
   wellProductionResponseSchema,
+  wellTrajectoryResponseSchema,
   type FieldSummary,
   type SourceListResponse,
   type WellDetail,
   type WellProductionResponse,
+  type WellTrajectoryResponse,
 } from '@petroatlas/shared-types';
 
 import { mapConfig } from '@/components/map-config';
@@ -60,6 +62,15 @@ export async function fetchWellProduction(
   return wellProductionResponseSchema.parse(
     await getJson(`/api/wells/${path}/production?interval=day`, signal),
   );
+}
+
+/** Survey stations of one well (docs/06, `GET /api/wells/:id/trajectory`). */
+export async function fetchWellTrajectory(
+  reference: number | string,
+  signal?: AbortSignal,
+): Promise<WellTrajectoryResponse> {
+  const path = typeof reference === 'number' ? String(reference) : encodeURIComponent(reference);
+  return wellTrajectoryResponseSchema.parse(await getJson(`/api/wells/${path}/trajectory`, signal));
 }
 
 /** Data sources and their licences (docs/06, `GET /api/meta/sources`). */

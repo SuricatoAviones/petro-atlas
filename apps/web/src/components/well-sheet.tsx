@@ -1,13 +1,18 @@
 'use client';
 
-import type { WellDetail, WellProductionResponse } from '@petroatlas/shared-types';
+import type {
+  WellDetail,
+  WellProductionResponse,
+  WellTrajectoryResponse,
+} from '@petroatlas/shared-types';
 import { useEffect, useId, useRef, useState } from 'react';
 
 import { messages } from '@/messages/es';
-import { fetchWellDetail, fetchWellProduction } from '@/lib/api';
+import { fetchWellDetail, fetchWellProduction, fetchWellTrajectory } from '@/lib/api';
 import type { SheetTab, UnitSystem } from '@/lib/sheet-state';
 
 import { LazyProductionCharts } from './lazy-production-charts';
+import { LazyTrajectoryChart } from './lazy-trajectory-chart';
 import type { WellAtPoint } from './well-map';
 
 export interface WellSelection {
@@ -36,7 +41,7 @@ interface DetailState {
 }
 
 const IDLE_STATE: DetailState = { status: 'idle', slug: null, detail: null };
-const TABS: readonly SheetTab[] = ['summary', 'production', 'operation'];
+const TABS: readonly SheetTab[] = ['summary', 'production', 'operation', 'trajectory'];
 
 interface ProductionState {
   status: 'idle' | 'loading' | 'ready' | 'error';
@@ -45,6 +50,14 @@ interface ProductionState {
 }
 
 const IDLE_PRODUCTION: ProductionState = { status: 'idle', slug: null, data: null };
+
+interface TrajectoryState {
+  status: 'idle' | 'loading' | 'ready' | 'error';
+  slug: string | null;
+  data: WellTrajectoryResponse | null;
+}
+
+const IDLE_TRAJECTORY: TrajectoryState = { status: 'idle', slug: null, data: null };
 
 const DATE_FORMATTER = new Intl.DateTimeFormat('es', {
   dateStyle: 'medium',
@@ -79,6 +92,7 @@ export function WellSheet({
   const closeRef = useRef<HTMLButtonElement>(null);
   const [state, setState] = useState<DetailState>(IDLE_STATE);
   const [production, setProduction] = useState<ProductionState>(IDLE_PRODUCTION);
+  const [trajectory, setTrajectory] = useState<TrajectoryState>(IDLE_TRAJECTORY);
   const selectedId = selectedWell.id;
   const selectedSlug = selectedWell.slug;
 
@@ -123,6 +137,24 @@ export function WellSheet({
   }, [selectedId, selectedSlug]);
 
   useEffect(() => {
+    const controller = new AbortController();
+    fetchWellTrajectory(selectedId ?? selectedSlug, controller.signal)
+      .then((data) => {
+        if (!controller.signal.aborted) {
+          setTrajectory({ status: 'ready', slug: selectedSlug, data });
+        }
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setTrajectory({ status: 'error', slug: selectedSlug, data: null });
+        }
+      });
+    return () => {
+      controller.abort();
+    };
+  }, [selectedId, selectedSlug]);
+
+  useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent): void => {
       if (event.key === 'Escape') onClose();
     };
@@ -141,6 +173,12 @@ export function WellSheet({
   const isProductionLoading =
     !isProductionCurrent || production.status === 'idle' || production.status === 'loading';
   const isProductionError = isProductionCurrent && production.status === 'error';
+  const isTrajectoryCurrent = trajectory.slug === selectedSlug;
+  const trajectoryData =
+    isTrajectoryCurrent && trajectory.status === 'ready' ? trajectory.data : null;
+  const isTrajectoryLoading =
+    !isTrajectoryCurrent || trajectory.status === 'idle' || trajectory.status === 'loading';
+  const isTrajectoryError = isTrajectoryCurrent && trajectory.status === 'error';
 
   return (
     <aside className="well-sheet" aria-labelledby={headingId} data-testid="well-sheet">
@@ -217,7 +255,7 @@ export function WellSheet({
           </>
         )}
 
-        {(tab === 'production' || tab === 'operation') && (
+        {tab !== 'summary' && (
           <>
             <fieldset className="well-sheet__units">
               <legend>{messages.wellSheet.units.legend}</legend>
@@ -236,18 +274,42 @@ export function WellSheet({
                 </label>
               ))}
             </fieldset>
-            {isProductionLoading && (
-              <p className="well-sheet__notice" role="status">
-                {messages.wellSheet.loading}
-              </p>
-            )}
-            {isProductionError && (
-              <p className="well-sheet__notice well-sheet__notice--error" role="alert">
-                {messages.wellSheet.seriesError}
-              </p>
-            )}
-            {productionData !== null && (
-              <LazyProductionCharts data={productionData} unitSystem={unitSystem} section={tab} />
+            {tab === 'trajectory' ? (
+              <>
+                {isTrajectoryLoading && (
+                  <p className="well-sheet__notice" role="status">
+                    {messages.wellSheet.loading}
+                  </p>
+                )}
+                {isTrajectoryError && (
+                  <p className="well-sheet__notice well-sheet__notice--error" role="alert">
+                    {messages.wellSheet.seriesError}
+                  </p>
+                )}
+                {trajectoryData !== null && (
+                  <LazyTrajectoryChart data={trajectoryData} unitSystem={unitSystem} />
+                )}
+              </>
+            ) : (
+              <>
+                {isProductionLoading && (
+                  <p className="well-sheet__notice" role="status">
+                    {messages.wellSheet.loading}
+                  </p>
+                )}
+                {isProductionError && (
+                  <p className="well-sheet__notice well-sheet__notice--error" role="alert">
+                    {messages.wellSheet.seriesError}
+                  </p>
+                )}
+                {productionData !== null && (
+                  <LazyProductionCharts
+                    data={productionData}
+                    unitSystem={unitSystem}
+                    section={tab}
+                  />
+                )}
+              </>
             )}
           </>
         )}
@@ -319,7 +381,7 @@ function WellSheetDetails({ detail }: { detail: WellDetail }) {
                   daily.days,
                 )}
           </dd>
-          <dt>{messages.wellSheet.trajectory}</dt>
+          <dt>{messages.wellSheet.trajectoryLabel}</dt>
           <dd>
             {detail.series.hasTrajectory
               ? messages.wellSheet.available

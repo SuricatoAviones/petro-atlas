@@ -82,6 +82,7 @@ export const messages = {
       summary: 'Ficha',
       production: 'Producción',
       operation: 'Operación',
+      trajectory: 'Trayectoria',
     },
     units: {
       legend: 'Unidades',
@@ -113,6 +114,15 @@ export const messages = {
       cumulativeGas: 'Gas',
       cumulativeWater: 'Agua',
     },
+    trajectory: {
+      title: 'Trayectoria',
+      noData: 'La fuente no publica la trayectoria de este pozo.',
+      depth: 'Profundidad vertical',
+      displacement: 'Desplazamiento horizontal',
+      measuredDepth: 'Profundidad medida',
+      inclination: 'Inclinación',
+      azimuth: 'Azimut',
+    },
     operation: {
       noData: 'La fuente no publica datos de operación para este pozo.',
       pressures: 'Presiones',
@@ -139,7 +149,7 @@ export const messages = {
     dailyRange: (from: string, to: string, days: number) =>
       `${from} – ${to} (${String(days)} días)`,
     noDaily: 'Sin producción diaria',
-    trajectory: 'Trayectoria',
+    trajectoryLabel: 'Trayectoria',
     available: 'Disponible',
     unavailable: 'No disponible',
     logCurves: 'Registros',
