@@ -2,7 +2,7 @@
 
 import 'maplibre-gl/dist/maplibre-gl.css';
 
-import { Map as MapLibreMap, NavigationControl, ScaleControl } from 'maplibre-gl';
+import { Map as MapLibreMap, NavigationControl, ScaleControl, setWorkerUrl } from 'maplibre-gl';
 import { useEffect, useRef, useState } from 'react';
 
 import { messages } from '@/messages/es';
@@ -19,6 +19,10 @@ export function BaseMap() {
   useEffect(() => {
     const container = containerRef.current;
     if (container === null) return;
+
+    // MapLibre looks for its worker next to its own module, which no longer holds once the
+    // library is bundled. This reference makes the bundler emit the worker as a static asset.
+    setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).href);
 
     const map = new MapLibreMap({
       container,

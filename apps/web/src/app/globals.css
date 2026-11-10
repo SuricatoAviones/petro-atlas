@@ -74,9 +74,10 @@ body {
   height: 100%;
 }
 
+/* Sized with width and height: MapLibre sets `position: relative` on its container. */
 .base-map__canvas {
-  position: absolute;
-  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .base-map__notice {
