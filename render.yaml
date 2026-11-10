@@ -1,0 +1,61 @@
+# Render Blueprint for PetroAtlas (docs/15-despliegue.md).
+#
+# It creates the web, the API and a PostgreSQL + PostGIS database in the existing
+# "PetroAtlas / Production" project. The database must still be migrated and seeded:
+# the API connects with a read-only role and cannot run the schema by itself.
+projects:
+  - name: PetroAtlas
+    environments:
+      - name: Production
+        databases:
+          - name: petroatlas-db
+            databaseName: petroatlas
+            user: petroatlas
+            # Free instances sleep and expire; use a paid plan for a permanent demo.
+            plan: free
+            postgresMajorVersion: '16'
+            region: virginia
+
+        services:
+          - type: web
+            name: petroatlas-api
+            runtime: node
+            plan: free
+            region: virginia
+            buildCommand: pnpm install --frozen-lockfile && pnpm --filter @petroatlas/shared-types build && pnpm --filter @petroatlas/api build
+            startCommand: pnpm --filter @petroatlas/api start
+            healthCheckPath: /api/health
+            envVars:
+              - key: API_DATABASE_URL
+                fromDatabase:
+                  name: petroatlas-db
+                  property: connectionString
+              # Render injects PORT (10000 by default); config.ts accepts it as a fallback.
+              - key: WEB_ORIGIN
+                fromService:
+                  name: petroatlas-web
+                  type: web
+                  envVarKey: RENDER_EXTERNAL_URL
+              - key: RATE_LIMIT_PER_MINUTE
+                value: 600
+              - key: NODE_VERSION
+                value: 26.13.0
+
+          - type: web
+            name: petroatlas-web
+            runtime: node
+            plan: free
+            region: virginia
+            buildCommand: pnpm install --frozen-lockfile && pnpm --filter @petroatlas/shared-types build && pnpm --filter @petroatlas/petro-calc build && pnpm --filter @petroatlas/web build
+            # Next start must bind to the port Render assigns; the package script fixes 3000.
+            startCommand: pnpm --filter @petroatlas/web exec next start --port $PORT
+            healthCheckPath: /
+            envVars:
+              # NEXT_PUBLIC_* is inlined at build time, so this must be available before the build.
+              - key: NEXT_PUBLIC_API_URL
+                fromService:
+                  name: petroatlas-api
+                  type: web
+                  envVarKey: RENDER_EXTERNAL_URL
+              - key: NODE_VERSION
+                value: 26.13.0
