@@ -62,7 +62,7 @@ Cierre: la presión de fondo de un pozo de Volve se ve en la ficha, con su fuent
 
 Objetivo: calcular sobre los datos del pozo.
 
-- [ ] `petro-calc/dca`: ajuste de Arps, pronóstico y EUR, con pruebas.
+- [x] `petro-calc/dca`: ajuste de Arps, pronóstico y EUR, con pruebas.
 - [ ] Selección de ventana sobre la gráfica y curva de ajuste superpuesta.
 - [ ] `petro-calc/ipr`: Vogel, Fetkovich y compuesta, con pruebas.
 - [ ] `petro-calc/pvt`: Standing, Vasquez y Beggs, Beggs y Robinson, con pruebas.
