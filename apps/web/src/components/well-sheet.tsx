@@ -13,6 +13,7 @@ import { fetchWellDetail, fetchWellProduction, fetchWellTrajectory } from '@/lib
 import type { SheetTab, UnitSystem } from '@/lib/sheet-state';
 
 import { AlertsList } from './alerts-list';
+import { LazyDiagnosticsTab } from './lazy-diagnostics-tab';
 import { LazyEngineeringTab } from './lazy-engineering-tab';
 import { LazyProductionCharts } from './lazy-production-charts';
 import { LazyTrajectoryChart } from './lazy-trajectory-chart';
@@ -51,6 +52,7 @@ const TABS: readonly SheetTab[] = [
   'operation',
   'trajectory',
   'engineering',
+  'diagnostics',
 ];
 
 interface ProductionState {
@@ -333,7 +335,7 @@ export function WellSheet({
                 )}
               </>
             )}
-            {tab === 'engineering' && (
+            {(tab === 'engineering' || tab === 'diagnostics') && (
               <>
                 {isProductionLoading && (
                   <p className="well-sheet__notice" role="status">
@@ -345,7 +347,12 @@ export function WellSheet({
                     {messages.wellSheet.seriesError}
                   </p>
                 )}
-                {productionData !== null && <LazyEngineeringTab data={productionData} />}
+                {productionData !== null &&
+                  (tab === 'engineering' ? (
+                    <LazyEngineeringTab data={productionData} />
+                  ) : (
+                    <LazyDiagnosticsTab data={productionData} />
+                  ))}
               </>
             )}
           </>

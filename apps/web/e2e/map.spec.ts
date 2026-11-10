@@ -61,6 +61,10 @@ test('filters the map, opens a well and keeps the view after a reload', async ({
   await expect(sheet.getByRole('heading', { name: 'Curva IPR' })).toBeVisible();
   await expect(sheet.getByRole('img', { name: 'Presión de fondo frente a caudal' })).toBeVisible();
   await expect(sheet.getByRole('img', { name: 'Bo frente a presión' })).toBeVisible();
+  await sheet.getByRole('tab', { name: 'Diagnóstico' }).click();
+  await expect(sheet.getByRole('img', { name: 'Chan: RAP' })).toBeVisible();
+  await expect(sheet.getByRole('img', { name: 'Chan: derivada del RAP' })).toBeVisible();
+  await expect(sheet.getByRole('img', { name: 'Tasa frente a acumulado' })).toBeVisible();
   await sheet.getByRole('tab', { name: 'Operación' }).click();
   await expect(sheet.getByRole('heading', { name: 'Presiones' })).toBeVisible();
 
