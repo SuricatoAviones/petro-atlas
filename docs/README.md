@@ -21,6 +21,7 @@ Esta carpeta es la fuente de verdad del diseño. Si el código y la documentaci�
 | [11-plan-de-fases.md](11-plan-de-fases.md) | Fases 0 a 4 con tareas y criterios de cierre |
 | [12-convenciones.md](12-convenciones.md) | Reglas de código, Git, pruebas, seguridad y definición de terminado |
 | [13-publicacion.md](13-publicacion.md) | Publicación de `petro-calc` en npm: requisitos, versiones y verificación |
+| [14-textos-legales.md](14-textos-legales.md) | Páginas legales, estado y revisión pendiente antes de la explotación pública |
 | [adr/](adr/README.md) | Decisiones de arquitectura registradas |
 | [PROMPT-INICIAL.md](PROMPT-INICIAL.md) | Prompt para arrancar el desarrollo con un agente de IA |
 

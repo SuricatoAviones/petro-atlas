@@ -94,6 +94,7 @@ Reglas que sigue todo cambio en el repositorio, lo escriba una persona o un agen
 - Una decisión que cambia el diseño se registra como ADR antes de implementarla.
 - Las funciones públicas de `petro-calc` llevan TSDoc con unidades y referencia.
 - El `README.md` de la raíz siempre permite levantar el proyecto desde cero.
+- Las páginas legales se actualizan con la aplicación; su alcance y su revisión pendiente están en `14-textos-legales.md`.
 
 ## Definición de terminado
 

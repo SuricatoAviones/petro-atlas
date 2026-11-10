@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 
+import { AppFooter } from '@/components/app-footer';
 import { AppHeader } from '@/components/app-header';
 import { MapExplorer } from '@/components/map-explorer';
 import { messages } from '@/messages/es';
@@ -21,6 +22,7 @@ export default function HomePage() {
           <MapExplorer />
         </Suspense>
       </main>
+      <AppFooter />
     </div>
   );
 }

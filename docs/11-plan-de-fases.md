@@ -77,6 +77,7 @@ Cierre: cobertura de 90% o más en `petro-calc` y cada fórmula con al menos una
 
 Objetivo: cerrar el producto y dejarlo presentable.
 
+- [x] Páginas legales: aviso legal, privacidad, datos y cookies, enlazadas desde el pie.
 - [ ] Comparación de pozos en una misma gráfica.
 - [ ] `GET /api/wells/:id/logs` y visor de registros por pistas.
 - [ ] Exportación CSV de series y resultados, y PNG de gráficas.
