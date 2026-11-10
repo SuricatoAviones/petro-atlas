@@ -201,7 +201,7 @@ body {
   top: 0;
   right: 0;
   bottom: 0;
-  width: min(24rem, 100%);
+  width: min(38rem, 100%);
   overflow-y: auto;
   padding: 1rem;
   border-left: 1px solid var(--color-border);
@@ -324,11 +324,133 @@ body {
   color: var(--color-header);
 }
 
+.well-sheet__tabs {
+  display: flex;
+  gap: 0.25rem;
+  margin: 1rem 0 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.well-sheet__tab {
+  padding: 0.4rem 0.6rem;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--color-ink-muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.well-sheet__tab[aria-selected='true'] {
+  border-bottom-color: var(--color-accent);
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.well-sheet__units {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  border: 0;
+}
+
+.well-sheet__units legend {
+  width: 100%;
+  padding: 0;
+  color: var(--color-ink-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.well-sheet__units label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  cursor: pointer;
+}
+
+.well-sheet__units input {
+  margin: 0;
+  accent-color: var(--color-header);
+}
+
+.production-charts {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.production-charts__hint {
+  margin: 0;
+  color: var(--color-ink-muted);
+  font-size: 0.75rem;
+}
+
+.chart-card {
+  min-width: 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.chart-card h4 {
+  margin: 0 0 0.25rem;
+  font-size: 0.9rem;
+}
+
+.chart-card__canvas {
+  width: 100%;
+  height: 200px;
+}
+
+.chart-card__source {
+  margin: 0.25rem 0;
+  color: var(--color-ink-muted);
+  font-size: 0.7rem;
+}
+
+.chart-card__table-toggle {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-header);
+  font: inherit;
+  font-size: 0.75rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.chart-card__table-wrapper {
+  max-height: 16rem;
+  margin-top: 0.5rem;
+  overflow: auto;
+  border: 1px solid var(--color-border);
+}
+
+.chart-card__table-wrapper table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-card__table-wrapper th,
+.chart-card__table-wrapper td {
+  padding: 0.2rem 0.4rem;
+  border-bottom: 1px solid var(--color-border);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.chart-card__table-wrapper th:first-child {
+  text-align: left;
+}
+
 @media (max-width: 48rem) {
   .well-sheet {
     top: auto;
     width: 100%;
-    height: min(60dvh, 32rem);
+    height: min(72dvh, 40rem);
     border-top: 1px solid var(--color-border);
     border-left: 0;
     box-shadow: 0 -2px 8px rgb(0 0 0 / 12%);

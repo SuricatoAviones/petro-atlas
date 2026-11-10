@@ -12,7 +12,10 @@ const nextConfig: NextConfig = {
     root: monorepoRoot,
     // Use the workspace source, as `tsconfig.base.json` does with the `@petroatlas/source`
     // condition. Without this, `next dev` only works after the package has been built.
-    resolveAlias: { '@petroatlas/shared-types': '../../packages/shared-types/src/index.ts' },
+    resolveAlias: {
+      '@petroatlas/shared-types': '../../packages/shared-types/src/index.ts',
+      '@petroatlas/petro-calc': '../../packages/petro-calc/src/index.ts',
+    },
   },
   reactStrictMode: true,
   poweredByHeader: false,

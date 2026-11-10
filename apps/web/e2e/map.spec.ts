@@ -31,12 +31,12 @@ test('filters the map, opens a well and keeps the view after a reload', async ({
       response.status() === 200
     );
   });
-  await page.getByLabel('Campo').selectOption({ label: FIELD_NAME });
+  await page.getByRole('combobox', { name: 'Campo' }).selectOption({ label: FIELD_NAME });
   await filteredTiles;
 
   const count = page.getByTestId('well-count');
   await expect(count).toHaveText('20 pozos');
-  await expect(page.getByLabel('Campo')).toHaveValue(FIELD_SLUG);
+  await expect(page.getByRole('combobox', { name: 'Campo' })).toHaveValue(FIELD_SLUG);
 
   const box = await map.boundingBox();
   if (box === null) throw new Error('The map has no bounding box');
@@ -48,6 +48,14 @@ test('filters the map, opens a well and keeps the view after a reload', async ({
   await expect(heading).toHaveText(/SYN-A-\d+/);
   const wellName = (await heading.textContent())?.trim() ?? '';
 
+  await sheet.getByRole('tab', { name: 'Producción' }).click();
+  await expect(sheet.getByRole('heading', { name: 'Tasas de producción' })).toBeVisible();
+  await expect(sheet.getByRole('img', { name: 'Tasas de producción' })).toBeVisible();
+  await sheet.getByRole('radio', { name: 'Campo' }).check();
+  await expect(sheet.getByRole('radio', { name: 'Campo' })).toBeChecked();
+  await sheet.getByRole('tab', { name: 'Operación' }).click();
+  await expect(sheet.getByRole('heading', { name: 'Presiones' })).toBeVisible();
+
   await expect
     .poll(() => new URL(page.url()).searchParams.get('pozo'), { timeout: 5_000 })
     .not.toBeNull();
@@ -55,9 +63,14 @@ test('filters the map, opens a well and keeps the view after a reload', async ({
 
   await page.reload();
   await expect(count).toHaveText('20 pozos');
-  await expect(page.getByLabel('Campo')).toHaveValue(FIELD_SLUG);
+  await expect(page.getByRole('combobox', { name: 'Campo' })).toHaveValue(FIELD_SLUG);
   await expect(sheet).toBeVisible();
   await expect(heading).toHaveText(wellName);
+  await expect(sheet.getByRole('tab', { name: 'Operación' })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  );
+  await expect(sheet.getByRole('radio', { name: 'Campo' })).toBeChecked();
 
   const afterView = parseView(new URL(page.url()).searchParams.get('vista'));
   expect(afterView[0]).toBeCloseTo(beforeView[0], 3);

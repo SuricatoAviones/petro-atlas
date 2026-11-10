@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { fetchFields, fetchWellCount } from '@/lib/api';
+import type { SheetTab, UnitSystem } from '@/lib/sheet-state';
 import { parseMapUrlState, writeMapUrlState, type MapView } from '@/lib/url-state';
 import { toWellQuery, type WellFilters } from '@/lib/well-filters';
 
@@ -93,6 +94,8 @@ export function MapExplorer() {
   const [filters, setFilters] = useState<WellFilters>(initialUrlState.filters);
   const [colorMode, setColorMode] = useState<WellColorMode>('status');
   const [view, setView] = useState<MapView>(initialUrlState.view);
+  const [sheetTab, setSheetTab] = useState<SheetTab>(initialUrlState.tab);
+  const [unitSystem, setUnitSystem] = useState<UnitSystem>(initialUrlState.unitSystem);
   const [wellsAtPoint, setWellsAtPoint] = useState<readonly WellAtPoint[]>([]);
   const [selectedWell, setSelectedWell] = useState<WellSelection | null>(
     initialUrlState.wellSlug === null
@@ -105,8 +108,14 @@ export function MapExplorer() {
   const selectedWellSlug = selectedWell?.slug ?? null;
 
   useEffect(() => {
-    writeMapUrlState({ filters, wellSlug: selectedWellSlug, view });
-  }, [filters, selectedWellSlug, view]);
+    writeMapUrlState({
+      filters,
+      wellSlug: selectedWellSlug,
+      view,
+      tab: sheetTab,
+      unitSystem,
+    });
+  }, [filters, selectedWellSlug, sheetTab, unitSystem, view]);
 
   const handleSelectWells = useCallback((wells: readonly WellAtPoint[]) => {
     const first = wells[0];
@@ -150,7 +159,11 @@ export function MapExplorer() {
           <WellSheet
             wells={wellsAtPoint}
             selectedWell={selectedWell}
+            tab={sheetTab}
+            unitSystem={unitSystem}
             onSelectWell={handleSelectWell}
+            onTabChange={setSheetTab}
+            onUnitSystemChange={setUnitSystem}
             onClose={closeWellSheet}
           />
         )}

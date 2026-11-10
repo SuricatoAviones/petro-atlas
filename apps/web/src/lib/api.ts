@@ -4,9 +4,11 @@ import {
   sourceListResponseSchema,
   wellCollectionResponseSchema,
   wellDetailSchema,
+  wellProductionResponseSchema,
   type FieldSummary,
   type SourceListResponse,
   type WellDetail,
+  type WellProductionResponse,
 } from '@petroatlas/shared-types';
 
 import { mapConfig } from '@/components/map-config';
@@ -47,6 +49,17 @@ export async function fetchWellDetail(
 ): Promise<WellDetail> {
   const path = typeof reference === 'number' ? String(reference) : encodeURIComponent(reference);
   return wellDetailSchema.parse(await getJson(`/api/wells/${path}`, signal));
+}
+
+/** Daily production and operation series of one well (docs/06). */
+export async function fetchWellProduction(
+  reference: number | string,
+  signal?: AbortSignal,
+): Promise<WellProductionResponse> {
+  const path = typeof reference === 'number' ? String(reference) : encodeURIComponent(reference);
+  return wellProductionResponseSchema.parse(
+    await getJson(`/api/wells/${path}/production?interval=day`, signal),
+  );
 }
 
 /** Data sources and their licences (docs/06, `GET /api/meta/sources`). */
