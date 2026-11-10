@@ -2,6 +2,8 @@
 
 `@petroatlas/petro-calc` vive en `packages/petro-calc` y se publica desde este monorepo. No hay un repositorio aparte para el paquete.
 
+> **Estado:** `0.2.0` publicado el 10 de noviembre de 2026 y verificado con una instalación desde el registro.
+
 ## Requisitos
 
 - Una cuenta de npm con acceso al ámbito `@petroatlas`. Si el ámbito no existe o no pertenece a la cuenta, npm rechaza la publicación con un error 403 o 404.
@@ -9,7 +11,7 @@
 - El árbol de Git limpio y la rama `main` actualizada.
 - `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:coverage` y `pnpm build` en verde.
 
-El nombre del proyecto es provisional (ver `11-plan-de-fases.md`). Antes de la primera publicación se confirma que `@petroatlas` está disponible y que el nombre definitivo es ese; si cambia, se actualizan `package.json`, el README, la documentación y la web en el mismo PR.
+El nombre definitivo es **PetroAtlas** y el paquete usa el ámbito `@petroatlas` (ver `11-plan-de-fases.md`). La cuenta que publica debe pertenecer a la organización `petroatlas` en npm.
 
 ## Versión y changelog
 
@@ -61,8 +63,8 @@ node --input-type=module -e "import { vogel } from '@petroatlas/petro-calc'; con
 Solo después de verificar la publicación:
 
 ```bash
-git tag petro-calc-v0.1.0
-git push origin petro-calc-v0.1.0
+git tag petro-calc-v0.2.0
+git push origin petro-calc-v0.2.0
 ```
 
 El tag usa el prefijo `petro-calc-v` para no confundirse con las versiones de la aplicación.
