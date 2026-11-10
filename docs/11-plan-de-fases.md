@@ -53,7 +53,7 @@ Objetivo: ver cómo se comporta un pozo en el tiempo.
 - [x] Selector de unidades SI y de campo.
 - [x] `petro-calc/units` y `petro-calc/diagnostics` (corte de agua y RGP) con pruebas.
 - [x] Mapa de burbujas de acumulados.
-- [ ] Vista `well_alert`, `GET /api/alerts`, borde de alerta en el mapa, lista en la ficha y panel lateral.
+- [x] Vista `well_alert`, `GET /api/alerts`, borde de alerta en el mapa, lista en la ficha y panel lateral.
 - [x] Gráfica de trayectoria en la ficha.
 
 Cierre: la presión de fondo de un pozo de Volve se ve en la ficha, con su fuente al pie, y coincide con el archivo original en tres fechas comprobadas a mano.

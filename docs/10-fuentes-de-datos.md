@@ -102,6 +102,8 @@ Las trayectorias son XML WITSML 1.4.1.1 con estaciones `md`/`tvd` en metros e `i
 
 Las coordenadas de los pozos de Volve no están en el archivo de producción: se obtienen cruzando el nombre oficial del pozo con Sodir.
 
+Verificación de cierre de la fase 2 (2026-11-10), pozo `15/9-F-12`, presión de fondo contra el archivo original: 2010-01-01 248.2708796 bar, 2010-06-15 280.0132563 bar y 2010-10-11 253.8519828 bar. La API devuelve los mismos valores redondeados a la precisión de `real` (248.27087, 280.01324 y 253.85199) con la fuente de Volve al pie.
+
 ## Reglas del ETL
 
 1. **Idempotente.** Correrlo dos veces deja la base de datos igual. Se usa `INSERT ... ON CONFLICT DO UPDATE`.
