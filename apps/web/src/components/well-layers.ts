@@ -2,7 +2,7 @@
  * Sources and layers drawn on top of the basemap: field outlines, well clusters and wells, all
  * from the vector tiles of the API (docs/06, "Teselas de pozos" and "Teselas de campos").
  */
-import type { ExpressionSpecification, Map as MapLibreMap } from 'maplibre-gl';
+import type { ExpressionSpecification, Map as MapLibreMap, VectorTileSource } from 'maplibre-gl';
 
 import { mapConfig } from './map-config';
 import {
@@ -57,8 +57,18 @@ function basemapFont(map: MapLibreMap): string[] {
   return [FALLBACK_FONT];
 }
 
+/** Well tiles with the current filters, so cluster counts match the panel (docs/06). */
+function wellTilesUrl(filterQuery: string): string {
+  const suffix = filterQuery === '' ? '' : `?${filterQuery}`;
+  return `${mapConfig.apiUrl}/api/tiles/wells/{z}/{x}/{y}.mvt${suffix}`;
+}
+
 /** Adds the field and well layers. Call it once, after the style has loaded. */
-export function addWellLayers(map: MapLibreMap, colorMode: WellColorMode): void {
+export function addWellLayers(
+  map: MapLibreMap,
+  colorMode: WellColorMode,
+  filterQuery: string,
+): void {
   const font = basemapFont(map);
 
   map.addSource(FIELD_SOURCE_ID, {
@@ -69,7 +79,7 @@ export function addWellLayers(map: MapLibreMap, colorMode: WellColorMode): void 
   });
   map.addSource(WELL_SOURCE_ID, {
     type: 'vector',
-    tiles: [`${mapConfig.apiUrl}/api/tiles/wells/{z}/{x}/{y}.mvt`],
+    tiles: [wellTilesUrl(filterQuery)],
     maxzoom: mapConfig.wellTileMaxZoom,
   });
 
@@ -148,4 +158,9 @@ export function addWellLayers(map: MapLibreMap, colorMode: WellColorMode): void 
 
 export function setWellColorMode(map: MapLibreMap, colorMode: WellColorMode): void {
   map.setPaintProperty(WELL_LAYER_ID, 'circle-color', wellColorExpression(colorMode));
+}
+
+/** Points the well source at the tile URL of the new filter set. */
+export function setWellFilters(map: MapLibreMap, filterQuery: string): void {
+  map.getSource<VectorTileSource>(WELL_SOURCE_ID)?.setTiles([wellTilesUrl(filterQuery)]);
 }

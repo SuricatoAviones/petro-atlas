@@ -6,6 +6,8 @@ import type { WellStatus, WellType } from '@petroatlas/shared-types';
 
 export type WellColorMode = 'status' | 'type';
 
+export const WELL_COLOR_MODES: readonly WellColorMode[] = ['status', 'type'];
+
 export const WELL_STATUS_COLORS: Record<WellStatus, string> = {
   producing: '#1a7f4b',
   injecting: '#1f6fb2',

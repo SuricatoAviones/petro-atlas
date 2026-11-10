@@ -21,12 +21,11 @@ import {
   WELL_SOURCE_ID,
   addWellLayers,
   setWellColorMode,
+  setWellFilters,
 } from './well-layers';
 
 type MapStatus = 'loading' | 'ready' | 'error';
 
-const COLOR_MODES: readonly WellColorMode[] = ['status', 'type'];
-const DEFAULT_COLOR_MODE: WellColorMode = 'status';
 /** Zoom levels gained by clicking a cluster. */
 const CLUSTER_CLICK_ZOOM_STEP = 2;
 
@@ -36,13 +35,28 @@ function isDataSource(sourceId: unknown): boolean {
   return typeof sourceId === 'string' && DATA_SOURCE_IDS.includes(sourceId);
 }
 
+export interface WellMapProps {
+  colorMode: WellColorMode;
+  /** Query string of the filters shared by the count and the tiles (docs/06). */
+  filtersQuery: string;
+}
+
 /** Full-size map of wells, grouped at low zoom, with field outlines from a zoom level on. */
-export function WellMap() {
+export function WellMap({ colorMode, filtersQuery }: WellMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap>(null);
+  const latestColorMode = useRef(colorMode);
+  const latestFiltersQuery = useRef(filtersQuery);
   const [status, setStatus] = useState<MapStatus>('loading');
   const [hasDataError, setHasDataError] = useState(false);
-  const [colorMode, setColorMode] = useState<WellColorMode>(DEFAULT_COLOR_MODE);
+
+  useEffect(() => {
+    latestColorMode.current = colorMode;
+  }, [colorMode]);
+
+  useEffect(() => {
+    latestFiltersQuery.current = filtersQuery;
+  }, [filtersQuery]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -64,7 +78,7 @@ export function WellMap() {
     map.addControl(new ScaleControl({ unit: 'metric' }), 'bottom-left');
 
     map.once('load', () => {
-      addWellLayers(map, DEFAULT_COLOR_MODE);
+      addWellLayers(map, latestColorMode.current, latestFiltersQuery.current);
       mapRef.current = map;
       setStatus('ready');
     });
@@ -104,6 +118,10 @@ export function WellMap() {
     if (status === 'ready' && mapRef.current !== null) setWellColorMode(mapRef.current, colorMode);
   }, [status, colorMode]);
 
+  useEffect(() => {
+    if (status === 'ready' && mapRef.current !== null) setWellFilters(mapRef.current, filtersQuery);
+  }, [status, filtersQuery]);
+
   return (
     <div className="well-map">
       <div
@@ -113,25 +131,6 @@ export function WellMap() {
         aria-label={messages.map.label}
         aria-busy={status === 'loading'}
       />
-      {status === 'ready' && (
-        <fieldset className="well-map__color-mode">
-          <legend>{messages.map.colorMode.legend}</legend>
-          {COLOR_MODES.map((mode) => (
-            <label key={mode}>
-              <input
-                type="radio"
-                name="well-color-mode"
-                value={mode}
-                checked={colorMode === mode}
-                onChange={() => {
-                  setColorMode(mode);
-                }}
-              />
-              {messages.map.colorMode[mode]}
-            </label>
-          ))}
-        </fieldset>
-      )}
       {status === 'loading' && (
         <p className="well-map__notice" role="status">
           {messages.map.loading}

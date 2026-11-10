@@ -16,6 +16,12 @@ export const messages = {
       status: 'Estado',
       type: 'Tipo',
     },
+    legend: {
+      title: 'Leyenda',
+      cluster: 'Grupo de pozos',
+      field: 'Campo',
+      unknownType: 'Sin tipo',
+    },
     /** Overrides for MapLibre's built-in control texts. */
     controls: {
       'NavigationControl.ZoomIn': 'Acercar',
@@ -25,5 +31,39 @@ export const messages = {
       'ScaleControl.Meters': 'm',
       'ScaleControl.Kilometers': 'km',
     },
+  },
+  filters: {
+    label: 'Filtros de pozos',
+    title: 'Filtros',
+    reset: 'Quitar filtros',
+    loading: 'Actualizando el conteo…',
+    countError: 'No se pudo actualizar el conteo.',
+    resultCount: (count: number) =>
+      count === 1 ? '1 pozo' : `${new Intl.NumberFormat('es').format(count)} pozos`,
+    optionsLoading: 'Cargando opciones…',
+    optionsError: 'No se pudieron cargar los campos.',
+    field: 'Campo',
+    operator: 'Operadora',
+    status: 'Estado',
+    type: 'Tipo',
+    spudRange: 'Año de perforación',
+    spudFrom: 'Desde',
+    spudTo: 'Hasta',
+    allFields: 'Todos los campos',
+    allOperators: 'Todas las operadoras',
+    yearPlaceholder: 'AAAA',
+  },
+  wellStatus: {
+    producing: 'Produciendo',
+    injecting: 'Inyectando',
+    shut_in: 'Cerrado',
+    abandoned: 'Abandonado',
+    unknown: 'Desconocido',
+  },
+  wellType: {
+    producer: 'Productor',
+    injector: 'Inyector',
+    exploration: 'Exploración',
+    observation: 'Observación',
   },
 } as const;
