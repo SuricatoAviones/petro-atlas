@@ -22,7 +22,7 @@ Objetivo: un repositorio donde cualquier cambio posterior se pueda probar y desp
 - [x] API con `GET /api/health` que comprueba la conexión a la base de datos.
 - [x] Web con una página que muestra un mapa base de MapLibre.
 - [x] Vitest configurado, con una prueba de ejemplo en `petro-calc`.
-- [ ] GitHub Actions: lint, tipos, pruebas y build.
+- [x] GitHub Actions: lint, tipos, pruebas y build.
 - [x] `README.md`, `LICENSE` (MIT), `.env.example`, `.gitignore` con `data/`.
 
 Cierre: en una máquina limpia, `docker compose up` deja la web en el navegador con el mapa y `/api/health` responde bien. El CI pasa en la rama principal.
