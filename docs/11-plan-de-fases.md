@@ -35,7 +35,7 @@ Objetivo: explorar pozos y campos reales.
 - [x] `GET /api/fields`, `GET /api/fields/:id`, `GET /api/wells`, `GET /api/wells/:id`, `GET /api/meta/sources`.
 - [x] Teselas vectoriales de pozos con `ST_AsMVT`.
 - [x] Mapa con clustering, color por estado o tipo, y capa de campos visible según el zoom.
-- [ ] Panel de filtros con conteo de resultados, indicador de carga y leyenda.
+- [x] Panel de filtros con conteo de resultados, indicador de carga y leyenda.
 - [ ] Ficha del pozo con metadatos y ubicación.
 - [ ] Estado en la URL: filtros, pozo abierto y vista del mapa.
 - [ ] Página "Fuentes y licencias".
