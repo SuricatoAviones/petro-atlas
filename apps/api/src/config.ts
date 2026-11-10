@@ -3,7 +3,10 @@ import { z } from 'zod';
 const envSchema = z.object({
   // Read-only role (petroatlas_api, docs/05).
   API_DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
-  API_PORT: z.coerce.number().int().min(1).max(65_535).default(4000),
+  /** Explicit port of `pnpm dev` and Docker Compose. */
+  API_PORT: z.coerce.number().int().min(1).max(65_535).optional(),
+  /** Port assigned by hosting platforms such as Render; `API_PORT` takes precedence. */
+  PORT: z.coerce.number().int().min(1).max(65_535).optional(),
   WEB_ORIGIN: z.url().default('http://localhost:3000'),
   RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(1200),
 });
@@ -25,7 +28,7 @@ export function loadConfig(env: NodeJS.ProcessEnv): ApiConfig {
   }
   return {
     databaseUrl: parsed.data.API_DATABASE_URL,
-    port: parsed.data.API_PORT,
+    port: parsed.data.API_PORT ?? parsed.data.PORT ?? 4000,
     webOrigin: parsed.data.WEB_ORIGIN,
     rateLimitPerMinute: parsed.data.RATE_LIMIT_PER_MINUTE,
   };
