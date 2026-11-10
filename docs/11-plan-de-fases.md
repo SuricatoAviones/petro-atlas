@@ -47,7 +47,7 @@ Cierre: demo pública con todos los pozos de Sodir, fluida al navegar.
 
 Objetivo: ver cómo se comporta un pozo en el tiempo.
 
-- [ ] ETL de Volve: producción diaria y trayectorias, cruzadas con los pozos de Sodir.
+- [x] ETL de Volve: producción diaria y trayectorias, cruzadas con los pozos de Sodir.
 - [ ] `GET /api/wells/:id/production`, `/trajectory`, `GET /api/fields/:id/production`.
 - [ ] Pestañas Producción y Operación con las gráficas de `07-graficas.md`, sincronizadas.
 - [ ] Selector de unidades SI y de campo.
