@@ -36,7 +36,7 @@ Objetivo: explorar pozos y campos reales.
 - [x] Teselas vectoriales de pozos con `ST_AsMVT`.
 - [x] Mapa con clustering, color por estado o tipo, y capa de campos visible según el zoom.
 - [x] Panel de filtros con conteo de resultados, indicador de carga y leyenda.
-- [ ] Ficha del pozo con metadatos y ubicación.
+- [x] Ficha del pozo con metadatos y ubicación.
 - [ ] Estado en la URL: filtros, pozo abierto y vista del mapa.
 - [ ] Página "Fuentes y licencias".
 - [ ] Prueba de extremo a extremo: abrir el mapa, filtrar, abrir un pozo, recargar y ver la misma vista.
