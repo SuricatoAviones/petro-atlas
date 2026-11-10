@@ -96,6 +96,7 @@ async function upsertWells(
 
 async function upsertProduction(
   client: pg.Client,
+  sourceId: number,
   wellIds: Map<string, number>,
   dataset: SyntheticDataset,
 ): Promise<void> {
@@ -108,12 +109,13 @@ async function upsertProduction(
   // One statement with column arrays; unnest turns them back into rows.
   await client.query(
     `INSERT INTO production_daily
-       (well_id, date, oil_sm3, gas_sm3, water_sm3, water_inj_sm3, on_stream_h,
+       (well_id, source_id, date, oil_sm3, gas_sm3, water_sm3, water_inj_sm3, on_stream_h,
         bhp_bar, whp_bar, bht_c, wht_c, choke_pct)
      SELECT * FROM unnest(
-       $1::int[], $2::date[], $3::real[], $4::real[], $5::real[], $6::real[], $7::real[],
-       $8::real[], $9::real[], $10::real[], $11::real[], $12::real[])
+       $1::int[], $2::int[], $3::date[], $4::real[], $5::real[], $6::real[], $7::real[],
+       $8::real[], $9::real[], $10::real[], $11::real[], $12::real[], $13::real[])
      ON CONFLICT (well_id, date) DO UPDATE SET
+       source_id = EXCLUDED.source_id,
        oil_sm3 = EXCLUDED.oil_sm3,
        gas_sm3 = EXCLUDED.gas_sm3,
        water_sm3 = EXCLUDED.water_sm3,
@@ -126,6 +128,7 @@ async function upsertProduction(
        choke_pct = EXCLUDED.choke_pct`,
     [
       rows.map((row) => wellIdOf(row.wellName)),
+      rows.map(() => sourceId),
       rows.map((row) => row.date),
       rows.map((row) => row.oilSm3),
       rows.map((row) => row.gasSm3),
@@ -141,6 +144,64 @@ async function upsertProduction(
   );
 }
 
+async function upsertFieldProduction(
+  client: pg.Client,
+  sourceId: number,
+  fieldId: number,
+  dataset: SyntheticDataset,
+): Promise<void> {
+  const rows = dataset.fieldProduction;
+  await client.query(
+    `INSERT INTO field_production_monthly
+       (field_id, source_id, month, oil_sm3, gas_sm3, water_sm3)
+     SELECT * FROM unnest($1::int[], $2::int[], $3::date[], $4::real[], $5::real[], $6::real[])
+     ON CONFLICT (field_id, month) DO UPDATE SET
+       source_id = EXCLUDED.source_id,
+       oil_sm3 = EXCLUDED.oil_sm3,
+       gas_sm3 = EXCLUDED.gas_sm3,
+       water_sm3 = EXCLUDED.water_sm3`,
+    [
+      rows.map(() => fieldId),
+      rows.map(() => sourceId),
+      rows.map((row) => row.month),
+      rows.map((row) => row.oilSm3),
+      rows.map((row) => row.gasSm3),
+      rows.map((row) => row.waterSm3),
+    ],
+  );
+}
+
+async function upsertTrajectories(
+  client: pg.Client,
+  sourceId: number,
+  wellIds: Map<string, number>,
+  dataset: SyntheticDataset,
+): Promise<void> {
+  const rows = dataset.trajectories;
+  const wellIdOf = (wellName: string): number => {
+    const id = wellIds.get(wellName);
+    if (id === undefined) throw new Error(`Unknown well ${wellName}`);
+    return id;
+  };
+  await client.query(
+    `INSERT INTO trajectory_station (well_id, source_id, md_m, tvd_m, incl_deg, azim_deg)
+     SELECT * FROM unnest($1::int[], $2::int[], $3::real[], $4::real[], $5::real[], $6::real[])
+     ON CONFLICT (well_id, md_m) DO UPDATE SET
+       source_id = EXCLUDED.source_id,
+       tvd_m = EXCLUDED.tvd_m,
+       incl_deg = EXCLUDED.incl_deg,
+       azim_deg = EXCLUDED.azim_deg`,
+    [
+      rows.map((row) => wellIdOf(row.wellName)),
+      rows.map(() => sourceId),
+      rows.map((row) => row.mdM),
+      rows.map((row) => row.tvdM),
+      rows.map((row) => row.inclDeg),
+      rows.map((row) => row.azimDeg),
+    ],
+  );
+}
+
 async function main(): Promise<void> {
   const dataset = generateSyntheticDataset();
   const client = new pg.Client({ connectionString: requireEnv('ETL_DATABASE_URL') });
@@ -150,7 +211,9 @@ async function main(): Promise<void> {
     const sourceId = await upsertSource(client, dataset);
     const fieldId = await upsertField(client, sourceId, dataset);
     const wellIds = await upsertWells(client, sourceId, fieldId, dataset);
-    await upsertProduction(client, wellIds, dataset);
+    await upsertProduction(client, sourceId, wellIds, dataset);
+    await upsertFieldProduction(client, sourceId, fieldId, dataset);
+    await upsertTrajectories(client, sourceId, wellIds, dataset);
     await client.query('UPDATE data_source SET ingested_at = now() WHERE id = $1', [sourceId]);
     await client.query('COMMIT');
     console.log(

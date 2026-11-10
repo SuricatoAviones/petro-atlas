@@ -6,9 +6,11 @@ import helmet from 'helmet';
 
 import type { Database, DatabaseCheck } from './database.ts';
 import { errorHandler, notFoundHandler, sendError } from './http-errors.ts';
+import { createAlertsRouter } from './routes/alerts.ts';
 import { createFieldsRouter } from './routes/fields.ts';
 import { createHealthRouter } from './routes/health.ts';
 import { createMetaRouter } from './routes/meta.ts';
+import { createSeriesRouter } from './routes/series.ts';
 import { TILE_CONTENT_TYPE, createTilesRouter } from './routes/tiles.ts';
 import { createWellsRouter } from './routes/wells.ts';
 
@@ -59,6 +61,8 @@ export function createApp({
   app.use('/api', createHealthRouter(checkDatabase));
   app.use('/api', createFieldsRouter(database));
   app.use('/api', createWellsRouter(database));
+  app.use('/api', createSeriesRouter(database));
+  app.use('/api', createAlertsRouter(database));
   app.use('/api', createMetaRouter(database));
   app.use('/api', createTilesRouter(database));
 

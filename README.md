@@ -2,7 +2,7 @@
 
 Explorador web de campos petroleros, de código abierto: un mapa de pozos como entrada, fichas con gráficas de producción y presión, y herramientas de ingeniería que calculan sobre los datos del pozo seleccionado. El nombre es provisional.
 
-> **Estado: fase 1 funcionalmente completa.** El mapa muestra los pozos y campos públicos de Sodir con clustering, filtros, ficha de pozo y estado en la URL, y la página de fuentes y licencias. Queda publicar la demo. El plan completo está en [docs/11-plan-de-fases.md](docs/11-plan-de-fases.md).
+> **Estado: fase 2 funcionalmente completa.** El mapa muestra los pozos y campos públicos de Sodir con clustering, filtros, ficha de pozo, estado en la URL, series de producción y operación de Volve, mapa de burbujas y alertas. Queda publicar la demo. El plan completo está en [docs/11-plan-de-fases.md](docs/11-plan-de-fases.md).
 
 ## Arranque rápido
 
@@ -51,6 +51,7 @@ pnpm dev                                 # API en :4000 y web en :3000, con reca
 | `pnpm db:migrate` | Aplica las migraciones pendientes de `db/migrations`                    |
 | `pnpm db:seed`    | Carga los datos sintéticos; se puede repetir sin duplicar nada          |
 | `pnpm etl:sodir`  | Descarga los pozos y campos públicos de Sodir a `data/` y los carga     |
+| `pnpm etl:volve`  | Carga la producción y las trayectorias de Volve desde `data/volve`      |
 
 Un cambio está terminado cuando `pnpm lint`, `pnpm typecheck`, `pnpm test` y `pnpm build` pasan. El resto de reglas está en [docs/12-convenciones.md](docs/12-convenciones.md).
 
@@ -74,7 +75,7 @@ La web pide datos a la API y calcula en el navegador con `petro-calc`. La API le
 
 - El código se publica bajo licencia [MIT](LICENSE).
 - El repositorio **no incluye datos de terceros**. Los datos de `db/seed` son sintéticos: los genera un script, llevan nombres ficticios (`SYNTHETIC ALPHA`, `SYN-A-01`…) y no representan ningún campo real.
-- El ETL descarga los datos públicos de Sodir a `data/`, que Git ignora; los de Volve (Equinor) llegan en la fase 2. Las fuentes y sus condiciones están en [docs/10-fuentes-de-datos.md](docs/10-fuentes-de-datos.md).
+- El ETL descarga los datos públicos de Sodir a `data/`, que Git ignora. Volve se obtiene de Equinor (Databricks Marketplace) y se coloca en `data/volve/`; el ETL lo normaliza y lo carga. Las fuentes y sus condiciones están en [docs/10-fuentes-de-datos.md](docs/10-fuentes-de-datos.md).
 - El mapa base usa las teselas de [OpenFreeMap](https://openfreemap.org/), con datos de © OpenMapTiles y © OpenStreetMap. Se puede cambiar con `NEXT_PUBLIC_MAP_STYLE_URL`.
 
 ## Documentación

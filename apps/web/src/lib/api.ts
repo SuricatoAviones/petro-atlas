@@ -1,12 +1,20 @@
 /** Browser calls to the read-only API. Every response is validated with a shared Zod schema. */
 import {
+  alertListResponseSchema,
   fieldListResponseSchema,
   sourceListResponseSchema,
   wellCollectionResponseSchema,
+  wellCumulativeResponseSchema,
   wellDetailSchema,
+  wellProductionResponseSchema,
+  wellTrajectoryResponseSchema,
+  type AlertItem,
   type FieldSummary,
   type SourceListResponse,
+  type WellCumulative,
   type WellDetail,
+  type WellProductionResponse,
+  type WellTrajectoryResponse,
 } from '@petroatlas/shared-types';
 
 import { mapConfig } from '@/components/map-config';
@@ -40,6 +48,21 @@ export async function fetchWellCount(query: string, signal?: AbortSignal): Promi
   return wellCollectionResponseSchema.parse(body).totalCount;
 }
 
+/** Active alerts of the public wells (docs/06, `GET /api/alerts`). */
+export async function fetchAlerts(signal?: AbortSignal): Promise<AlertItem[]> {
+  return alertListResponseSchema.parse(await getJson('/api/alerts', signal)).items;
+}
+
+/** Cumulative volumes per well for the bubble map (docs/06). */
+export async function fetchCumulativeWells(
+  query: string,
+  signal?: AbortSignal,
+): Promise<WellCumulative[]> {
+  const suffix = query === '' ? '' : `?${query}`;
+  return wellCumulativeResponseSchema.parse(await getJson(`/api/wells/cumulative${suffix}`, signal))
+    .items;
+}
+
 /** Metadata of one well and the series it has (docs/06, `GET /api/wells/:id`). */
 export async function fetchWellDetail(
   reference: number | string,
@@ -47,6 +70,26 @@ export async function fetchWellDetail(
 ): Promise<WellDetail> {
   const path = typeof reference === 'number' ? String(reference) : encodeURIComponent(reference);
   return wellDetailSchema.parse(await getJson(`/api/wells/${path}`, signal));
+}
+
+/** Daily production and operation series of one well (docs/06). */
+export async function fetchWellProduction(
+  reference: number | string,
+  signal?: AbortSignal,
+): Promise<WellProductionResponse> {
+  const path = typeof reference === 'number' ? String(reference) : encodeURIComponent(reference);
+  return wellProductionResponseSchema.parse(
+    await getJson(`/api/wells/${path}/production?interval=day`, signal),
+  );
+}
+
+/** Survey stations of one well (docs/06, `GET /api/wells/:id/trajectory`). */
+export async function fetchWellTrajectory(
+  reference: number | string,
+  signal?: AbortSignal,
+): Promise<WellTrajectoryResponse> {
+  const path = typeof reference === 'number' ? String(reference) : encodeURIComponent(reference);
+  return wellTrajectoryResponseSchema.parse(await getJson(`/api/wells/${path}/trajectory`, signal));
 }
 
 /** Data sources and their licences (docs/06, `GET /api/meta/sources`). */

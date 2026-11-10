@@ -8,6 +8,13 @@ import {
 
 import { mapConfig } from '@/components/map-config';
 
+import {
+  parseSheetTab,
+  parseUnitSystem,
+  SHEET_TAB_PARAM,
+  type SheetTab,
+  type UnitSystem,
+} from './sheet-state';
 import { EMPTY_WELL_FILTERS, type WellFilters } from './well-filters';
 
 export interface MapView {
@@ -22,6 +29,8 @@ export interface MapUrlState {
   /** Slug of the open well, or null when the sheet is closed. */
   wellSlug: string | null;
   view: MapView;
+  tab: SheetTab;
+  unitSystem: UnitSystem;
 }
 
 interface SearchParamsReader {
@@ -101,12 +110,14 @@ export function parseMapUrlState(params: SearchParamsReader): MapUrlState {
     },
     wellSlug: parseWellSlug(params.get('pozo')),
     view: parseView(params.get('vista')),
+    tab: parseSheetTab(params.get('tab')),
+    unitSystem: parseUnitSystem(params.get('unidades')),
   };
 }
 
 export function toMapSearchParams(state: MapUrlState): URLSearchParams {
   const params = new URLSearchParams();
-  const { filters, wellSlug, view } = state;
+  const { filters, wellSlug, view, tab, unitSystem } = state;
 
   if (filters.field !== '') params.set('campo', filters.field);
   if (filters.operator !== '') params.set('operadora', filters.operator);
@@ -119,6 +130,8 @@ export function toMapSearchParams(state: MapUrlState): URLSearchParams {
     params.set('perforadoHasta', filters.spudToYear);
   }
   if (wellSlug !== null) params.set('pozo', wellSlug);
+  if (tab !== 'summary') params.set('tab', SHEET_TAB_PARAM[tab]);
+  if (unitSystem === 'field') params.set('unidades', 'campo');
   params.set('vista', `${view.lat.toFixed(5)},${view.lon.toFixed(5)},${view.zoom.toFixed(2)}`);
 
   return params;

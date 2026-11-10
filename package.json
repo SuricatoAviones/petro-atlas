@@ -21,7 +21,8 @@
     "db:seed": "pnpm --filter @petroatlas/db seed",
     "skills:link": "node scripts/link-skills.mjs",
     "etl:sodir": "pnpm --filter @petroatlas/etl sodir",
-    "etl:all": "pnpm etl:sodir"
+    "etl:volve": "pnpm --filter @petroatlas/etl volve",
+    "etl:all": "pnpm etl:sodir && pnpm etl:volve"
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",

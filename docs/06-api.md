@@ -11,6 +11,7 @@ La API es de solo lectura y sirve datos. Los cálculos de ingeniería corren en 
 | `GET /api/fields/:id` | Campo con su polígono GeoJSON y totales | |
 | `GET /api/fields/:id/production` | Serie de producción del campo | `from`, `to`, `interval` |
 | `GET /api/wells` | Pozos como GeoJSON FeatureCollection | `bbox`, `field`, `status`, `type`, `operator`, `spudFrom`, `spudTo` |
+| `GET /api/wells/cumulative` | Acumulados por pozo para el mapa de burbujas | `bbox`, `field`, `status`, `type`, `operator`, `spudFrom`, `spudTo` |
 | `GET /api/wells/:id` | Metadatos del pozo y series disponibles | |
 | `GET /api/wells/:id/production` | Tasas, presiones, temperaturas y choke | `from`, `to`, `interval` = `day` o `month` |
 | `GET /api/wells/:id/trajectory` | Estaciones de desviación | |
@@ -98,6 +99,26 @@ Si la base de datos no responde, devuelve 503 con el formato común de error:
 
 `alertLevel` es siempre `null` hasta que exista la vista de alertas (fase 2).
 
+`GET /api/wells/cumulative?field=volve`
+
+Devuelve una fila por pozo con los volúmenes acumulados de toda su serie diaria. Un fluido sin datos es `null`, no cero.
+
+```json
+{
+  "items": [
+    {
+      "wellId": 1447,
+      "name": "15/9-F-12",
+      "lonDeg": 1.8859,
+      "latDeg": 58.441,
+      "oilSm3": 10037078,
+      "gasSm3": 1475370112,
+      "waterSm3": 15318578
+    }
+  ]
+}
+```
+
 `GET /api/wells/15-9-F-12`
 
 `series` dice qué datos existen para el pozo, para que la interfaz deshabilite lo que falta. `daily` es `null` si el pozo no tiene producción diaria.
@@ -167,7 +188,7 @@ Las series van en columnas, no en filas, para reducir el tamaño de la respuesta
   "wellId": 12,
   "interval": "day",
   "units": {
-    "oil": "Sm3", "gas": "Sm3", "water": "Sm3",
+    "oil": "Sm3", "gas": "Sm3", "water": "Sm3", "waterInj": "Sm3",
     "bhp": "bar", "whp": "bar", "bht": "degC", "wht": "degC",
     "choke": "%", "onStream": "h"
   },
@@ -176,6 +197,7 @@ Las series van en columnas, no en filas, para reducir el tamaño de la respuesta
     "oil": [1520.4, 1498.2, 1503.9],
     "gas": [221300, 218900, 219700],
     "water": [310.5, 318.0, 322.4],
+    "waterInj": [null, null, null],
     "bhp": [241.7, 241.2, null],
     "whp": [38.6, 38.4, 38.5],
     "bht": [106.1, 106.1, null],
@@ -183,11 +205,45 @@ Las series van en columnas, no en filas, para reducir el tamaño de la respuesta
     "choke": [52.0, 52.0, 52.0],
     "onStream": [24, 24, 24]
   },
-  "source": { "name": "Volve", "license": "Equinor Open Data Licence" }
+  "source": { "name": "Volve (Equinor)", "license": "Equinor Open Data Licence: attribution required, not for resale" }
 }
 ```
 
-Los valores del ejemplo son ilustrativos.
+Los valores del ejemplo son ilustrativos. `interval=month` suma los volúmenes y promedia presiones, temperaturas, choke y horas en línea sobre los días con dato.
+
+`GET /api/wells/12/trajectory`
+
+```json
+{
+  "wellId": 12,
+  "stations": [
+    { "mdM": 0, "tvdM": 0, "inclDeg": 0, "azimDeg": 0 },
+    { "mdM": 100, "tvdM": 95.2, "inclDeg": 10.4, "azimDeg": 42.0 }
+  ],
+  "source": { "name": "Volve (Equinor)", "license": "Equinor Open Data Licence: attribution required, not for resale" }
+}
+```
+
+`GET /api/fields/3/production?from=2010-01-01&to=2010-03-31`
+
+La serie del campo es siempre mensual.
+
+```json
+{
+  "fieldId": 3,
+  "interval": "month",
+  "units": { "oil": "Sm3", "gas": "Sm3", "water": "Sm3" },
+  "dates": ["2010-01-01", "2010-02-01", "2010-03-01"],
+  "series": {
+    "oil": [42000, 40500, 39800],
+    "gas": [6100000, 5900000, 5800000],
+    "water": [2100, 2400, 2800]
+  },
+  "source": { "name": "Volve (Equinor)", "license": "Equinor Open Data Licence: attribution required, not for resale" }
+}
+```
+
+Los valores de los ejemplos de trayectoria y campo son ilustrativos.
 
 `GET /api/alerts`
 
@@ -197,11 +253,17 @@ Los valores del ejemplo son ilustrativos.
   "items": [
     {
       "wellId": 14,
+      "wellSlug": "15-9-F-14",
       "wellName": "15/9-F-14",
       "level": "critical",
       "kinds": ["production_drop"],
       "asOf": "2016-07-13",
-      "detail": { "oil7d": 41.2, "oilPrev30": 96.8 }
+      "detail": {
+        "oil7d": 41.2,
+        "oilPrev30": 96.8,
+        "waterCut7d": 0.42,
+        "prod3d": 123.4
+      }
     }
   ]
 }

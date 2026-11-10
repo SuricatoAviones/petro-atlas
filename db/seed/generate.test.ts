@@ -41,6 +41,26 @@ describe('generateSyntheticDataset', () => {
     }
   });
 
+  it('aggregates the field production into twelve months', () => {
+    expect(dataset.fieldProduction).toHaveLength(12);
+    expect(dataset.fieldProduction[0]?.month).toBe('2025-01-01');
+    expect(dataset.fieldProduction.at(-1)?.month).toBe('2025-12-01');
+    for (const month of dataset.fieldProduction) {
+      expect(month.oilSm3).toBeGreaterThan(0);
+      expect(month.gasSm3).toBeGreaterThan(0);
+      expect(month.waterSm3).toBeGreaterThanOrEqual(0);
+    }
+  });
+
+  it('gives every well a trajectory that reaches its total depth', () => {
+    for (const well of dataset.wells) {
+      const stations = dataset.trajectories.filter((station) => station.wellName === well.name);
+      expect(stations.length).toBeGreaterThan(1);
+      expect(stations[0]?.mdM).toBe(0);
+      expect(stations.at(-1)?.mdM).toBe(well.totalDepthM);
+    }
+  });
+
   it('gives every well with data one row per day for one year', () => {
     for (const well of dataset.wells) {
       const dates = rowsOf(well.name).map((row) => row.date);

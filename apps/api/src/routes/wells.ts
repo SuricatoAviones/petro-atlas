@@ -1,12 +1,15 @@
 import {
   wellCollectionResponseSchema,
+  wellCumulativeResponseSchema,
   wellDetailSchema,
   type WellCollectionResponse,
+  type WellCumulativeResponse,
   type WellDetail,
 } from '@petroatlas/shared-types';
 import { Router } from 'express';
 import { z } from 'zod';
 
+import { WELL_ALERT_LEVEL_SQL } from '../alert-level.ts';
 import type { Database } from '../database.ts';
 import { HttpError } from '../http-errors.ts';
 import {
@@ -27,6 +30,11 @@ const listQuerySchema = z.object({
   ...paginationParams,
 });
 
+const cumulativeQuerySchema = z.object({
+  bbox: bboxParam.optional(),
+  ...wellFilterParams,
+});
+
 interface WellRow {
   id: number;
   slug: string;
@@ -38,6 +46,24 @@ interface WellRow {
   lon_deg: number;
   lat_deg: number;
   has_daily_data: boolean;
+  alert_level: 'warning' | 'critical' | null;
+}
+
+interface CumulativeRow {
+  id: number;
+  name: string;
+  lon_deg: number;
+  lat_deg: number;
+  oil_sm3: number | null;
+  gas_sm3: number | null;
+  water_sm3: number | null;
+}
+
+function addBboxFilter(filter: ReturnType<typeof createSqlFilter>, bbox: unknown): void {
+  filter.add((placeholder) => {
+    const corner = (index: number): string => `(${placeholder}::float8[])[${String(index)}]`;
+    return `w.geom && ST_MakeEnvelope(${corner(1)}, ${corner(2)}, ${corner(3)}, ${corner(4)}, 4326)`;
+  }, bbox);
 }
 
 interface WellDetailRow {
@@ -79,7 +105,8 @@ export function createWellsRouter(database: Database): Router {
     }, query.bbox);
     addWellFilters(filter, query);
 
-    const from = `FROM ${WELL_FILTER_FROM}`;
+    const from = `FROM ${WELL_FILTER_FROM}
+                  LEFT JOIN well_alert a ON a.well_id = w.id`;
     // Counted before the cursor is added, so it covers every page.
     const count = await database.query<{ total: number }>(
       `SELECT count(*)::int AS total ${from} ${filter.where()}`,
@@ -90,7 +117,8 @@ export function createWellsRouter(database: Database): Router {
     const { rows } = await database.query<WellRow>(
       `SELECT w.id, w.slug, w.name, w.well_type, w.status, w.field_id, f.name AS field_name,
               ST_X(w.geom) AS lon_deg, ST_Y(w.geom) AS lat_deg,
-              EXISTS (SELECT 1 FROM production_daily p WHERE p.well_id = w.id) AS has_daily_data
+              EXISTS (SELECT 1 FROM production_daily p WHERE p.well_id = w.id) AS has_daily_data,
+              ${WELL_ALERT_LEVEL_SQL} AS alert_level
        ${from}
        ${filter.where()}
        ORDER BY w.id
@@ -112,12 +140,46 @@ export function createWellsRouter(database: Database): Router {
           status: row.status,
           fieldId: row.field_id,
           fieldName: row.field_name,
-          alertLevel: null,
+          alertLevel: row.alert_level,
           hasDailyData: row.has_daily_data,
         },
       })),
       totalCount: count.rows[0]?.total ?? 0,
       nextCursor,
+    });
+    setReadCacheHeader(response);
+    response.json(body);
+  });
+
+  router.get('/wells/cumulative', async (request, response) => {
+    const query = parseParams(cumulativeQuerySchema, request.query);
+    const filter = createSqlFilter();
+    addBboxFilter(filter, query.bbox);
+    addWellFilters(filter, query);
+
+    const { rows } = await database.query<CumulativeRow>(
+      `SELECT w.id, w.name, ST_X(w.geom) AS lon_deg, ST_Y(w.geom) AS lat_deg,
+              sum(p.oil_sm3)::float8 AS oil_sm3,
+              sum(p.gas_sm3)::float8 AS gas_sm3,
+              sum(p.water_sm3)::float8 AS water_sm3
+       FROM ${WELL_FILTER_FROM}
+       LEFT JOIN production_daily p ON p.well_id = w.id
+       ${filter.where()}
+       GROUP BY w.id, w.name, w.geom
+       ORDER BY w.id`,
+      filter.values,
+    );
+
+    const body: WellCumulativeResponse = wellCumulativeResponseSchema.parse({
+      items: rows.map((row) => ({
+        wellId: row.id,
+        name: row.name,
+        lonDeg: row.lon_deg,
+        latDeg: row.lat_deg,
+        oilSm3: row.oil_sm3,
+        gasSm3: row.gas_sm3,
+        waterSm3: row.water_sm3,
+      })),
     });
     setReadCacheHeader(response);
     response.json(body);

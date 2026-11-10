@@ -13,11 +13,12 @@ const isoDateSchema = z.iso.date();
 /** Opaque pagination cursor: pass it back as `?cursor=`. Null on the last page. */
 const nextCursorSchema = z.string().nullable();
 
-const sourceRefSchema = z.object({
+export const sourceRefSchema = z.object({
   name: z.string(),
   license: z.string(),
   url: z.string(),
 });
+export type SourceRef = z.infer<typeof sourceRefSchema>;
 
 // --- GeoJSON (EPSG:4326, [lon, lat]) ---
 
@@ -95,6 +96,23 @@ export const wellCollectionResponseSchema = z.object({
 });
 export type WellCollectionResponse = z.infer<typeof wellCollectionResponseSchema>;
 
+/** `GET /api/wells/cumulative`: one row per well with its cumulative produced volumes. */
+export const wellCumulativeSchema = z.object({
+  wellId: z.number().int(),
+  name: z.string(),
+  lonDeg: z.number(),
+  latDeg: z.number(),
+  oilSm3: z.number().nullable(),
+  gasSm3: z.number().nullable(),
+  waterSm3: z.number().nullable(),
+});
+export type WellCumulative = z.infer<typeof wellCumulativeSchema>;
+
+export const wellCumulativeResponseSchema = z.object({
+  items: z.array(wellCumulativeSchema),
+});
+export type WellCumulativeResponse = z.infer<typeof wellCumulativeResponseSchema>;
+
 /** `GET /api/wells/:id` */
 export const wellDetailSchema = z.object({
   id: z.number().int(),
@@ -122,6 +140,109 @@ export const wellDetailSchema = z.object({
   source: sourceRefSchema,
 });
 export type WellDetail = z.infer<typeof wellDetailSchema>;
+
+// --- Production and trajectory series ---
+
+const productionUnitsSchema = z.object({
+  oil: z.literal('Sm3'),
+  gas: z.literal('Sm3'),
+  water: z.literal('Sm3'),
+  waterInj: z.literal('Sm3'),
+  bhp: z.literal('bar'),
+  whp: z.literal('bar'),
+  bht: z.literal('degC'),
+  wht: z.literal('degC'),
+  choke: z.literal('%'),
+  onStream: z.literal('h'),
+});
+
+/** `GET /api/wells/:id/production` */
+export const wellProductionResponseSchema = z.object({
+  wellId: z.number().int(),
+  interval: z.enum(['day', 'month']),
+  units: productionUnitsSchema,
+  dates: z.array(isoDateSchema),
+  series: z.object({
+    oil: z.array(z.number().nullable()),
+    gas: z.array(z.number().nullable()),
+    water: z.array(z.number().nullable()),
+    waterInj: z.array(z.number().nullable()),
+    bhp: z.array(z.number().nullable()),
+    whp: z.array(z.number().nullable()),
+    bht: z.array(z.number().nullable()),
+    wht: z.array(z.number().nullable()),
+    choke: z.array(z.number().nullable()),
+    onStream: z.array(z.number().nullable()),
+  }),
+  source: sourceRefSchema,
+});
+export type WellProductionResponse = z.infer<typeof wellProductionResponseSchema>;
+
+export const trajectoryStationSchema = z.object({
+  mdM: z.number(),
+  tvdM: z.number(),
+  inclDeg: z.number().nullable(),
+  azimDeg: z.number().nullable(),
+});
+export type TrajectoryStation = z.infer<typeof trajectoryStationSchema>;
+
+/** `GET /api/wells/:id/trajectory` */
+export const wellTrajectoryResponseSchema = z.object({
+  wellId: z.number().int(),
+  stations: z.array(trajectoryStationSchema),
+  source: sourceRefSchema,
+});
+export type WellTrajectoryResponse = z.infer<typeof wellTrajectoryResponseSchema>;
+
+const fieldProductionUnitsSchema = z.object({
+  oil: z.literal('Sm3'),
+  gas: z.literal('Sm3'),
+  water: z.literal('Sm3'),
+});
+
+/** `GET /api/fields/:id/production` */
+export const fieldProductionResponseSchema = z.object({
+  fieldId: z.number().int(),
+  interval: z.literal('month'),
+  units: fieldProductionUnitsSchema,
+  dates: z.array(isoDateSchema),
+  series: z.object({
+    oil: z.array(z.number().nullable()),
+    gas: z.array(z.number().nullable()),
+    water: z.array(z.number().nullable()),
+  }),
+  source: sourceRefSchema,
+});
+export type FieldProductionResponse = z.infer<typeof fieldProductionResponseSchema>;
+
+// --- Alerts ---
+
+export const alertLevelSchema = z.enum(['warning', 'critical']);
+export const alertKindSchema = z.enum(['production_drop', 'high_water_cut', 'no_production']);
+
+export const alertItemSchema = z.object({
+  wellId: z.number().int(),
+  wellSlug: z.string(),
+  wellName: z.string(),
+  level: alertLevelSchema,
+  kinds: z.array(alertKindSchema),
+  /** Last date with data for this well; the rules are historical (docs/09). */
+  asOf: isoDateSchema,
+  detail: z.object({
+    oil7d: z.number().nullable(),
+    oilPrev30: z.number().nullable(),
+    waterCut7d: z.number().nullable(),
+    prod3d: z.number().nullable(),
+  }),
+});
+export type AlertItem = z.infer<typeof alertItemSchema>;
+
+/** `GET /api/alerts` */
+export const alertListResponseSchema = z.object({
+  asOfByWell: z.literal(true),
+  items: z.array(alertItemSchema),
+});
+export type AlertListResponse = z.infer<typeof alertListResponseSchema>;
 
 // --- Sources ---
 

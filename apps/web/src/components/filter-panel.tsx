@@ -1,22 +1,31 @@
 import {
   wellStatusSchema,
   wellTypeSchema,
+  type AlertItem,
   type FieldSummary,
   type WellStatus,
   type WellType,
 } from '@petroatlas/shared-types';
 import { useId } from 'react';
 
+import { BUBBLE_FLUIDS, bubbleRadius, formatVolume, type BubbleFluid } from '@/lib/bubble';
 import { messages } from '@/messages/es';
 import { EMPTY_WELL_FILTERS, hasActiveWellFilters, type WellFilters } from '@/lib/well-filters';
 
-import { WELL_STATUS_COLORS, WELL_TYPE_COLORS, type WellColorMode } from './well-colors';
+import { AlertsList } from './alerts-list';
+import {
+  BUBBLE_COLORS,
+  WELL_STATUS_COLORS,
+  WELL_TYPE_COLORS,
+  type WellColorMode,
+} from './well-colors';
 import { WellLegend } from './well-legend';
 
 const WELL_STATUSES: readonly WellStatus[] = wellStatusSchema.options;
 const WELL_TYPES: readonly WellType[] = wellTypeSchema.options;
 
 export type FilterOptionsStatus = 'loading' | 'ready' | 'error';
+export type BubbleStatus = 'idle' | 'loading' | 'ready' | 'error';
 
 export interface WellCountState {
   status: FilterOptionsStatus;
@@ -30,8 +39,15 @@ interface FilterPanelProps {
   optionsStatus: FilterOptionsStatus;
   count: WellCountState;
   colorMode: WellColorMode;
+  bubbleFluid: BubbleFluid | null;
+  bubbleMax: number;
+  bubbleStatus: BubbleStatus;
+  alerts: readonly AlertItem[];
+  alertsStatus: BubbleStatus;
   onFiltersChange: (filters: WellFilters) => void;
   onColorModeChange: (mode: WellColorMode) => void;
+  onBubbleFluidChange: (fluid: BubbleFluid | null) => void;
+  onOpenWell: (alert: AlertItem) => void;
 }
 
 function toggleItem<T>(items: readonly T[], item: T, selected: boolean): T[] {
@@ -46,8 +62,15 @@ export function FilterPanel({
   optionsStatus,
   count,
   colorMode,
+  bubbleFluid,
+  bubbleMax,
+  bubbleStatus,
+  alerts,
+  alertsStatus,
   onFiltersChange,
   onColorModeChange,
+  onBubbleFluidChange,
+  onOpenWell,
 }: FilterPanelProps) {
   const fieldId = useId();
   const operatorId = useId();
@@ -196,6 +219,75 @@ export function FilterPanel({
           ))}
         </fieldset>
 
+        <fieldset className="filter-group">
+          <legend>{messages.map.bubbles.title}</legend>
+          <label className="filter-group__option">
+            <input
+              type="radio"
+              name="bubble-fluid"
+              checked={bubbleFluid === null}
+              onChange={() => {
+                onBubbleFluidChange(null);
+              }}
+            />
+            {messages.map.bubbles.none}
+          </label>
+          {BUBBLE_FLUIDS.map((fluid) => (
+            <label key={fluid} className="filter-group__option">
+              <input
+                type="radio"
+                name="bubble-fluid"
+                checked={bubbleFluid === fluid}
+                onChange={() => {
+                  onBubbleFluidChange(fluid);
+                }}
+              />
+              <span
+                className="filter-group__swatch"
+                style={{ backgroundColor: BUBBLE_COLORS[fluid] }}
+                aria-hidden="true"
+              />
+              {messages.map.bubbles[fluid]}
+            </label>
+          ))}
+          {bubbleFluid !== null && (
+            <div className="bubble-legend" aria-live="polite">
+              <p>{messages.map.bubbles.legend}</p>
+              {bubbleStatus === 'loading' && (
+                <p className="filter-panel__hint" role="status">
+                  {messages.map.bubbles.loading}
+                </p>
+              )}
+              {bubbleStatus === 'error' && (
+                <p className="filter-panel__hint filter-panel__hint--error" role="alert">
+                  {messages.map.bubbles.loadError}
+                </p>
+              )}
+              {bubbleStatus === 'ready' && bubbleMax > 0 && (
+                <ul>
+                  {[0.25, 0.5, 1].map((fraction) => {
+                    const value = bubbleMax * fraction;
+                    const radius = bubbleRadius(value, bubbleMax);
+                    return (
+                      <li key={fraction}>
+                        <span
+                          className="bubble-legend__circle"
+                          style={{
+                            width: `${String(radius * 2)}px`,
+                            height: `${String(radius * 2)}px`,
+                          }}
+                          aria-hidden="true"
+                        />
+                        {formatVolume(value)}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          )}
+        </fieldset>
+
         <fieldset className="filter-panel__years">
           <legend>{messages.filters.spudRange}</legend>
           <div>
@@ -238,6 +330,23 @@ export function FilterPanel({
       </form>
 
       <WellLegend colorMode={colorMode} onColorModeChange={onColorModeChange} />
+
+      <section className="filter-panel__alerts" aria-labelledby="alerts-heading">
+        <h3 id="alerts-heading">
+          {messages.alerts.title} ({alerts.length})
+        </h3>
+        {alertsStatus === 'loading' && (
+          <p className="filter-panel__hint" role="status">
+            {messages.alerts.loading}
+          </p>
+        )}
+        {alertsStatus === 'error' && (
+          <p className="filter-panel__hint filter-panel__hint--error" role="alert">
+            {messages.alerts.loadError}
+          </p>
+        )}
+        {alertsStatus === 'ready' && <AlertsList alerts={alerts} onOpenWell={onOpenWell} />}
+      </section>
     </aside>
   );
 }

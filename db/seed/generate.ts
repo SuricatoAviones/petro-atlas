@@ -53,11 +53,29 @@ export interface DailyProductionRow {
   chokePct: number | null;
 }
 
+export interface SyntheticTrajectoryStation {
+  wellName: string;
+  mdM: number;
+  tvdM: number;
+  inclDeg: number | null;
+  azimDeg: number | null;
+}
+
+export interface SyntheticFieldProductionMonth {
+  /** First day of the month, YYYY-MM-01. */
+  month: string;
+  oilSm3: number;
+  gasSm3: number;
+  waterSm3: number;
+}
+
 export interface SyntheticDataset {
   source: SyntheticSource;
   field: SyntheticField;
   wells: SyntheticWell[];
   production: DailyProductionRow[];
+  fieldProduction: SyntheticFieldProductionMonth[];
+  trajectories: SyntheticTrajectoryStation[];
 }
 
 const RANDOM_SEED = 20_250_101;
@@ -285,6 +303,49 @@ function generateObservationRows(well: SyntheticWell, random: () => number): Dai
   }));
 }
 
+/** Sums the daily volumes of the field into monthly rows, ignoring missing values. */
+function generateFieldProduction(
+  production: readonly DailyProductionRow[],
+): SyntheticFieldProductionMonth[] {
+  const months = new Map<string, SyntheticFieldProductionMonth>();
+  for (const row of production) {
+    const month = `${row.date.slice(0, 7)}-01`;
+    const entry = months.get(month) ?? { month, oilSm3: 0, gasSm3: 0, waterSm3: 0 };
+    entry.oilSm3 += row.oilSm3 ?? 0;
+    entry.gasSm3 += row.gasSm3 ?? 0;
+    entry.waterSm3 += row.waterSm3 ?? 0;
+    months.set(month, entry);
+  }
+  return [...months.values()]
+    .map((entry) => ({
+      ...entry,
+      oilSm3: round(entry.oilSm3),
+      gasSm3: round(entry.gasSm3, 0),
+      waterSm3: round(entry.waterSm3),
+    }))
+    .sort((left, right) => left.month.localeCompare(right.month));
+}
+
+/** A simple deterministic survey for every well: vertical at the tie point, then a gentle build. */
+function generateTrajectories(wells: readonly SyntheticWell[]): SyntheticTrajectoryStation[] {
+  const stationCount = 7;
+  return wells.flatMap((well, wellIndex) =>
+    Array.from({ length: stationCount }, (_, stationIndex) => {
+      const fraction = stationIndex / (stationCount - 1);
+      const mdM = round(well.totalDepthM * fraction, 1);
+      const inclDeg = stationIndex === 0 ? 0 : round((5 + (wellIndex % 5) * 4) * fraction, 1);
+      const azimDeg = stationIndex === 0 ? 0 : round((90 + wellIndex * 17) % 360, 1);
+      return {
+        wellName: well.name,
+        mdM,
+        tvdM: round(mdM * Math.cos((inclDeg * Math.PI) / 180), 1),
+        inclDeg,
+        azimDeg,
+      };
+    }),
+  );
+}
+
 /** Builds the full synthetic dataset. The same call always returns the same data. */
 export function generateSyntheticDataset(): SyntheticDataset {
   const random = createRandom(RANDOM_SEED);
@@ -324,5 +385,7 @@ export function generateSyntheticDataset(): SyntheticDataset {
     },
     wells,
     production,
+    fieldProduction: generateFieldProduction(production),
+    trajectories: generateTrajectories(wells),
   };
 }

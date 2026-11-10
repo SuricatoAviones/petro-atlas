@@ -40,6 +40,7 @@ erDiagram
   }
   PRODUCTION_DAILY {
     int well_id PK, FK
+    int source_id FK
     date date PK
     real oil_sm3
     real gas_sm3
@@ -54,6 +55,7 @@ erDiagram
   }
   FIELD_PRODUCTION_MONTHLY {
     int field_id PK, FK
+    int source_id FK
     date month PK
     real oil_sm3
     real gas_sm3
@@ -61,6 +63,7 @@ erDiagram
   }
   TRAJECTORY_STATION {
     int well_id PK, FK
+    int source_id FK
     real md_m PK
     real tvd_m
     real incl_deg
@@ -80,6 +83,7 @@ erDiagram
 ## Reglas del esquema
 
 - Las columnas llevan la unidad en el nombre: `oil_sm3`, `bhp_bar`, `bht_c`.
+- `production_daily`, `field_production_monthly` y `trajectory_station` guardan su `source_id`, para que la interfaz muestre la fuente y la licencia de cada serie (RNF-02).
 - Un dato ausente es `NULL`, nunca cero. Un cero significa que se midió cero.
 - Las series usan clave compuesta (pozo, fecha), lo que hace la ingesta idempotente con `ON CONFLICT`.
 - Las geometrías están en EPSG:4326. Las fuentes que publican en otro datum (Sodir usa ED50, EPSG:4230) se transforman al cargar.
@@ -124,6 +128,7 @@ CREATE TABLE well (
 
 CREATE TABLE production_daily (
   well_id       int  NOT NULL REFERENCES well(id) ON DELETE CASCADE,
+  source_id     int  NOT NULL REFERENCES data_source(id),
   date          date NOT NULL,
   oil_sm3       real,
   gas_sm3       real,
@@ -140,6 +145,7 @@ CREATE TABLE production_daily (
 
 CREATE TABLE field_production_monthly (
   field_id  int  NOT NULL REFERENCES field(id) ON DELETE CASCADE,
+  source_id int  NOT NULL REFERENCES data_source(id),
   month     date NOT NULL,
   oil_sm3   real,
   gas_sm3   real,
@@ -148,8 +154,9 @@ CREATE TABLE field_production_monthly (
 );
 
 CREATE TABLE trajectory_station (
-  well_id  int  NOT NULL REFERENCES well(id) ON DELETE CASCADE,
-  md_m     real NOT NULL,
+  well_id   int  NOT NULL REFERENCES well(id) ON DELETE CASCADE,
+  source_id int  NOT NULL REFERENCES data_source(id),
+  md_m      real NOT NULL,
   tvd_m    real NOT NULL,
   incl_deg real,
   azim_deg real,
@@ -193,12 +200,15 @@ agg AS (
     sum(p.oil_sm3)   FILTER (WHERE p.date >  l.d - 7)                       AS oil_sum_7d,
     sum(p.water_sm3) FILTER (WHERE p.date >  l.d - 7)                       AS water_sum_7d,
     sum(coalesce(p.oil_sm3, 0) + coalesce(p.gas_sm3, 0))
-                     FILTER (WHERE p.date >  l.d - 3)                       AS prod_3d
+                     FILTER (WHERE p.date >  l.d - 3)                       AS prod_3d,
+    l.d AS as_of
   FROM production_daily p
   JOIN last l USING (well_id)
-  GROUP BY p.well_id
+  GROUP BY p.well_id, l.d
 )
-SELECT well_id,
+SELECT well_id, as_of, oil_7d, oil_prev30,
+  water_sum_7d / nullif(water_sum_7d + oil_sum_7d, 0) AS water_cut_7d,
+  prod_3d,
   CASE
     WHEN oil_prev30 > 0 AND oil_7d < 0.50 * oil_prev30 THEN 'critical'
     WHEN oil_prev30 > 0 AND oil_7d < 0.75 * oil_prev30 THEN 'warning'

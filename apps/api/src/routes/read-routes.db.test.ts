@@ -3,12 +3,17 @@
  * prueba"). They only assert on the synthetic field, so extra data loaded by the ETL is harmless.
  */
 import {
+  alertListResponseSchema,
   apiErrorSchema,
   fieldDetailSchema,
   fieldListResponseSchema,
+  fieldProductionResponseSchema,
   sourceListResponseSchema,
   wellCollectionResponseSchema,
+  wellCumulativeResponseSchema,
   wellDetailSchema,
+  wellProductionResponseSchema,
+  wellTrajectoryResponseSchema,
 } from '@petroatlas/shared-types';
 import { beforeAll, describe, expect, it } from 'vitest';
 
@@ -77,8 +82,9 @@ describe('GET /api/fields/:id', () => {
     expect(bySlug.wellCount).toBe(20);
     expect(bySlug.geometry?.type).toBe('MultiPolygon');
     expect(bySlug.geometry?.coordinates[0]?.[0]).toHaveLength(5);
-    // No monthly field production is loaded by the seed: absent, not zero.
-    expect(bySlug.totals).toEqual({ oilSm3: null, gasSm3: null, waterSm3: null });
+    expect(bySlug.totals.oilSm3).toBeGreaterThan(0);
+    expect(bySlug.totals.gasSm3).toBeGreaterThan(0);
+    expect(bySlug.totals.waterSm3).toBeGreaterThanOrEqual(0);
     expect(bySlug.source.name).toBe('PetroAtlas synthetic seed');
   });
 
@@ -110,6 +116,8 @@ describe('GET /api/wells', () => {
       hasDailyData: true,
     });
     expect(exploration?.properties.hasDailyData).toBe(false);
+    const shutIn = collection.features.find((feature) => feature.properties.name === 'SYN-A-14');
+    expect(shutIn?.properties.alertLevel).toBe('critical');
   });
 
   it('pages through results with a cursor, without repeating or skipping wells', async () => {
@@ -176,6 +184,36 @@ describe('GET /api/wells', () => {
   });
 });
 
+describe('GET /api/wells/cumulative', () => {
+  it('returns accumulated volumes per well and accepts the well filters', async () => {
+    const all = wellCumulativeResponseSchema.parse(
+      (await get(`/wells/cumulative?field=${SEED_FIELD_SLUG}`)).body,
+    );
+    const producer = all.items.find((item) => item.name === 'SYN-A-01');
+    const injectors = wellCumulativeResponseSchema.parse(
+      (await get(`/wells/cumulative?field=${SEED_FIELD_SLUG}&type=injector`)).body,
+    );
+
+    expect(all.items).toHaveLength(20);
+    expect(producer?.oilSm3).toBeGreaterThan(0);
+    expect(producer?.gasSm3).toBeGreaterThan(0);
+    expect(injectors.items).toHaveLength(4);
+    expect(injectors.items.every((item) => item.oilSm3 === null)).toBe(true);
+  });
+
+  it('filters by bounding box', async () => {
+    const body = wellCumulativeResponseSchema.parse(
+      (await get('/wells/cumulative?bbox=2.9,64.55,3.1,64.65')).body,
+    );
+
+    expect(body.items).toHaveLength(20);
+  });
+
+  it('responds 400 INVALID_PARAMS for an invalid bounding box', async () => {
+    await expectError('/wells/cumulative?bbox=3,64,2,65', 400, 'INVALID_PARAMS');
+  });
+});
+
 describe('GET /api/wells/:id', () => {
   it('returns metadata and the available series, by slug and by id', async () => {
     const bySlug = wellDetailSchema.parse((await get('/wells/SYN-A-01')).body);
@@ -189,7 +227,7 @@ describe('GET /api/wells/:id', () => {
       field: { slug: SEED_FIELD_SLUG, operator: 'Demo Operator (fictitious)' },
       series: {
         daily: { from: '2025-01-01', to: '2025-12-31', days: 365 },
-        hasTrajectory: false,
+        hasTrajectory: true,
         logCurves: [],
       },
       source: { name: 'PetroAtlas synthetic seed' },
@@ -208,6 +246,141 @@ describe('GET /api/wells/:id', () => {
   it('responds 404 WELL_NOT_FOUND for an unknown well', async () => {
     await expectError('/wells/NO-SUCH-WELL', 404, 'WELL_NOT_FOUND');
     await expectError('/wells/999999999', 404, 'WELL_NOT_FOUND');
+  });
+});
+
+describe('GET /api/wells/:id/production', () => {
+  it('returns the daily series in columns with its source', async () => {
+    const well = wellDetailSchema.parse((await get('/wells/SYN-A-01')).body);
+    const { status, body } = await get('/wells/SYN-A-01/production?from=2025-01-01&to=2025-01-03');
+    const production = wellProductionResponseSchema.parse(body);
+
+    expect(status).toBe(200);
+    expect(production).toMatchObject({
+      wellId: well.id,
+      interval: 'day',
+      source: { name: 'PetroAtlas synthetic seed' },
+    });
+    expect(production.dates).toEqual(['2025-01-01', '2025-01-02', '2025-01-03']);
+    expect(production.series.oil).toHaveLength(3);
+    expect(production.series.oil[0]).toBeGreaterThan(0);
+    expect(production.series.bhp[0]).not.toBeNull();
+  });
+
+  it('aggregates the series by month', async () => {
+    const production = wellProductionResponseSchema.parse(
+      (await get('/wells/SYN-A-01/production?interval=month')).body,
+    );
+
+    expect(production.interval).toBe('month');
+    expect(production.dates).toHaveLength(12);
+    expect(production.dates[0]).toBe('2025-01-01');
+    expect(production.series.oil).toHaveLength(12);
+    expect(production.series.oil.every((value) => value !== null)).toBe(true);
+  });
+
+  it.each([
+    '/wells/SYN-A-01/production?from=2025-13-01',
+    '/wells/SYN-A-01/production?interval=week',
+    '/wells/SYN-A-01/production?from=2025-02-01&to=2025-01-01',
+  ])('responds 400 INVALID_PARAMS for %s', async (path) => {
+    await expectError(path, 400, 'INVALID_PARAMS');
+  });
+
+  it('responds 404 WELL_NOT_FOUND for an unknown well', async () => {
+    await expectError('/wells/NO-SUCH-WELL/production', 404, 'WELL_NOT_FOUND');
+  });
+});
+
+describe('GET /api/wells/:id/trajectory', () => {
+  it('returns the stations in measured-depth order', async () => {
+    const well = wellDetailSchema.parse((await get('/wells/SYN-A-01')).body);
+    const trajectory = wellTrajectoryResponseSchema.parse(
+      (await get('/wells/SYN-A-01/trajectory')).body,
+    );
+
+    expect(trajectory).toMatchObject({
+      wellId: well.id,
+      source: { name: 'PetroAtlas synthetic seed' },
+    });
+    expect(trajectory.stations.length).toBeGreaterThan(1);
+    expect(trajectory.stations[0]?.mdM).toBe(0);
+    expect(trajectory.stations.at(-1)?.mdM).toBe(well.totalDepthM);
+  });
+
+  it('responds 404 WELL_NOT_FOUND for an unknown well', async () => {
+    await expectError('/wells/NO-SUCH-WELL/trajectory', 404, 'WELL_NOT_FOUND');
+  });
+});
+
+describe('GET /api/fields/:id/production', () => {
+  it('returns the monthly field series in columns', async () => {
+    const field = fieldDetailSchema.parse((await get(`/fields/${SEED_FIELD_SLUG}`)).body);
+    const production = fieldProductionResponseSchema.parse(
+      (await get(`/fields/${SEED_FIELD_SLUG}/production`)).body,
+    );
+
+    expect(production).toMatchObject({
+      fieldId: field.id,
+      interval: 'month',
+      source: { name: 'PetroAtlas synthetic seed' },
+    });
+    expect(production.dates).toHaveLength(12);
+    expect(production.dates[0]).toBe('2025-01-01');
+    expect(production.series.oil).toHaveLength(12);
+  });
+
+  it('filters by month range', async () => {
+    const production = fieldProductionResponseSchema.parse(
+      (await get(`/fields/${SEED_FIELD_SLUG}/production?from=2025-02-01&to=2025-03-31`)).body,
+    );
+
+    expect(production.dates).toEqual(['2025-02-01', '2025-03-01']);
+  });
+
+  it.each([
+    `/fields/${SEED_FIELD_SLUG}/production?interval=day`,
+    `/fields/${SEED_FIELD_SLUG}/production?from=2025-02-01&to=2025-01-01`,
+  ])('responds 400 INVALID_PARAMS for %s', async (path) => {
+    await expectError(path, 400, 'INVALID_PARAMS');
+  });
+
+  it('responds 404 FIELD_NOT_FOUND for an unknown field', async () => {
+    await expectError('/fields/no-such-field/production', 404, 'FIELD_NOT_FOUND');
+  });
+});
+
+describe('GET /api/alerts', () => {
+  it('lists active alerts, critical first, with their details', async () => {
+    const { status, body } = await get('/alerts');
+    const alerts = alertListResponseSchema.parse(body);
+    const shutIn = alerts.items.find((item) => item.wellName === 'SYN-A-14');
+    const levels = alerts.items.map((item) => item.level);
+
+    expect(status).toBe(200);
+    expect(alerts.asOfByWell).toBe(true);
+    expect(shutIn).toMatchObject({ level: 'critical' });
+    expect(shutIn?.kinds).toContain('no_production');
+    expect(shutIn?.asOf).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    const firstWarning = levels.indexOf('warning');
+    const lastCritical = levels.lastIndexOf('critical');
+    if (firstWarning !== -1 && lastCritical !== -1) {
+      expect(firstWarning).toBeGreaterThan(lastCritical);
+    }
+  });
+
+  it('filters by field and level', async () => {
+    const field = alertListResponseSchema.parse(
+      (await get(`/alerts?field=${SEED_FIELD_SLUG}`)).body,
+    );
+    const critical = alertListResponseSchema.parse((await get('/alerts?level=critical')).body);
+
+    expect(field.items.every((item) => item.wellName.startsWith('SYN-'))).toBe(true);
+    expect(critical.items.every((item) => item.level === 'critical')).toBe(true);
+  });
+
+  it('responds 400 INVALID_PARAMS for an invalid level', async () => {
+    await expectError('/alerts?level=urgent', 400, 'INVALID_PARAMS');
   });
 });
 
