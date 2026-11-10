@@ -68,7 +68,7 @@ Objetivo: calcular sobre los datos del pozo.
 - [x] `petro-calc/pvt`: Standing, Vasquez y Beggs, Beggs y Robinson, con pruebas.
 - [x] Pestaña Ingeniería con parámetros editables y curvas que responden al instante.
 - [x] Pestaña Diagnóstico: Chan, tasa vs acumulado e índice de productividad.
-- [ ] Ventana de ajuste reflejada en la URL.
+- [x] Ventana de ajuste reflejada en la URL.
 - [ ] Publicar `petro-calc` en npm con su propio README.
 
 Cierre: cobertura de 90% o más en `petro-calc` y cada fórmula con al menos una prueba contra un valor publicado.
