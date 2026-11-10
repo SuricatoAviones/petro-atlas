@@ -1,16 +1,17 @@
 'use client';
 
 import type { LogCurve, SourceRef } from '@petroatlas/shared-types';
+import type { Messages } from '@/messages';
 import * as echarts from 'echarts/core';
 import { LineChart } from 'echarts/charts';
 import { DataZoomComponent, GridComponent, TooltipComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import { useEffect, useMemo, useRef } from 'react';
 
-import { messages } from '@/messages/es';
 import type { TableData } from '@/lib/export';
 
 import { ChartSource, ChartTools, PNG_EXPORT_OPTIONS } from './chart-tools';
+import { useMessages } from './locale-provider';
 
 echarts.use([LineChart, GridComponent, TooltipComponent, DataZoomComponent, CanvasRenderer]);
 
@@ -47,11 +48,11 @@ function depthOf(curve: LogCurve, index: number): number {
   return curve.topM + index * curve.stepM;
 }
 
-function trackName(curve: LogCurve): string {
+function trackName(curve: LogCurve, messages: Messages): string {
   return messages.wellSheet.logs.trackLabel(curve.mnemonic, curve.unit);
 }
 
-function chartOption(curves: readonly LogCurve[]): echarts.EChartsCoreOption {
+function chartOption(curves: readonly LogCurve[], messages: Messages): echarts.EChartsCoreOption {
   const count = Math.max(1, curves.length);
   const width = 93 / count;
   return {
@@ -67,7 +68,7 @@ function chartOption(curves: readonly LogCurve[]): echarts.EChartsCoreOption {
     xAxis: curves.map((curve, index) => ({
       type: isLogScale(curve.mnemonic) ? 'log' : 'value',
       gridIndex: index,
-      name: trackName(curve),
+      name: trackName(curve, messages),
       nameLocation: 'middle',
       nameGap: 24,
       scale: true,
@@ -90,7 +91,7 @@ function chartOption(curves: readonly LogCurve[]): echarts.EChartsCoreOption {
     dataZoom: [{ type: 'inside', yAxisIndex: 'all' }],
     series: curves.map((curve, index) => ({
       type: 'line',
-      name: trackName(curve),
+      name: trackName(curve, messages),
       xAxisIndex: index,
       yAxisIndex: index,
       showSymbol: false,
@@ -105,7 +106,7 @@ function chartOption(curves: readonly LogCurve[]): echarts.EChartsCoreOption {
   };
 }
 
-function logTable(curves: readonly LogCurve[]): TableData {
+function logTable(curves: readonly LogCurve[], messages: Messages): TableData {
   const depths = new Set<number>();
   for (const curve of curves) {
     curve.values.forEach((_, index) => {
@@ -121,7 +122,7 @@ function logTable(curves: readonly LogCurve[]): TableData {
     return map;
   });
   return {
-    headers: [messages.wellSheet.logs.depth, ...curves.map(trackName)],
+    headers: [messages.wellSheet.logs.depth, ...curves.map((curve) => trackName(curve, messages))],
     rows: sorted.map((depth) => [
       depth,
       ...valuesByCurve.map((values) => values.get(depth) ?? null),
@@ -136,13 +137,14 @@ export interface LogsChartProps {
 
 /** Depth tracks of the log curves of a well (docs/07, "Registros"). */
 export function LogsChart({ curves, source }: LogsChartProps) {
+  const messages = useMessages();
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<ReturnType<typeof echarts.init> | null>(null);
   const sorted = useMemo(
     () => [...curves].sort((left, right) => familyRank(left.mnemonic) - familyRank(right.mnemonic)),
     [curves],
   );
-  const table = useMemo(() => logTable(sorted), [sorted]);
+  const table = useMemo(() => logTable(sorted, messages), [messages, sorted]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -161,8 +163,8 @@ export function LogsChart({ curves, source }: LogsChartProps) {
   }, []);
 
   useEffect(() => {
-    chartRef.current?.setOption(chartOption(sorted), true);
-  }, [sorted]);
+    chartRef.current?.setOption(chartOption(sorted, messages), true);
+  }, [messages, sorted]);
 
   return (
     <section className="chart-card">

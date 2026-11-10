@@ -4,14 +4,19 @@ import Link from 'next/link';
 import { AppFooter } from '@/components/app-footer';
 import { AppHeader } from '@/components/app-header';
 import { SourcesList } from '@/components/sources-list';
-import { messages } from '@/messages/es';
+import { getRequestLocale } from '@/lib/locale';
+import { getMessages } from '@/messages';
 
-export const metadata: Metadata = {
-  title: `${messages.sources.title} · ${messages.app.name}`,
-  description: messages.sources.intro,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const messages = getMessages(await getRequestLocale());
+  return {
+    title: `${messages.sources.title} — ${messages.app.name}`,
+    description: messages.sources.intro,
+  };
+}
 
-export default function SourcesPage() {
+export default async function SourcesPage() {
+  const messages = getMessages(await getRequestLocale());
   return (
     <div className="app-shell">
       <AppHeader current="sources" />

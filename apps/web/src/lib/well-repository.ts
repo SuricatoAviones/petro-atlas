@@ -10,8 +10,6 @@ import type {
   WellTrajectoryResponse,
 } from '@petroatlas/shared-types';
 
-import { messages } from '@/messages/es';
-
 import { fetchWellDetail, fetchWellLogs, fetchWellProduction, fetchWellTrajectory } from './api';
 import { listImportedWells, type ImportedWell } from './imported-wells';
 
@@ -53,8 +51,9 @@ const apiWellRepository: WellRepository = {
 
 /** An imported well has no page to link to: the empty URL makes the charts print plain text. */
 export const IMPORTED_SOURCE = {
-  name: messages.importWells.sourceName,
-  license: messages.importWells.sourceLicense,
+  // The data source is shown in charts, whose label does not depend on the interface language.
+  name: 'CSV import / Datos importados',
+  license: 'User data / Datos propios; not redistributed',
   url: '',
 } as const;
 

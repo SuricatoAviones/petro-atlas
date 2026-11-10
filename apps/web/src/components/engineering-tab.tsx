@@ -19,11 +19,8 @@ import {
 import { useMemo, useState } from 'react';
 
 import { downloadCsv } from '@/lib/export';
-import { messages } from '@/messages/es';
-
 import { EngineeringChart } from './engineering-chart';
-
-const PVT_FORMAT = new Intl.NumberFormat('es', { maximumFractionDigits: 4 });
+import { useLocale, useMessages } from './locale-provider';
 
 const PRESSURE_POINTS = 20;
 
@@ -174,6 +171,12 @@ export interface EngineeringTabProps {
 
 /** IPR and PVT calculators of the Engineering tab (RF-08). */
 export function EngineeringTab({ data }: EngineeringTabProps) {
+  const messages = useMessages();
+  const { locale } = useLocale();
+  const pvtFormat = useMemo(
+    () => new Intl.NumberFormat(locale, { maximumFractionDigits: 4 }),
+    [locale],
+  );
   const [model, setModel] = useState<IprModel>('vogel');
   const [values, setValues] = useState<Record<string, string>>({
     pr: '250',
@@ -376,18 +379,18 @@ export function EngineeringTab({ data }: EngineeringTabProps) {
               <tbody>
                 <tr>
                   <th scope="row">{messages.wellSheet.engineering.bubble}</th>
-                  <td>{PVT_FORMAT.format(pvt.standingResult.bubblePointPsia)} psia</td>
-                  <td>{PVT_FORMAT.format(pvt.vasquezResult.bubblePointPsia)} psia</td>
+                  <td>{pvtFormat.format(pvt.standingResult.bubblePointPsia)} psia</td>
+                  <td>{pvtFormat.format(pvt.vasquezResult.bubblePointPsia)} psia</td>
                 </tr>
                 <tr>
                   <th scope="row">{messages.wellSheet.engineering.formationVolume}</th>
-                  <td>{PVT_FORMAT.format(pvt.standingResult.oilFormationVolumeFactor)} bbl/STB</td>
-                  <td>{PVT_FORMAT.format(pvt.vasquezResult.oilFormationVolumeFactor)} bbl/STB</td>
+                  <td>{pvtFormat.format(pvt.standingResult.oilFormationVolumeFactor)} bbl/STB</td>
+                  <td>{pvtFormat.format(pvt.vasquezResult.oilFormationVolumeFactor)} bbl/STB</td>
                 </tr>
                 <tr>
                   <th scope="row">{messages.wellSheet.engineering.viscosity}</th>
-                  <td>{PVT_FORMAT.format(pvt.standingResult.oilViscosityCp)} cP</td>
-                  <td>{PVT_FORMAT.format(pvt.vasquezResult.oilViscosityCp)} cP</td>
+                  <td>{pvtFormat.format(pvt.standingResult.oilViscosityCp)} cP</td>
+                  <td>{pvtFormat.format(pvt.vasquezResult.oilViscosityCp)} cP</td>
                 </tr>
               </tbody>
             </table>

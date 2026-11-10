@@ -39,6 +39,7 @@ flowchart TB
 | Mapa | MapLibre GL JS | Código abierto, sin token, soporta teselas vectoriales y clustering |
 | Gráficas | ECharts | Series largas con zoom sincronizado y ejes logarítmicos |
 | Estado de URL | Parámetros de búsqueda de Next.js | Vistas compartibles sin librería extra |
+| Idiomas | Diccionarios `messages/es.ts` y `messages/en.ts` | Español e inglés; la elección se guarda en una cookie funcional |
 | Almacenamiento local | IndexedDB | Pozos importados que no salen del navegador |
 | API | Express 5 + Zod | Validación de parámetros y tipos compartidos con la web |
 | Acceso a datos | SQL parametrizado con `pg` | Las consultas espaciales y de teselas son SQL directo |

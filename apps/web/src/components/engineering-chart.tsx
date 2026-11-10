@@ -12,10 +12,10 @@ import {
 import { CanvasRenderer } from 'echarts/renderers';
 import { useEffect, useMemo, useRef } from 'react';
 
-import { messages } from '@/messages/es';
 import type { TableData } from '@/lib/export';
 
 import { ChartSource, ChartTools, PNG_EXPORT_OPTIONS } from './chart-tools';
+import { useMessages } from './locale-provider';
 
 echarts.use([
   LineChart,
@@ -65,6 +65,7 @@ export function EngineeringChart({
   logY = false,
   xLabel,
 }: EngineeringChartProps) {
+  const messages = useMessages();
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<ReturnType<typeof echarts.init> | null>(null);
   const table = useMemo(
@@ -78,7 +79,7 @@ export function EngineeringChart({
         ...series.map((item) => item.values[index] ?? null),
       ]),
     }),
-    [series, xLabel, xType, xValues],
+    [messages, series, xLabel, xType, xValues],
   );
 
   useEffect(() => {

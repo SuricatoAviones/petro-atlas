@@ -13,9 +13,9 @@ import {
 import { useEffect, useRef, useState } from 'react';
 
 import type { MapView } from '@/lib/url-state';
-import { messages } from '@/messages/es';
 
 import { mapConfig } from './map-config';
+import { useMessages } from './locale-provider';
 import type { WellColorMode } from './well-colors';
 import {
   CLUSTER_LAYER_ID,
@@ -110,6 +110,7 @@ export function WellMap({
   onSelectWells,
   onViewChange,
 }: WellMapProps) {
+  const messages = useMessages();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap>(null);
   const initialViewRef = useRef(initialView);
@@ -223,7 +224,7 @@ export function WellMap({
       mapRef.current = null;
       map.remove();
     };
-  }, []);
+  }, [messages]);
 
   useEffect(() => {
     if (status === 'ready' && mapRef.current !== null) setWellColorMode(mapRef.current, colorMode);

@@ -4,14 +4,11 @@ import type { WellProductionResponse } from '@petroatlas/shared-types';
 import { fitArps, rateAt } from '@petroatlas/petro-calc';
 import { useMemo } from 'react';
 
-import { messages } from '@/messages/es';
-
 import type { FitWindow, UnitSystem } from '@/lib/sheet-state';
 
 import { CHART_COLORS } from './chart-colors';
+import { useLocale, useMessages } from './locale-provider';
 import { SeriesChart, convertSeries, unitOf, type ChartSeries } from './series-chart';
-
-const NUMBER_FORMAT = new Intl.NumberFormat('es', { maximumFractionDigits: 2 });
 
 function cumulative(values: readonly (number | null)[]): (number | null)[] {
   let total = 0;
@@ -105,6 +102,12 @@ export function ProductionCharts({
   onFitWindowChange,
   groupId,
 }: ProductionChartsProps) {
+  const messages = useMessages();
+  const { locale } = useLocale();
+  const numberFormat = useMemo(
+    () => new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }),
+    [locale],
+  );
   const source = data.source;
   const closedDates = data.dates.filter((_, index) => data.series.onStream[index] === 0);
   const liquidUnit = unitOf('liquidVolume', unitSystem);
@@ -259,14 +262,14 @@ export function ProductionCharts({
                   <dl>
                     <dt>{messages.wellSheet.fit.qi}</dt>
                     <dd>
-                      {NUMBER_FORMAT.format(fit.qi)} {liquidUnit}/d
+                      {numberFormat.format(fit.qi)} {liquidUnit}/d
                     </dd>
                     <dt>{messages.wellSheet.fit.di}</dt>
-                    <dd>{NUMBER_FORMAT.format(fit.di)} 1/d</dd>
+                    <dd>{numberFormat.format(fit.di)} 1/d</dd>
                     <dt>{messages.wellSheet.fit.b}</dt>
-                    <dd>{NUMBER_FORMAT.format(fit.b)}</dd>
+                    <dd>{numberFormat.format(fit.b)}</dd>
                     <dt>{messages.wellSheet.fit.r2}</dt>
-                    <dd>{NUMBER_FORMAT.format(fit.r2)}</dd>
+                    <dd>{numberFormat.format(fit.r2)}</dd>
                   </dl>
                   <p className="fit-summary__note">{messages.wellSheet.fit.loadedFrom}</p>
                 </>

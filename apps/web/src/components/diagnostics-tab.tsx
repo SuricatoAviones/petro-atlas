@@ -4,9 +4,8 @@ import type { WellProductionResponse } from '@petroatlas/shared-types';
 import { chan, productivityIndex } from '@petroatlas/petro-calc';
 import { useMemo, useState } from 'react';
 
-import { messages } from '@/messages/es';
-
 import { EngineeringChart } from './engineering-chart';
+import { useMessages } from './locale-provider';
 
 function cumulativeOil(data: WellProductionResponse): (number | null)[] {
   let total = 0;
@@ -27,6 +26,7 @@ export interface DiagnosticsTabProps {
 
 /** Chan, rate versus cumulative and productivity index (RF-09). */
 export function DiagnosticsTab({ data }: DiagnosticsTabProps) {
+  const messages = useMessages();
   const [reservoirPressure, setReservoirPressure] = useState('250');
   const hasOil = data.series.oil.some((value) => value !== null);
   const hasWater = data.series.water.some((value) => value !== null);

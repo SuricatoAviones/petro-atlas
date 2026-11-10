@@ -1,3 +1,5 @@
+'use client';
+
 import {
   wellStatusSchema,
   wellTypeSchema,
@@ -6,7 +8,7 @@ import {
 } from '@petroatlas/shared-types';
 import { useId } from 'react';
 
-import { messages } from '@/messages/es';
+import { useMessages } from './locale-provider';
 
 import {
   WELL_COLOR_MODES,
@@ -32,6 +34,7 @@ interface WellLegendProps {
 
 /** Colour mode switch and key of the map symbols. Colour is always paired with a text label. */
 export function WellLegend({ colorMode, onColorModeChange }: WellLegendProps) {
+  const messages = useMessages();
   const headingId = useId();
 
   const entries: readonly LegendEntry[] =

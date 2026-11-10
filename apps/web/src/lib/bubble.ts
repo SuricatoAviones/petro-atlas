@@ -24,11 +24,9 @@ export function bubbleRadius(value: number, maximum: number): number {
   return BUBBLE_MIN_RADIUS + (BUBBLE_MAX_RADIUS - BUBBLE_MIN_RADIUS) * Math.sqrt(value / maximum);
 }
 
-const VOLUME_FORMAT = new Intl.NumberFormat('es', {
-  notation: 'compact',
-  maximumFractionDigits: 1,
-});
-
-export function formatVolume(value: number): string {
-  return `${VOLUME_FORMAT.format(value)} Sm³`;
+export function formatVolume(value: number, locale: string): string {
+  return `${new Intl.NumberFormat(locale, {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(value)} Sm³`;
 }

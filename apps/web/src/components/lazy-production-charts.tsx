@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 
-import { messages } from '@/messages/es';
+import { ChartLoading } from './lazy-loading';
 
 /**
  * ECharts and the chart options weigh several hundred kilobytes, so they load only when a well
@@ -12,10 +12,6 @@ export const LazyProductionCharts = dynamic(
   () => import('./production-charts').then((module) => module.ProductionCharts),
   {
     ssr: false,
-    loading: () => (
-      <p className="well-sheet__notice" role="status">
-        {messages.wellSheet.charts.loading}
-      </p>
-    ),
+    loading: ChartLoading,
   },
 );

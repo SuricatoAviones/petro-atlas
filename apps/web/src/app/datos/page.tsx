@@ -1,14 +1,19 @@
 import type { Metadata } from 'next';
 
 import { LegalPage } from '@/components/legal-page';
-import { messages } from '@/messages/es';
+import { getRequestLocale } from '@/lib/locale';
+import { getMessages } from '@/messages';
 
-export const metadata: Metadata = {
-  title: `${messages.legal.data.title} · ${messages.app.name}`,
-  description: messages.legal.data.intro,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const messages = getMessages(await getRequestLocale());
+  return {
+    title: `${messages.legal.data.title} — ${messages.app.name}`,
+    description: messages.legal.data.intro,
+  };
+}
 
-export default function DataPage() {
+export default async function DataPage() {
+  const messages = getMessages(await getRequestLocale());
   return (
     <LegalPage
       title={messages.legal.data.title}

@@ -8,11 +8,11 @@ import { GridComponent, TooltipComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import { useEffect, useMemo, useRef } from 'react';
 
-import { messages } from '@/messages/es';
 import type { TableData } from '@/lib/export';
 import type { UnitSystem } from '@/lib/sheet-state';
 
 import { ChartSource, ChartTools, PNG_EXPORT_OPTIONS } from './chart-tools';
+import { useMessages } from './locale-provider';
 
 echarts.use([LineChart, GridComponent, TooltipComponent, CanvasRenderer]);
 
@@ -57,6 +57,7 @@ export interface TrajectoryChartProps {
 
 /** Vertical section of the well (docs/07, "Trayectoria"). */
 export function TrajectoryChart({ data, unitSystem }: TrajectoryChartProps) {
+  const messages = useMessages();
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<ReturnType<typeof echarts.init> | null>(null);
   const unit = unitSystem === 'si' ? 'm' : 'ft';
@@ -82,7 +83,7 @@ export function TrajectoryChart({ data, unitSystem }: TrajectoryChartProps) {
         point.azimDeg,
       ]),
     }),
-    [points, unit, unitSystem],
+    [messages, points, unit, unitSystem],
   );
 
   useEffect(() => {
@@ -133,7 +134,7 @@ export function TrajectoryChart({ data, unitSystem }: TrajectoryChartProps) {
       } satisfies echarts.EChartsCoreOption,
       true,
     );
-  }, [chartData, unit]);
+  }, [chartData, messages, unit]);
 
   if (data.stations.length === 0) {
     return <p className="well-sheet__notice">{messages.wellSheet.trajectory.noData}</p>;

@@ -16,9 +16,9 @@ import { useEffect, useMemo, useRef } from 'react';
 
 import type { TableData } from '@/lib/export';
 import type { UnitSystem } from '@/lib/sheet-state';
-import { messages } from '@/messages/es';
 
 import { ChartSource, ChartTools, PNG_EXPORT_OPTIONS } from './chart-tools';
+import { useMessages } from './locale-provider';
 
 echarts.use([
   LineChart,
@@ -132,6 +132,7 @@ export function SeriesChart({
   groupId,
   onSelectVisibleRange,
 }: SeriesChartProps) {
+  const messages = useMessages();
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<ReturnType<typeof echarts.init> | null>(null);
 
@@ -192,7 +193,7 @@ export function SeriesChart({
       headers: [messages.wellSheet.charts.date, ...series.map((item) => item.name)],
       rows: dates.map((date, index) => [date, ...series.map((item) => item.values[index] ?? null)]),
     }),
-    [dates, series],
+    [dates, messages, series],
   );
 
   return (

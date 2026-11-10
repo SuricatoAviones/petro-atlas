@@ -1,7 +1,8 @@
+'use client';
+
 import Link from 'next/link';
 
-import { messages } from '@/messages/es';
-
+import { useMessages } from './locale-provider';
 import { AppFooter } from './app-footer';
 import { AppHeader } from './app-header';
 
@@ -35,6 +36,8 @@ function SectionLink({ link }: { link: LegalLink }) {
 
 /** Shared shell and section renderer for the legal pages. */
 export function LegalPage({ title, intro, sections }: LegalPageProps) {
+  const messages = useMessages();
+
   return (
     <div className="app-shell">
       <AppHeader />

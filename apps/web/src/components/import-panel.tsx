@@ -2,7 +2,6 @@
 
 import { useId, useRef, useState } from 'react';
 
-import { messages } from '@/messages/es';
 import {
   MAX_IMPORT_FILE_BYTES,
   MAX_REPORTED_ERRORS,
@@ -18,6 +17,8 @@ import {
   type ImportSummary,
   type ImportedWell,
 } from '@/lib/imported-wells';
+
+import { useMessages } from './locale-provider';
 
 interface ImportPanelProps {
   importedWells: readonly ImportedWell[];
@@ -39,6 +40,7 @@ function errorColumn(error: CsvRowError): string {
 
 /** CSV import kept in the browser (RF-14; docs/09). */
 export function ImportPanel({ importedWells, onImportedChange, onOpenImported }: ImportPanelProps) {
+  const messages = useMessages();
   const fileId = useId();
   const fileRef = useRef<HTMLInputElement>(null);
   const [fieldUnits, setFieldUnits] = useState(false);
@@ -273,6 +275,7 @@ function ImportErrors({
   errors: readonly CsvRowError[];
   errorCount: number;
 }) {
+  const messages = useMessages();
   if (errors.length === 0) return null;
   return (
     <details className="import-panel__errors">

@@ -3,9 +3,12 @@ import { Suspense } from 'react';
 import { AppFooter } from '@/components/app-footer';
 import { AppHeader } from '@/components/app-header';
 import { MapExplorer } from '@/components/map-explorer';
-import { messages } from '@/messages/es';
+import { getRequestLocale } from '@/lib/locale';
+import { getMessages } from '@/messages';
 
-export default function HomePage() {
+export default async function HomePage() {
+  const messages = getMessages(await getRequestLocale());
+
   return (
     <div className="app-shell">
       <AppHeader current="map" />

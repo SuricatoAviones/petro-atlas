@@ -44,7 +44,7 @@ Un cambio está terminado cuando `pnpm lint`, `pnpm typecheck`, `pnpm test` y `p
 
 ## Reglas que más se rompen
 
-- **Idioma:** código, identificadores, comentarios y commits en inglés. Documentación y textos de la interfaz en español; los textos de la web van en `apps/web/src/messages/es.ts`.
+- **Idioma:** código, identificadores, comentarios y commits en inglés. Documentación en español y textos de la interfaz en español e inglés, con un diccionario por idioma en `apps/web/src/messages/`.
 - **TypeScript:** estricto y sin `any`. Solo sintaxis borrable (sin `enum`, `namespace` ni propiedades de parámetro), porque Node ejecuta los `.ts` directamente. Exportaciones con nombre, salvo donde el framework exige `export default`.
 - **Importaciones:** relativas con extensión `.ts` en paquetes, API y `db`; en `apps/web`, sin extensión y con el alias `@/`.
 - **Dependencias entre paquetes** (las comprueba ESLint): `petro-calc` no importa nada; `shared-types` solo Zod; la API no importa `petro-calc`; la web nunca accede a la base de datos.

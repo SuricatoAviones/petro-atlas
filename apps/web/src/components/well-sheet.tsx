@@ -8,7 +8,6 @@ import type {
 } from '@petroatlas/shared-types';
 import { useEffect, useId, useRef, useState } from 'react';
 
-import { messages } from '@/messages/es';
 import { wellExportUrl } from '@/lib/api';
 import { downloadCsv, safeFileName, type TableData } from '@/lib/export';
 import type { ImportedWell } from '@/lib/imported-wells';
@@ -27,6 +26,7 @@ import { LazyDiagnosticsTab } from './lazy-diagnostics-tab';
 import { LazyEngineeringTab } from './lazy-engineering-tab';
 import { LazyProductionCharts } from './lazy-production-charts';
 import { LazyTrajectoryChart } from './lazy-trajectory-chart';
+import { useLocale, useMessages } from './locale-provider';
 import { LogsChart } from './logs-chart';
 import { WellComparison } from './well-comparison';
 import type { WellAtPoint } from './well-map';
@@ -77,18 +77,22 @@ const TABS: readonly SheetTab[] = [
   'diagnostics',
 ];
 
-const DATE_FORMATTER = new Intl.DateTimeFormat('es', {
-  dateStyle: 'medium',
-  timeZone: 'UTC',
-});
-const DEPTH_FORMATTER = new Intl.NumberFormat('es', { maximumFractionDigits: 0 });
-const COORDINATE_FORMATTER = new Intl.NumberFormat('es', {
-  minimumFractionDigits: 4,
-  maximumFractionDigits: 5,
-});
+function formatDate(isoDate: string, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: 'medium',
+    timeZone: 'UTC',
+  }).format(new Date(`${isoDate}T00:00:00Z`));
+}
 
-function formatDate(isoDate: string): string {
-  return DATE_FORMATTER.format(new Date(`${isoDate}T00:00:00Z`));
+function formatDepth(value: number, locale: string): string {
+  return new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(value);
+}
+
+function formatCoordinate(value: number, locale: string): string {
+  return new Intl.NumberFormat(locale, {
+    minimumFractionDigits: 4,
+    maximumFractionDigits: 5,
+  }).format(value);
 }
 
 function openStreetMapUrl(latDeg: number, lonDeg: number): string {
@@ -144,6 +148,7 @@ export function WellSheet({
   onFitWindowChange,
   onClose,
 }: WellSheetProps) {
+  const messages = useMessages();
   const headingId = useId();
   const chartGroupId = useId();
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -515,6 +520,7 @@ function WellExport({
   origin: WellOrigin;
   slug: string;
 }) {
+  const messages = useMessages();
   if (origin === 'public') {
     return (
       <p className="well-sheet__export">
@@ -544,6 +550,7 @@ function WellExport({
 }
 
 function WellSheetDetails({ detail }: { detail: WellDetail }) {
+  const { locale, messages } = useLocale();
   const field = detail.field;
   const daily = detail.series.daily;
 
@@ -568,21 +575,23 @@ function WellSheetDetails({ detail }: { detail: WellDetail }) {
         )}
         <dt>{messages.wellSheet.spudDate}</dt>
         <dd>
-          {detail.spudDate === null ? messages.wellSheet.noData : formatDate(detail.spudDate)}
+          {detail.spudDate === null
+            ? messages.wellSheet.noData
+            : formatDate(detail.spudDate, locale)}
         </dd>
         <dt>{messages.wellSheet.totalDepth}</dt>
         <dd>
           {detail.totalDepthM === null
             ? messages.wellSheet.noData
-            : `${DEPTH_FORMATTER.format(detail.totalDepthM)} m`}
+            : `${formatDepth(detail.totalDepthM, locale)} m`}
         </dd>
       </dl>
 
       <section className="well-sheet__section">
         <h3>{messages.wellSheet.location}</h3>
         <p>
-          {COORDINATE_FORMATTER.format(detail.location.latDeg)},{' '}
-          {COORDINATE_FORMATTER.format(detail.location.lonDeg)}
+          {formatCoordinate(detail.location.latDeg, locale)},{' '}
+          {formatCoordinate(detail.location.lonDeg, locale)}
         </p>
         <a
           href={openStreetMapUrl(detail.location.latDeg, detail.location.lonDeg)}
@@ -601,8 +610,8 @@ function WellSheetDetails({ detail }: { detail: WellDetail }) {
             {daily === null
               ? messages.wellSheet.noDaily
               : messages.wellSheet.dailyRange(
-                  formatDate(daily.from),
-                  formatDate(daily.to),
+                  formatDate(daily.from, locale),
+                  formatDate(daily.to, locale),
                   daily.days,
                 )}
           </dd>
