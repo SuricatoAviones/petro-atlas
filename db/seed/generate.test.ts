@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  LOGGED_WELL_COUNT,
   PRODUCTION_DAYS,
   PRODUCTION_START_DATE,
   generateSyntheticDataset,
@@ -129,5 +130,42 @@ describe('generateSyntheticDataset', () => {
     const firstMonthOilSm3 = rows.slice(0, 30).reduce((sum, row) => sum + (row.oilSm3 ?? 0), 0);
     const lastMonthOilSm3 = rows.slice(-30).reduce((sum, row) => sum + (row.oilSm3 ?? 0), 0);
     expect(lastMonthOilSm3).toBeLessThan(firstMonthOilSm3);
+  });
+
+  it('logs the first producers with four curves at a constant step', () => {
+    const loggedWells = new Set(dataset.logs.map((curve) => curve.wellName));
+    expect(loggedWells.size).toBe(LOGGED_WELL_COUNT);
+    for (const wellName of loggedWells) {
+      const curves = dataset.logs.filter((curve) => curve.wellName === wellName);
+      const well = dataset.wells.find((candidate) => candidate.name === wellName);
+      expect(curves.map((curve) => curve.mnemonic)).toEqual(['GR', 'RT', 'RHOB', 'NPHI']);
+      for (const curve of curves) {
+        expect(curve.baseM).toBe(well?.totalDepthM);
+        expect(curve.topM).toBeLessThan(curve.baseM);
+        // One sample per metre, both ends included.
+        expect(curve.samples).toHaveLength(curve.baseM - curve.topM + 1);
+      }
+    }
+  });
+
+  it('keeps log values in plausible ranges and leaves one gap as null', () => {
+    const ranges: Record<string, [number, number]> = {
+      GR: [0, 200],
+      RT: [0.1, 2000],
+      RHOB: [1.9, 2.9],
+      NPHI: [0, 0.6],
+    };
+    for (const curve of dataset.logs) {
+      const [minimum, maximum] = ranges[curve.mnemonic] ?? [0, 0];
+      for (const sample of curve.samples) {
+        if (sample === null) continue;
+        expect(sample).toBeGreaterThanOrEqual(minimum);
+        expect(sample).toBeLessThanOrEqual(maximum);
+      }
+    }
+    const missing = dataset.logs.filter((curve) => curve.samples.includes(null));
+    expect(missing.map((curve) => [curve.wellName, curve.mnemonic])).toEqual([
+      ['SYN-A-01', 'RHOB'],
+    ]);
   });
 });
