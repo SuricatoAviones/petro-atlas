@@ -1,9 +1,11 @@
 /** Browser calls to the read-only API. Every response is validated with a shared Zod schema. */
 import {
   fieldListResponseSchema,
+  sourceListResponseSchema,
   wellCollectionResponseSchema,
   wellDetailSchema,
   type FieldSummary,
+  type SourceListResponse,
   type WellDetail,
 } from '@petroatlas/shared-types';
 
@@ -45,4 +47,9 @@ export async function fetchWellDetail(
 ): Promise<WellDetail> {
   const path = typeof reference === 'number' ? String(reference) : encodeURIComponent(reference);
   return wellDetailSchema.parse(await getJson(`/api/wells/${path}`, signal));
+}
+
+/** Data sources and their licences (docs/06, `GET /api/meta/sources`). */
+export async function fetchSources(signal?: AbortSignal): Promise<SourceListResponse['items']> {
+  return sourceListResponseSchema.parse(await getJson('/api/meta/sources', signal)).items;
 }

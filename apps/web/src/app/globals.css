@@ -67,9 +67,121 @@ body {
   font-size: 0.875rem;
 }
 
+.app-header__nav {
+  display: flex;
+  gap: 1.25rem;
+  margin-left: auto;
+  font-size: 0.875rem;
+}
+
+.app-header__nav a {
+  color: var(--color-header-muted);
+  text-decoration: none;
+}
+
+.app-header__nav a:hover {
+  color: var(--color-header-text);
+}
+
+.app-header__nav a[aria-current='page'] {
+  border-bottom: 2px solid var(--color-accent);
+  color: var(--color-header-text);
+}
+
 .app-main {
   min-height: 0;
   overflow: hidden;
+}
+
+.app-main--page {
+  overflow-y: auto;
+}
+
+.page {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem;
+}
+
+.page__title {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.page__intro {
+  max-width: 42rem;
+  margin: 0.75rem 0 1.5rem;
+  color: var(--color-ink-muted);
+}
+
+.page__notice {
+  margin: 0;
+  color: var(--color-ink-muted);
+}
+
+.page__notice--error {
+  color: var(--color-error);
+}
+
+.page__notice button {
+  margin-top: 0.5rem;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.25rem;
+  background: var(--color-panel);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.page__note {
+  margin: 1.5rem 0 0;
+  padding: 0.75rem;
+  border-left: 3px solid var(--color-accent);
+  background: rgb(224 165 38 / 12%);
+  color: var(--color-ink-muted);
+  font-size: 0.875rem;
+}
+
+.page__back {
+  display: inline-block;
+  margin-top: 1.25rem;
+  color: var(--color-header);
+}
+
+.source-list {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.source-card {
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  background: var(--color-panel);
+}
+
+.source-card h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+}
+
+.source-card p {
+  margin: 0.25rem 0;
+}
+
+.source-card__license,
+.source-card__ingest {
+  font-size: 0.875rem;
+}
+
+.source-card a,
+.source-card code {
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
 }
 
 .map-explorer {
@@ -447,6 +559,18 @@ body {
 }
 
 @media (max-width: 48rem) {
+  .app-header {
+    gap: 0.5rem;
+  }
+
+  .app-header__tagline {
+    display: none;
+  }
+
+  .app-header__nav {
+    gap: 0.75rem;
+  }
+
   .map-explorer {
     grid-template-columns: 1fr;
     grid-template-rows: auto minmax(0, 1fr);

@@ -5,6 +5,9 @@ export const messages = {
     tagline: 'Explorador de pozos petroleros',
     description:
       'Mapa de pozos petroleros con series de producción y presión y herramientas de ingeniería.',
+    navigation: 'Navegación principal',
+    map: 'Mapa',
+    sources: 'Fuentes y licencias',
   },
   map: {
     label: 'Mapa de pozos',
@@ -52,6 +55,20 @@ export const messages = {
     allFields: 'Todos los campos',
     allOperators: 'Todas las operadoras',
     yearPlaceholder: 'AAAA',
+  },
+  sources: {
+    title: 'Fuentes y licencias',
+    intro:
+      'PetroAtlas no redistribuye datos de terceros: el ETL los descarga y la base de datos los sirve con su atribución. Estas son las fuentes cargadas en esta instalación.',
+    loading: 'Cargando las fuentes…',
+    loadError: 'No se pudieron cargar las fuentes.',
+    retry: 'Reintentar',
+    license: 'Licencia',
+    lastIngest: 'Última ingesta',
+    neverIngested: 'Sin ingesta registrada',
+    syntheticNote:
+      'El conjunto de desarrollo incluye un campo sintético (SYNTHETIC ALPHA) generado por db/seed. No representa un yacimiento real.',
+    backToMap: 'Volver al mapa',
   },
   wellSheet: {
     title: 'Ficha del pozo',
