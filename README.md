@@ -2,7 +2,7 @@
 
 Explorador web de campos petroleros, de código abierto: un mapa de pozos como entrada, fichas con gráficas de producción y presión, y herramientas de ingeniería que calculan sobre los datos del pozo seleccionado. El nombre es provisional.
 
-> **Estado: fase 1 en curso.** Hoy el repositorio levanta la base de datos con datos sintéticos, una API con `GET /api/health` y una web con el mapa base, y el ETL ya carga los pozos y campos públicos de Sodir. Los pozos en el mapa llegan con el resto de la fase 1. El plan completo está en [docs/11-plan-de-fases.md](docs/11-plan-de-fases.md).
+> **Estado: fase 1 funcionalmente completa.** El mapa muestra los pozos y campos públicos de Sodir con clustering, filtros, ficha de pozo y estado en la URL, y la página de fuentes y licencias. Queda publicar la demo. El plan completo está en [docs/11-plan-de-fases.md](docs/11-plan-de-fases.md).
 
 ## Arranque rápido
 
