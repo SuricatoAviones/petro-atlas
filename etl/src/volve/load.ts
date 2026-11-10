@@ -49,18 +49,20 @@ function wellIdOf(wellIds: ReadonlyMap<string, number>, wellName: string): numbe
 
 async function upsertProduction(
   client: pg.Client,
+  sourceId: number,
   wellIds: ReadonlyMap<string, number>,
   days: readonly NormalizedProductionDay[],
 ): Promise<void> {
   if (days.length === 0) return;
   await client.query(
     `INSERT INTO production_daily
-       (well_id, date, oil_sm3, gas_sm3, water_sm3, water_inj_sm3, on_stream_h,
+       (well_id, source_id, date, oil_sm3, gas_sm3, water_sm3, water_inj_sm3, on_stream_h,
         bhp_bar, whp_bar, bht_c, wht_c, choke_pct)
      SELECT * FROM unnest(
-       $1::int[], $2::date[], $3::real[], $4::real[], $5::real[], $6::real[], $7::real[],
-       $8::real[], $9::real[], $10::real[], $11::real[], $12::real[])
+       $1::int[], $2::int[], $3::date[], $4::real[], $5::real[], $6::real[], $7::real[],
+       $8::real[], $9::real[], $10::real[], $11::real[], $12::real[], $13::real[])
      ON CONFLICT (well_id, date) DO UPDATE SET
+       source_id = EXCLUDED.source_id,
        oil_sm3 = EXCLUDED.oil_sm3,
        gas_sm3 = EXCLUDED.gas_sm3,
        water_sm3 = EXCLUDED.water_sm3,
@@ -73,6 +75,7 @@ async function upsertProduction(
        choke_pct = EXCLUDED.choke_pct`,
     [
       days.map((day) => wellIdOf(wellIds, day.wellName)),
+      days.map(() => sourceId),
       days.map((day) => day.date),
       days.map((day) => day.oilSm3),
       days.map((day) => day.gasSm3),
@@ -97,6 +100,7 @@ async function fieldIdOfVolve(client: pg.Client): Promise<number | null> {
 
 async function upsertFieldProduction(
   client: pg.Client,
+  sourceId: number,
   months: readonly NormalizedMonthlyFieldProduction[],
 ): Promise<void> {
   if (months.length === 0) return;
@@ -105,14 +109,17 @@ async function upsertFieldProduction(
     throw new Error('The VOLVE field is not loaded; run pnpm etl:sodir first');
   }
   await client.query(
-    `INSERT INTO field_production_monthly (field_id, month, oil_sm3, gas_sm3, water_sm3)
-     SELECT * FROM unnest($1::int[], $2::date[], $3::real[], $4::real[], $5::real[])
+    `INSERT INTO field_production_monthly
+       (field_id, source_id, month, oil_sm3, gas_sm3, water_sm3)
+     SELECT * FROM unnest($1::int[], $2::int[], $3::date[], $4::real[], $5::real[], $6::real[])
      ON CONFLICT (field_id, month) DO UPDATE SET
+       source_id = EXCLUDED.source_id,
        oil_sm3 = EXCLUDED.oil_sm3,
        gas_sm3 = EXCLUDED.gas_sm3,
        water_sm3 = EXCLUDED.water_sm3`,
     [
       months.map(() => fieldId),
+      months.map(() => sourceId),
       months.map((month) => month.month),
       months.map((month) => month.oilSm3),
       months.map((month) => month.gasSm3),
@@ -123,6 +130,7 @@ async function upsertFieldProduction(
 
 async function replaceTrajectories(
   client: pg.Client,
+  sourceId: number,
   wellIds: ReadonlyMap<string, number>,
   stations: readonly NormalizedTrajectoryStation[],
 ): Promise<void> {
@@ -130,14 +138,16 @@ async function replaceTrajectories(
   const ids = [...new Set(stations.map((station) => wellIdOf(wellIds, station.wellName)))];
   await client.query('DELETE FROM trajectory_station WHERE well_id = ANY($1::int[])', [ids]);
   await client.query(
-    `INSERT INTO trajectory_station (well_id, md_m, tvd_m, incl_deg, azim_deg)
-     SELECT * FROM unnest($1::int[], $2::real[], $3::real[], $4::real[], $5::real[])
+    `INSERT INTO trajectory_station (well_id, source_id, md_m, tvd_m, incl_deg, azim_deg)
+     SELECT * FROM unnest($1::int[], $2::int[], $3::real[], $4::real[], $5::real[], $6::real[])
      ON CONFLICT (well_id, md_m) DO UPDATE SET
+       source_id = EXCLUDED.source_id,
        tvd_m = EXCLUDED.tvd_m,
        incl_deg = EXCLUDED.incl_deg,
        azim_deg = EXCLUDED.azim_deg`,
     [
       stations.map((station) => wellIdOf(wellIds, station.wellName)),
+      stations.map(() => sourceId),
       stations.map((station) => station.mdM),
       stations.map((station) => station.tvdM),
       stations.map((station) => station.inclDeg),
@@ -164,9 +174,9 @@ export async function loadVolve(
   try {
     await client.query('BEGIN');
     const sourceId = await upsertSource(client);
-    await upsertProduction(client, wellIds, days);
-    await upsertFieldProduction(client, months);
-    await replaceTrajectories(client, wellIds, stations);
+    await upsertProduction(client, sourceId, wellIds, days);
+    await upsertFieldProduction(client, sourceId, months);
+    await replaceTrajectories(client, sourceId, wellIds, stations);
     await client.query('UPDATE data_source SET ingested_at = now() WHERE id = $1', [sourceId]);
     await client.query('COMMIT');
     return {
