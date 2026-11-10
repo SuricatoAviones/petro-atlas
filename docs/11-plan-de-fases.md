@@ -33,7 +33,7 @@ Objetivo: explorar pozos y campos reales.
 
 - [x] ETL de Sodir: campos con polígonos y pozos con coordenadas.
 - [x] `GET /api/fields`, `GET /api/fields/:id`, `GET /api/wells`, `GET /api/wells/:id`, `GET /api/meta/sources`.
-- [ ] Teselas vectoriales de pozos con `ST_AsMVT`.
+- [x] Teselas vectoriales de pozos con `ST_AsMVT`.
 - [ ] Mapa con clustering, color por estado o tipo, y capa de campos visible según el zoom.
 - [ ] Panel de filtros con conteo de resultados, indicador de carga y leyenda.
 - [ ] Ficha del pozo con metadatos y ubicación.
