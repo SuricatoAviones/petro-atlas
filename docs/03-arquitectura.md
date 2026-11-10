@@ -49,7 +49,7 @@ flowchart TB
 | CI | GitHub Actions | Lint, tipos, pruebas y build en cada push |
 | Despliegue | Docker Compose | Un comando levanta todo el entorno |
 
-Las versiones exactas se fijan al crear el repositorio, usando la versión LTS vigente de Node y las últimas estables de cada librería, y quedan registradas en `package.json`.
+Las versiones exactas se fijan al crear el repositorio, usando la versión LTS vigente de Node y las últimas estables de cada librería, y quedan registradas en `package.json`. Las excepciones a "última estable" están en el [ADR 0006](adr/0006-typescript-6-y-eslint-9.md).
 
 ## Estructura del repositorio
 
@@ -63,7 +63,9 @@ petroatlas/
 │   └── shared-types/   Tipos y esquemas Zod compartidos
 ├── etl/                Descarga, normalización y carga de datos
 ├── db/
+│   ├── init/           Usuarios de base de datos al inicializar PostgreSQL
 │   ├── migrations/     SQL versionado
+│   ├── scripts/        Ejecutor de migraciones
 │   └── seed/           Datos de ejemplo para desarrollo
 ├── data/               Descargas del ETL (ignorada por Git)
 ├── docs/               Esta documentación

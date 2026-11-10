@@ -14,16 +14,16 @@ Cinco fases. Cada una termina con algo que se puede mostrar. No se empieza una f
 
 Objetivo: un repositorio donde cualquier cambio posterior se pueda probar y desplegar.
 
-- [ ] Monorepo con pnpm workspaces: `apps/web`, `apps/api`, `packages/petro-calc`, `packages/shared-types`, `etl`, `db`.
-- [ ] TypeScript estricto, ESLint y Prettier compartidos desde la raíz.
-- [ ] `docker-compose.yml` con PostgreSQL + PostGIS, API y web.
-- [ ] `db/migrations/0001_init.sql` con el DDL de `05-base-de-datos.md` y un ejecutor de migraciones.
-- [ ] `db/seed`: script que genera un campo y unos 20 pozos sintéticos con un año de producción.
-- [ ] API con `GET /api/health` que comprueba la conexión a la base de datos.
-- [ ] Web con una página que muestra un mapa base de MapLibre.
-- [ ] Vitest configurado, con una prueba de ejemplo en `petro-calc`.
+- [x] Monorepo con pnpm workspaces: `apps/web`, `apps/api`, `packages/petro-calc`, `packages/shared-types`, `etl`, `db`.
+- [x] TypeScript estricto, ESLint y Prettier compartidos desde la raíz.
+- [x] `docker-compose.yml` con PostgreSQL + PostGIS, API y web.
+- [x] `db/migrations/0001_init.sql` con el DDL de `05-base-de-datos.md` y un ejecutor de migraciones.
+- [x] `db/seed`: script que genera un campo y unos 20 pozos sintéticos con un año de producción.
+- [x] API con `GET /api/health` que comprueba la conexión a la base de datos.
+- [x] Web con una página que muestra un mapa base de MapLibre.
+- [x] Vitest configurado, con una prueba de ejemplo en `petro-calc`.
 - [ ] GitHub Actions: lint, tipos, pruebas y build.
-- [ ] `README.md`, `LICENSE` (MIT), `.env.example`, `.gitignore` con `data/`.
+- [x] `README.md`, `LICENSE` (MIT), `.env.example`, `.gitignore` con `data/`.
 
 Cierre: en una máquina limpia, `docker compose up` deja la web en el navegador con el mapa y `/api/health` responde bien. El CI pasa en la rama principal.
 

@@ -215,6 +215,7 @@ Los umbrales de la vista deben coincidir con los valores por defecto de `petro-c
 - Una migración publicada no se edita; se corrige con otra.
 - Las migraciones solo avanzan. Para deshacer en desarrollo se recrea la base de datos.
 - `0001_init.sql` contiene exactamente el DDL de este documento.
+- El ejecutor (`db/scripts/migrate.ts`, `pnpm db:migrate`) aplica en orden los archivos pendientes, cada uno en su transacción, y los anota en la tabla `schema_migrations` con su suma de comprobación. Si un archivo ya aplicado cambia, el ejecutor se detiene. Esa tabla es del ejecutor, no del modelo de datos.
 
 ## Usuarios de base de datos
 
@@ -222,3 +223,5 @@ Los umbrales de la vista deben coincidir con los valores por defecto de `petro-c
 | --- | --- | --- |
 | `petroatlas_etl` | Lectura y escritura | ETL y migraciones |
 | `petroatlas_api` | Solo `SELECT` | API |
+
+Los usuarios no se crean en una migración, porque sus contraseñas vienen del entorno: los crea `db/init/20-petroatlas-roles.sh` cuando el contenedor de PostgreSQL inicializa la base de datos. El mismo script instala PostGIS, que exige superusuario, y deja privilegios por defecto para que toda tabla creada por `petroatlas_etl` sea legible, y solo legible, por `petroatlas_api`.
