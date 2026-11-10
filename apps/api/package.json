@@ -19,8 +19,10 @@
     "zod": "4.6.7"
   },
   "devDependencies": {
+    "@mapbox/vector-tile": "3.0.0",
     "@types/cors": "2.8.19",
     "@types/express": "5.0.6",
-    "@types/pg": "8.23.1"
+    "@types/pg": "8.23.1",
+    "pbf": "5.1.2"
   }
 }

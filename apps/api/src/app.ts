@@ -7,6 +7,7 @@ import { errorHandler, notFoundHandler, sendError } from './http-errors.ts';
 import { createFieldsRouter } from './routes/fields.ts';
 import { createHealthRouter } from './routes/health.ts';
 import { createMetaRouter } from './routes/meta.ts';
+import { createTilesRouter } from './routes/tiles.ts';
 import { createWellsRouter } from './routes/wells.ts';
 
 export interface AppOptions {
@@ -45,6 +46,7 @@ export function createApp({
   app.use('/api', createFieldsRouter(database));
   app.use('/api', createWellsRouter(database));
   app.use('/api', createMetaRouter(database));
+  app.use('/api', createTilesRouter(database));
 
   app.use(notFoundHandler);
   app.use(errorHandler);

@@ -5,6 +5,8 @@
 export interface SqlFilter {
   /** Adds a condition when `value` is defined. `condition` receives the placeholder, e.g. `$2`. */
   add: (condition: (placeholder: string) => string, value: unknown) => void;
+  /** Adds a condition that needs no value of its own. */
+  addCondition: (condition: string) => void;
   /** Registers a value without a condition and returns its placeholder. */
   param: (value: unknown) => string;
   /** `WHERE a AND b`, or an empty string when no condition was added. */
@@ -22,6 +24,9 @@ export function createSqlFilter(): SqlFilter {
   return {
     add: (condition, value) => {
       if (value !== undefined) conditions.push(condition(param(value)));
+    },
+    addCondition: (condition) => {
+      conditions.push(condition);
     },
     param,
     where: () => (conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''),
