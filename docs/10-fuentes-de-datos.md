@@ -20,9 +20,57 @@ Dos fuentes públicas noruegas cubren el diseño: Sodir da la cobertura geográf
 
 ## Sodir FactPages
 
-- Las vistas de tabla de pozos y campos se exportan en CSV y Excel. Hay también servicios de mapa con las geometrías.
-- Atributos de pozo que se usan: nombre del pozo, coordenadas en grados decimales, campo, fecha de terminación, operadora, propósito y estado. En la exportación llevan prefijo `wlb`, por ejemplo `wlbWellboreName`, `wlbNsDecDeg`, `wlbEwDecDeg`, `wlbField`, `wlbCompletionDate`.
-- Los nombres exactos de las columnas se comprueban contra la descripción de atributos al escribir el ETL. No se asumen.
+Comprobado contra las exportaciones reales el 2026-11-09. El ETL (`pnpm etl:sodir`) descarga cuatro archivos a `data/sodir/`:
+
+| Archivo | Origen | Contenido |
+| --- | --- | --- |
+| `wellbore_exploration_all.csv` | Vista de tabla de FactPages | Pozos de exploración |
+| `wellbore_development_all.csv` | Vista de tabla de FactPages | Pozos de desarrollo |
+| `field.csv` | Vista de tabla de FactPages | Campos, operadora y estado |
+| `field_outlines.geojson` | Servicio de mapas de Sodir, capa 7100 | Polígonos de los campos |
+
+Columnas que se usan:
+
+| Columna de origen | Destino | Nota |
+| --- | --- | --- |
+| `wlbWellboreName` | `well.name` | Nombre oficial |
+| `wlbNsDecDeg`, `wlbEwDecDeg` | `well.geom` | Grados decimales en **ED50** (EPSG:4230); se transforman a EPSG:4326 al cargar, unos 100 m de diferencia |
+| `wlbEntryDate` | `well.spud_date` | Formato `DD.MM.AAAA`. `wlbCompletionDate` es la fecha de terminación y no se usa |
+| `wlbTotalDepth` | `well.total_depth_m` | m |
+| `wlbField` | `well.field_id` | Se cruza con `fldName` |
+| `wlbPurpose` | `well.well_type` | Ver traducción abajo |
+| `wlbStatus` | `well.status` | Ver traducción abajo |
+| `fldName` | `field.name` | |
+| `cmpLongName` | `field.operator` | Operadora actual del campo |
+| `fldCurrentActivitySatus` | `field.status` | El nombre de la columna viene así escrito en la fuente |
+| `fldNpdidField` | cruce con los polígonos | |
+
+Traducción a las enumeraciones de `04-modelo-de-dominio.md`:
+
+| Valor de Sodir | Valor en PetroAtlas |
+| --- | --- |
+| Archivo de exploración (cualquier `wlbPurpose`) | tipo `exploration` |
+| `PRODUCTION` | tipo `producer` |
+| `INJECTION`, `INJECTION-CCS` | tipo `injector` |
+| `OBSERVATION` | tipo `observation` |
+| Otro propósito o vacío | tipo `NULL` |
+| `PRODUCING` | estado `producing` |
+| `INJECTING` | estado `injecting` |
+| `PRODUCING/INJECTING` | `injecting` si el pozo es inyector; si no, `producing` |
+| `CLOSED`, `SUSPENDED` | estado `shut_in` |
+| `PLUGGED`, `P&A`, `JUNKED` | estado `abandoned` |
+| Cualquier otro o vacío | estado `unknown` |
+| Campo `Producing` / `Shut down` / `Approved for production` | `producing` / `shut_down` / `approved` |
+
+Decisiones:
+
+- No se cargan los pozos "otros" de Sodir (`wellbore_other_all`: sondeos de suelo, gas somero, científicos). No son pozos petroleros y no encajan en `well_type`.
+- Los pozos con estado `WILL NEVER BE DRILLED` se descartan y se cuentan en el informe.
+- La operadora de un pozo es la de su campo. Los pozos sin campo no tienen operadora.
+- Algunos polígonos publicados tienen anillos que se cruzan; se reparan al cargar con `ST_MakeValid`.
+- Un campo sin polígono publicado se carga con geometría `NULL`.
+
+Primera carga completa: 142 campos (141 con polígono) y 8.357 pozos de 8.492 leídos; 135 descartados por no haberse perforado nunca.
 
 ## Volve
 
@@ -73,4 +121,4 @@ pnpm db:seed       # datos sintéticos para desarrollo, sin descargar nada
 - [ ] Confirmar el texto exacto de la licencia de Sodir antes de publicar la demo.
 - [ ] Confirmar si la licencia de Volve permite que la demo pública sirva los datos tal cual, o si conviene limitarla a datos agregados.
 - [ ] Decidir si la demo pública incluye la producción mensual por pozo de Diskos.
-- [ ] Comprobar los nombres reales de columnas de ambas fuentes y corregir este documento.
+- [ ] Comprobar los nombres reales de columnas de Volve y corregir este documento. Los de Sodir ya están comprobados.
