@@ -13,6 +13,7 @@ import { fetchWellDetail, fetchWellProduction, fetchWellTrajectory } from '@/lib
 import type { SheetTab, UnitSystem } from '@/lib/sheet-state';
 
 import { AlertsList } from './alerts-list';
+import { LazyEngineeringTab } from './lazy-engineering-tab';
 import { LazyProductionCharts } from './lazy-production-charts';
 import { LazyTrajectoryChart } from './lazy-trajectory-chart';
 import type { WellAtPoint } from './well-map';
@@ -44,7 +45,13 @@ interface DetailState {
 }
 
 const IDLE_STATE: DetailState = { status: 'idle', slug: null, detail: null };
-const TABS: readonly SheetTab[] = ['summary', 'production', 'operation', 'trajectory'];
+const TABS: readonly SheetTab[] = [
+  'summary',
+  'production',
+  'operation',
+  'trajectory',
+  'engineering',
+];
 
 interface ProductionState {
   status: 'idle' | 'loading' | 'ready' | 'error';
@@ -268,24 +275,26 @@ export function WellSheet({
 
         {tab !== 'summary' && (
           <>
-            <fieldset className="well-sheet__units">
-              <legend>{messages.wellSheet.units.legend}</legend>
-              {(['si', 'field'] as const).map((system) => (
-                <label key={system}>
-                  <input
-                    type="radio"
-                    name="well-sheet-units"
-                    value={system}
-                    checked={unitSystem === system}
-                    onChange={() => {
-                      onUnitSystemChange(system);
-                    }}
-                  />
-                  {messages.wellSheet.units[system]}
-                </label>
-              ))}
-            </fieldset>
-            {tab === 'trajectory' ? (
+            {(tab === 'production' || tab === 'operation' || tab === 'trajectory') && (
+              <fieldset className="well-sheet__units">
+                <legend>{messages.wellSheet.units.legend}</legend>
+                {(['si', 'field'] as const).map((system) => (
+                  <label key={system}>
+                    <input
+                      type="radio"
+                      name="well-sheet-units"
+                      value={system}
+                      checked={unitSystem === system}
+                      onChange={() => {
+                        onUnitSystemChange(system);
+                      }}
+                    />
+                    {messages.wellSheet.units[system]}
+                  </label>
+                ))}
+              </fieldset>
+            )}
+            {tab === 'trajectory' && (
               <>
                 {isTrajectoryLoading && (
                   <p className="well-sheet__notice" role="status">
@@ -301,7 +310,8 @@ export function WellSheet({
                   <LazyTrajectoryChart data={trajectoryData} unitSystem={unitSystem} />
                 )}
               </>
-            ) : (
+            )}
+            {(tab === 'production' || tab === 'operation') && (
               <>
                 {isProductionLoading && (
                   <p className="well-sheet__notice" role="status">
@@ -321,6 +331,21 @@ export function WellSheet({
                     section={tab}
                   />
                 )}
+              </>
+            )}
+            {tab === 'engineering' && (
+              <>
+                {isProductionLoading && (
+                  <p className="well-sheet__notice" role="status">
+                    {messages.wellSheet.loading}
+                  </p>
+                )}
+                {isProductionError && (
+                  <p className="well-sheet__notice well-sheet__notice--error" role="alert">
+                    {messages.wellSheet.seriesError}
+                  </p>
+                )}
+                {productionData !== null && <LazyEngineeringTab data={productionData} />}
               </>
             )}
           </>

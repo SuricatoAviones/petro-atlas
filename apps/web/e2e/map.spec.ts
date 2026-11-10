@@ -57,6 +57,10 @@ test('filters the map, opens a well and keeps the view after a reload', async ({
   await expect(sheet.getByRole('radio', { name: 'Campo' })).toBeChecked();
   await sheet.getByRole('tab', { name: 'Trayectoria' }).click();
   await expect(sheet.getByRole('img', { name: 'Trayectoria' })).toBeVisible();
+  await sheet.getByRole('tab', { name: 'Ingeniería' }).click();
+  await expect(sheet.getByRole('heading', { name: 'Curva IPR' })).toBeVisible();
+  await expect(sheet.getByRole('img', { name: 'Presión de fondo frente a caudal' })).toBeVisible();
+  await expect(sheet.getByRole('img', { name: 'Bo frente a presión' })).toBeVisible();
   await sheet.getByRole('tab', { name: 'Operación' }).click();
   await expect(sheet.getByRole('heading', { name: 'Presiones' })).toBeVisible();
 
