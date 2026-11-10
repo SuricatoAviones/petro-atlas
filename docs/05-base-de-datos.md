@@ -82,7 +82,8 @@ erDiagram
 - Las columnas llevan la unidad en el nombre: `oil_sm3`, `bhp_bar`, `bht_c`.
 - Un dato ausente es `NULL`, nunca cero. Un cero significa que se midió cero.
 - Las series usan clave compuesta (pozo, fecha), lo que hace la ingesta idempotente con `ON CONFLICT`.
-- Las geometrías están en EPSG:4326.
+- Las geometrías están en EPSG:4326. Las fuentes que publican en otro datum (Sodir usa ED50, EPSG:4230) se transforman al cargar.
+- `well.slug` y `field.slug` son columnas generadas a partir de `name`, con índice único: el identificador legible que usa la URL (`15/9-F-12` → `15-9-F-12`, `VOLVE` → `volve`). Las añade `0002_slugs.sql`; nadie las escribe a mano.
 - `production_daily` guarda volúmenes del día, no tasas. La tasa diaria es el volumen del día; la tasa en flujo se obtiene dividiendo entre `on_stream_h / 24`.
 - Las curvas de registro guardan sus muestras en un arreglo con paso de profundidad constante entre `top_m` y `base_m`. Evita millones de filas por pozo y basta para un visor.
 
@@ -211,10 +212,10 @@ Los umbrales de la vista deben coincidir con los valores por defecto de `petro-c
 
 ## Migraciones
 
-- Cada cambio de esquema es un archivo SQL nuevo en `db/migrations/`, numerado: `0001_init.sql`, `0002_well_alert_view.sql`.
+- Cada cambio de esquema es un archivo SQL nuevo en `db/migrations/`, numerado: `0001_init.sql`, `0002_slugs.sql`.
 - Una migración publicada no se edita; se corrige con otra.
 - Las migraciones solo avanzan. Para deshacer en desarrollo se recrea la base de datos.
-- `0001_init.sql` contiene exactamente el DDL de este documento.
+- `0001_init.sql` contiene exactamente el DDL de este documento. Las migraciones posteriores se describen en las reglas del esquema.
 - El ejecutor (`db/scripts/migrate.ts`, `pnpm db:migrate`) aplica en orden los archivos pendientes, cada uno en su transacción, y los anota en la tabla `schema_migrations` con su suma de comprobación. Si un archivo ya aplicado cambia, el ejecutor se detiene. Esa tabla es del ejecutor, no del modelo de datos.
 
 ## Usuarios de base de datos

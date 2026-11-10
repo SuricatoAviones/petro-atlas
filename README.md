@@ -2,7 +2,7 @@
 
 Explorador web de campos petroleros, de código abierto: un mapa de pozos como entrada, fichas con gráficas de producción y presión, y herramientas de ingeniería que calculan sobre los datos del pozo seleccionado. El nombre es provisional.
 
-> **Estado: fase 0 (andamiaje).** Hoy el repositorio levanta la base de datos con datos sintéticos, una API con `GET /api/health` y una web con el mapa base. Los pozos en el mapa llegan en la fase 1. El plan completo está en [docs/11-plan-de-fases.md](docs/11-plan-de-fases.md).
+> **Estado: fase 1 en curso.** Hoy el repositorio levanta la base de datos con datos sintéticos, una API con `GET /api/health` y una web con el mapa base, y el ETL ya carga los pozos y campos públicos de Sodir. Los pozos en el mapa llegan con el resto de la fase 1. El plan completo está en [docs/11-plan-de-fases.md](docs/11-plan-de-fases.md).
 
 ## Arranque rápido
 
@@ -38,16 +38,17 @@ docker compose up --detach db db-setup   # base de datos, migraciones y datos si
 pnpm dev                                 # API en :4000 y web en :3000, con recarga
 ```
 
-| Comando           | Qué hace                                                       |
-| ----------------- | -------------------------------------------------------------- |
-| `pnpm dev`        | API y web en modo desarrollo                                   |
-| `pnpm lint`       | ESLint y comprobación de formato con Prettier                  |
-| `pnpm format`     | Aplica el formato de Prettier                                  |
-| `pnpm typecheck`  | `tsc --noEmit` en todos los paquetes                           |
-| `pnpm test`       | Pruebas unitarias con Vitest                                   |
-| `pnpm build`      | Compila paquetes, API y web                                    |
-| `pnpm db:migrate` | Aplica las migraciones pendientes de `db/migrations`           |
-| `pnpm db:seed`    | Carga los datos sintéticos; se puede repetir sin duplicar nada |
+| Comando           | Qué hace                                                            |
+| ----------------- | ------------------------------------------------------------------- |
+| `pnpm dev`        | API y web en modo desarrollo                                        |
+| `pnpm lint`       | ESLint y comprobación de formato con Prettier                       |
+| `pnpm format`     | Aplica el formato de Prettier                                       |
+| `pnpm typecheck`  | `tsc --noEmit` en todos los paquetes                                |
+| `pnpm test`       | Pruebas unitarias con Vitest                                        |
+| `pnpm build`      | Compila paquetes, API y web                                         |
+| `pnpm db:migrate` | Aplica las migraciones pendientes de `db/migrations`                |
+| `pnpm db:seed`    | Carga los datos sintéticos; se puede repetir sin duplicar nada      |
+| `pnpm etl:sodir`  | Descarga los pozos y campos públicos de Sodir a `data/` y los carga |
 
 Un cambio está terminado cuando `pnpm lint`, `pnpm typecheck`, `pnpm test` y `pnpm build` pasan. El resto de reglas está en [docs/12-convenciones.md](docs/12-convenciones.md).
 
@@ -58,7 +59,7 @@ apps/web/               Next.js: mapa, ficha de pozo, herramientas
 apps/api/               Express: API REST de solo lectura
 packages/petro-calc/    Cálculos de ingeniería en TypeScript puro
 packages/shared-types/  Tipos y esquemas Zod compartidos
-etl/                    Ingesta de datos públicos (fase 1)
+etl/                    Ingesta de datos públicos (Sodir)
 db/migrations/          SQL versionado
 db/seed/                Generador de datos sintéticos
 db/init/                Creación de usuarios al inicializar PostgreSQL
@@ -71,7 +72,7 @@ La web pide datos a la API y calcula en el navegador con `petro-calc`. La API le
 
 - El código se publica bajo licencia [MIT](LICENSE).
 - El repositorio **no incluye datos de terceros**. Los datos de `db/seed` son sintéticos: los genera un script, llevan nombres ficticios (`SYNTHETIC ALPHA`, `SYN-A-01`…) y no representan ningún campo real.
-- A partir de la fase 1, el ETL descargará los datos públicos de Sodir y de Volve (Equinor) a `data/`, que Git ignora. Las fuentes y sus condiciones están en [docs/10-fuentes-de-datos.md](docs/10-fuentes-de-datos.md).
+- El ETL descarga los datos públicos de Sodir a `data/`, que Git ignora; los de Volve (Equinor) llegan en la fase 2. Las fuentes y sus condiciones están en [docs/10-fuentes-de-datos.md](docs/10-fuentes-de-datos.md).
 - El mapa base usa las teselas de [OpenFreeMap](https://openfreemap.org/), con datos de © OpenMapTiles y © OpenStreetMap. Se puede cambiar con `NEXT_PUBLIC_MAP_STYLE_URL`.
 
 ## Documentación
