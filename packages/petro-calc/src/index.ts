@@ -17,3 +17,13 @@ export {
   waterOilRatio,
   type ChanResult,
 } from './diagnostics.ts';
+export {
+  cumulativeAt,
+  eur,
+  fitArps,
+  forecast,
+  rateAt,
+  type ArpsFit,
+  type ArpsFitOptions,
+  type ArpsModel,
+} from './dca.ts';
