@@ -151,6 +151,7 @@ export const messages = {
     fit: {
       title: 'Ajuste de Arps',
       useView: 'Usar la ventana visible',
+      clear: 'Quitar ajuste',
       window: 'Ventana',
       qi: 'qi',
       di: 'Di',

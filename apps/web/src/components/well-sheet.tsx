@@ -10,7 +10,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 
 import { messages } from '@/messages/es';
 import { fetchWellDetail, fetchWellProduction, fetchWellTrajectory } from '@/lib/api';
-import type { SheetTab, UnitSystem } from '@/lib/sheet-state';
+import type { FitWindow, SheetTab, UnitSystem } from '@/lib/sheet-state';
 
 import { AlertsList } from './alerts-list';
 import { LazyDiagnosticsTab } from './lazy-diagnostics-tab';
@@ -32,10 +32,12 @@ interface WellSheetProps {
   selectedWell: WellSelection;
   tab: SheetTab;
   unitSystem: UnitSystem;
+  fitWindow: FitWindow | null;
   alerts: readonly AlertItem[];
   onSelectWell: (well: WellAtPoint) => void;
   onTabChange: (tab: SheetTab) => void;
   onUnitSystemChange: (unitSystem: UnitSystem) => void;
+  onFitWindowChange: (fitWindow: FitWindow | null) => void;
   onClose: () => void;
 }
 
@@ -95,10 +97,12 @@ export function WellSheet({
   selectedWell,
   tab,
   unitSystem,
+  fitWindow,
   alerts,
   onSelectWell,
   onTabChange,
   onUnitSystemChange,
+  onFitWindowChange,
   onClose,
 }: WellSheetProps) {
   const headingId = useId();
@@ -331,6 +335,8 @@ export function WellSheet({
                     data={productionData}
                     unitSystem={unitSystem}
                     section={tab}
+                    fitWindow={fitWindow}
+                    onFitWindowChange={onFitWindowChange}
                   />
                 )}
               </>

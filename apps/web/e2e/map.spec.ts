@@ -53,6 +53,9 @@ test('filters the map, opens a well and keeps the view after a reload', async ({
   await expect(sheet.getByRole('img', { name: 'Tasas de producción' })).toBeVisible();
   await sheet.getByRole('button', { name: 'Usar la ventana visible' }).click();
   await expect(sheet.getByRole('heading', { name: 'Ajuste de Arps' })).toBeVisible();
+  await expect
+    .poll(() => new URL(page.url()).searchParams.get('ajuste'), { timeout: 5_000 })
+    .toMatch(/^\d{4}-\d{2}-\d{2},\d{4}-\d{2}-\d{2}$/);
   await sheet.getByRole('radio', { name: 'Campo' }).check();
   await expect(sheet.getByRole('radio', { name: 'Campo' })).toBeChecked();
   await sheet.getByRole('tab', { name: 'Trayectoria' }).click();
@@ -83,6 +86,13 @@ test('filters the map, opens a well and keeps the view after a reload', async ({
     'true',
   );
   await expect(sheet.getByRole('radio', { name: 'Campo' })).toBeChecked();
+
+  await sheet.getByRole('tab', { name: 'Producción' }).click();
+  await expect(sheet.getByRole('heading', { name: 'Ajuste de Arps' })).toBeVisible();
+  await sheet.getByRole('button', { name: 'Quitar ajuste' }).click();
+  await expect
+    .poll(() => new URL(page.url()).searchParams.get('ajuste'), { timeout: 5_000 })
+    .toBeNull();
 
   const afterView = parseView(new URL(page.url()).searchParams.get('vista'));
   expect(afterView[0]).toBeCloseTo(beforeView[0], 3);

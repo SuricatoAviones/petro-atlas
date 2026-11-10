@@ -16,7 +16,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { messages } from '@/messages/es';
 
-import type { UnitSystem } from '@/lib/sheet-state';
+import type { FitWindow, UnitSystem } from '@/lib/sheet-state';
 
 import { CHART_COLORS } from './chart-colors';
 
@@ -290,11 +290,6 @@ function daysBetween(startDate: string, endDate: string): number {
   );
 }
 
-interface FitWindow {
-  start: string;
-  end: string;
-}
-
 interface FitResult {
   status: 'ready' | 'error';
   qi: number;
@@ -353,12 +348,19 @@ export interface ProductionChartsProps {
   data: WellProductionResponse;
   unitSystem: UnitSystem;
   section: ChartSection;
+  fitWindow: FitWindow | null;
+  onFitWindowChange: (fitWindow: FitWindow | null) => void;
 }
 
 /** Charts of the Production and Operation tabs (docs/07). All charts share a time zoom. */
-export function ProductionCharts({ data, unitSystem, section }: ProductionChartsProps) {
+export function ProductionCharts({
+  data,
+  unitSystem,
+  section,
+  fitWindow,
+  onFitWindowChange,
+}: ProductionChartsProps) {
   const groupId = useId();
-  const [fitWindow, setFitWindow] = useState<FitWindow | null>(null);
   const source = data.source;
   const closedDates = data.dates.filter((_, index) => data.series.onStream[index] === 0);
   const liquidUnit = unitOf('liquidVolume', unitSystem);
@@ -486,12 +488,23 @@ export function ProductionCharts({ data, unitSystem, section }: ProductionCharts
             closedDates={closedDates}
             groupId={groupId}
             onSelectVisibleRange={(start, end) => {
-              setFitWindow({ start, end });
+              onFitWindowChange({ start, end });
             }}
           />
           {fit !== null && (
             <section className="fit-summary">
-              <h4>{messages.wellSheet.fit.title}</h4>
+              <div className="chart-card__header">
+                <h4>{messages.wellSheet.fit.title}</h4>
+                <button
+                  type="button"
+                  className="chart-card__action"
+                  onClick={() => {
+                    onFitWindowChange(null);
+                  }}
+                >
+                  {messages.wellSheet.fit.clear}
+                </button>
+              </div>
               {fit.status === 'error' ? (
                 <p className="well-sheet__notice">{messages.wellSheet.fit.noFit}</p>
               ) : (

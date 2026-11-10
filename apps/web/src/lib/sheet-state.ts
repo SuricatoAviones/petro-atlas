@@ -3,6 +3,12 @@ export type SheetTab =
   'summary' | 'production' | 'operation' | 'trajectory' | 'engineering' | 'diagnostics';
 export type UnitSystem = 'si' | 'field';
 
+/** Window of the decline-curve fit, serialized as `ajuste=start,end` (docs/09). */
+export interface FitWindow {
+  start: string;
+  end: string;
+}
+
 export const SHEET_TAB_PARAM: Record<SheetTab, string> = {
   summary: 'ficha',
   production: 'produccion',
