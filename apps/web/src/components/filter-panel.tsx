@@ -88,6 +88,7 @@ export function FilterPanel({
         }
         role="status"
         aria-live="polite"
+        data-testid="well-count"
       >
         {countText}
       </p>

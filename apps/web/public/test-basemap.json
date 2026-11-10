@@ -1,0 +1,13 @@
+{
+  "version": 8,
+  "name": "PetroAtlas end-to-end basemap",
+  "glyphs": "http://localhost:3100/glyphs/{fontstack}/{range}.pbf",
+  "sources": {},
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": { "background-color": "#f2f4f2" }
+    }
+  ]
+}

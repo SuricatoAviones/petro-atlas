@@ -94,7 +94,7 @@ export function WellSheet({ wells, selectedWell, onSelectWell, onClose }: WellSh
   const isLoading = !isCurrent || state.status === 'idle' || state.status === 'loading';
 
   return (
-    <aside className="well-sheet" aria-labelledby={headingId}>
+    <aside className="well-sheet" aria-labelledby={headingId} data-testid="well-sheet">
       <div className="well-sheet__header">
         <div>
           <h2 id={headingId}>{detail?.name ?? messages.wellSheet.title}</h2>
