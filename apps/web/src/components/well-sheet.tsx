@@ -8,21 +8,28 @@ import { fetchWellDetail } from '@/lib/api';
 
 import type { WellAtPoint } from './well-map';
 
+export interface WellSelection {
+  /** Known when the well comes from a map click; null when the URL only carries the slug. */
+  id: number | null;
+  slug: string;
+  name: string | null;
+}
+
 interface WellSheetProps {
   /** Wells drawn under the click; the API can place several at the same coordinates. */
   wells: readonly WellAtPoint[];
-  selectedWellId: number;
-  onSelectWell: (id: number) => void;
+  selectedWell: WellSelection;
+  onSelectWell: (well: WellAtPoint) => void;
   onClose: () => void;
 }
 
 interface DetailState {
   status: 'idle' | 'loading' | 'ready' | 'error';
-  id: number | null;
+  slug: string | null;
   detail: WellDetail | null;
 }
 
-const IDLE_STATE: DetailState = { status: 'idle', id: null, detail: null };
+const IDLE_STATE: DetailState = { status: 'idle', slug: null, detail: null };
 
 const DATE_FORMATTER = new Intl.DateTimeFormat('es', {
   dateStyle: 'medium',
@@ -43,10 +50,12 @@ function openStreetMapUrl(latDeg: number, lonDeg: number): string {
 }
 
 /** Metadata and location of a well (RF-03, phase 1). Tabs for series arrive in phase 2. */
-export function WellSheet({ wells, selectedWellId, onSelectWell, onClose }: WellSheetProps) {
+export function WellSheet({ wells, selectedWell, onSelectWell, onClose }: WellSheetProps) {
   const headingId = useId();
   const closeRef = useRef<HTMLButtonElement>(null);
   const [state, setState] = useState<DetailState>(IDLE_STATE);
+  const selectedId = selectedWell.id;
+  const selectedSlug = selectedWell.slug;
 
   useEffect(() => {
     closeRef.current?.focus();
@@ -54,21 +63,21 @@ export function WellSheet({ wells, selectedWellId, onSelectWell, onClose }: Well
 
   useEffect(() => {
     const controller = new AbortController();
-    fetchWellDetail(selectedWellId, controller.signal)
+    fetchWellDetail(selectedId ?? selectedSlug, controller.signal)
       .then((detail) => {
         if (!controller.signal.aborted) {
-          setState({ status: 'ready', id: selectedWellId, detail });
+          setState({ status: 'ready', slug: selectedSlug, detail });
         }
       })
       .catch(() => {
         if (!controller.signal.aborted) {
-          setState({ status: 'error', id: selectedWellId, detail: null });
+          setState({ status: 'error', slug: selectedSlug, detail: null });
         }
       });
     return () => {
       controller.abort();
     };
-  }, [selectedWellId]);
+  }, [selectedId, selectedSlug]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent): void => {
@@ -80,7 +89,7 @@ export function WellSheet({ wells, selectedWellId, onSelectWell, onClose }: Well
     };
   }, [onClose]);
 
-  const isCurrent = state.id === selectedWellId;
+  const isCurrent = state.slug === selectedSlug;
   const detail = isCurrent && state.status === 'ready' ? state.detail : null;
   const isLoading = !isCurrent || state.status === 'idle' || state.status === 'loading';
 
@@ -109,9 +118,9 @@ export function WellSheet({ wells, selectedWellId, onSelectWell, onClose }: Well
               <li key={well.id}>
                 <button
                   type="button"
-                  aria-current={well.id === selectedWellId ? 'true' : undefined}
+                  aria-current={well.slug === selectedSlug ? 'true' : undefined}
                   onClick={() => {
-                    onSelectWell(well.id);
+                    onSelectWell(well);
                   }}
                 >
                   {well.name}

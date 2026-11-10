@@ -39,6 +39,10 @@ export async function fetchWellCount(query: string, signal?: AbortSignal): Promi
 }
 
 /** Metadata of one well and the series it has (docs/06, `GET /api/wells/:id`). */
-export async function fetchWellDetail(id: number, signal?: AbortSignal): Promise<WellDetail> {
-  return wellDetailSchema.parse(await getJson(`/api/wells/${String(id)}`, signal));
+export async function fetchWellDetail(
+  reference: number | string,
+  signal?: AbortSignal,
+): Promise<WellDetail> {
+  const path = typeof reference === 'number' ? String(reference) : encodeURIComponent(reference);
+  return wellDetailSchema.parse(await getJson(`/api/wells/${path}`, signal));
 }

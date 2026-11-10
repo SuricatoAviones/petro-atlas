@@ -1,16 +1,18 @@
 'use client';
 
 import type { FieldSummary } from '@petroatlas/shared-types';
+import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { fetchFields, fetchWellCount } from '@/lib/api';
-import { EMPTY_WELL_FILTERS, toWellQuery, type WellFilters } from '@/lib/well-filters';
+import { parseMapUrlState, writeMapUrlState, type MapView } from '@/lib/url-state';
+import { toWellQuery, type WellFilters } from '@/lib/well-filters';
 
 import { FilterPanel, type FilterOptionsStatus, type WellCountState } from './filter-panel';
 import { LazyWellMap } from './lazy-well-map';
 import type { WellColorMode } from './well-colors';
 import type { WellAtPoint } from './well-map';
-import { WellSheet } from './well-sheet';
+import { WellSheet, type WellSelection } from './well-sheet';
 
 interface FieldOptionsState {
   status: FilterOptionsStatus;
@@ -86,21 +88,42 @@ function useWellCount(query: string): WellCountState {
 
 /** Map page state: filters, result count and colour mode, shared by the panel and the map. */
 export function MapExplorer() {
-  const [filters, setFilters] = useState<WellFilters>(EMPTY_WELL_FILTERS);
+  const searchParams = useSearchParams();
+  const [initialUrlState] = useState(() => parseMapUrlState(searchParams));
+  const [filters, setFilters] = useState<WellFilters>(initialUrlState.filters);
   const [colorMode, setColorMode] = useState<WellColorMode>('status');
+  const [view, setView] = useState<MapView>(initialUrlState.view);
   const [wellsAtPoint, setWellsAtPoint] = useState<readonly WellAtPoint[]>([]);
-  const [selectedWellId, setSelectedWellId] = useState<number | null>(null);
+  const [selectedWell, setSelectedWell] = useState<WellSelection | null>(
+    initialUrlState.wellSlug === null
+      ? null
+      : { id: null, slug: initialUrlState.wellSlug, name: null },
+  );
   const filterQuery = useMemo(() => toWellQuery(filters), [filters]);
   const options = useFieldOptions();
   const count = useWellCount(filterQuery);
+  const selectedWellSlug = selectedWell?.slug ?? null;
+
+  useEffect(() => {
+    writeMapUrlState({ filters, wellSlug: selectedWellSlug, view });
+  }, [filters, selectedWellSlug, view]);
 
   const handleSelectWells = useCallback((wells: readonly WellAtPoint[]) => {
+    const first = wells[0];
     setWellsAtPoint(wells);
-    setSelectedWellId(wells[0]?.id ?? null);
+    setSelectedWell(
+      first === undefined ? null : { id: first.id, slug: first.slug, name: first.name },
+    );
+  }, []);
+  const handleSelectWell = useCallback((well: WellAtPoint) => {
+    setSelectedWell({ id: well.id, slug: well.slug, name: well.name });
   }, []);
   const closeWellSheet = useCallback(() => {
     setWellsAtPoint([]);
-    setSelectedWellId(null);
+    setSelectedWell(null);
+  }, []);
+  const handleViewChange = useCallback((nextView: MapView) => {
+    setView(nextView);
   }, []);
 
   return (
@@ -119,13 +142,15 @@ export function MapExplorer() {
         <LazyWellMap
           colorMode={colorMode}
           filtersQuery={filterQuery}
+          initialView={initialUrlState.view}
           onSelectWells={handleSelectWells}
+          onViewChange={handleViewChange}
         />
-        {wellsAtPoint.length > 0 && selectedWellId !== null && (
+        {selectedWell !== null && (
           <WellSheet
             wells={wellsAtPoint}
-            selectedWellId={selectedWellId}
-            onSelectWell={setSelectedWellId}
+            selectedWell={selectedWell}
+            onSelectWell={handleSelectWell}
             onClose={closeWellSheet}
           />
         )}

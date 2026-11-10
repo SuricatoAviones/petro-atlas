@@ -78,6 +78,7 @@ Filtros, pozo abierto, rango de fechas y pestaña activa viven en los parámetro
 | --- | --- | --- |
 | `campo` | Identificador legible del campo | `volve` |
 | `estado`, `tipo`, `operadora` | Filtros del mapa; admiten varios valores separados por coma | `productor,cerrado` |
+| `perforadoDesde`, `perforadoHasta` | Año de perforación, en cuatro cifras | `1950` |
 | `pozo` | Identificador legible del pozo abierto | `15-9-F-12` |
 | `desde`, `hasta` | Rango de fechas de las gráficas | `2010-01-01` |
 | `tab` | Pestaña activa de la ficha | `operacion` |

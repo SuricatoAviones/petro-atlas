@@ -12,6 +12,7 @@ import {
 } from 'maplibre-gl';
 import { useEffect, useRef, useState } from 'react';
 
+import type { MapView } from '@/lib/url-state';
 import { messages } from '@/messages/es';
 
 import { mapConfig } from './map-config';
@@ -68,16 +69,27 @@ export interface WellMapProps {
   colorMode: WellColorMode;
   /** Query string of the filters shared by the count and the tiles (docs/06). */
   filtersQuery: string;
+  /** View read from the URL; only applied when the map is created. */
+  initialView: MapView;
   onSelectWells: (wells: readonly WellAtPoint[]) => void;
+  onViewChange: (view: MapView) => void;
 }
 
 /** Full-size map of wells, grouped at low zoom, with field outlines from a zoom level on. */
-export function WellMap({ colorMode, filtersQuery, onSelectWells }: WellMapProps) {
+export function WellMap({
+  colorMode,
+  filtersQuery,
+  initialView,
+  onSelectWells,
+  onViewChange,
+}: WellMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap>(null);
+  const initialViewRef = useRef(initialView);
   const latestColorMode = useRef(colorMode);
   const latestFiltersQuery = useRef(filtersQuery);
   const latestOnSelectWells = useRef(onSelectWells);
+  const latestOnViewChange = useRef(onViewChange);
   const [status, setStatus] = useState<MapStatus>('loading');
   const [hasDataError, setHasDataError] = useState(false);
 
@@ -94,6 +106,10 @@ export function WellMap({ colorMode, filtersQuery, onSelectWells }: WellMapProps
   }, [onSelectWells]);
 
   useEffect(() => {
+    latestOnViewChange.current = onViewChange;
+  }, [onViewChange]);
+
+  useEffect(() => {
     const container = containerRef.current;
     if (container === null) return;
 
@@ -104,8 +120,8 @@ export function WellMap({ colorMode, filtersQuery, onSelectWells }: WellMapProps
     const map = new MapLibreMap({
       container,
       style: mapConfig.styleUrl,
-      center: [mapConfig.initialCenter.lon, mapConfig.initialCenter.lat],
-      zoom: mapConfig.initialZoom,
+      center: [initialViewRef.current.lon, initialViewRef.current.lat],
+      zoom: initialViewRef.current.zoom,
       attributionControl: { compact: true },
       locale: messages.map.controls,
     });
@@ -148,6 +164,10 @@ export function WellMap({ colorMode, filtersQuery, onSelectWells }: WellMapProps
         map.getCanvas().style.cursor = '';
       });
     }
+    map.on('moveend', () => {
+      const center = map.getCenter();
+      latestOnViewChange.current({ lat: center.lat, lon: center.lng, zoom: map.getZoom() });
+    });
 
     return () => {
       mapRef.current = null;
