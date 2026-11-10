@@ -13,11 +13,12 @@ const isoDateSchema = z.iso.date();
 /** Opaque pagination cursor: pass it back as `?cursor=`. Null on the last page. */
 const nextCursorSchema = z.string().nullable();
 
-const sourceRefSchema = z.object({
+export const sourceRefSchema = z.object({
   name: z.string(),
   license: z.string(),
   url: z.string(),
 });
+export type SourceRef = z.infer<typeof sourceRefSchema>;
 
 // --- GeoJSON (EPSG:4326, [lon, lat]) ---
 
@@ -122,6 +123,80 @@ export const wellDetailSchema = z.object({
   source: sourceRefSchema,
 });
 export type WellDetail = z.infer<typeof wellDetailSchema>;
+
+// --- Production and trajectory series ---
+
+const productionUnitsSchema = z.object({
+  oil: z.literal('Sm3'),
+  gas: z.literal('Sm3'),
+  water: z.literal('Sm3'),
+  waterInj: z.literal('Sm3'),
+  bhp: z.literal('bar'),
+  whp: z.literal('bar'),
+  bht: z.literal('degC'),
+  wht: z.literal('degC'),
+  choke: z.literal('%'),
+  onStream: z.literal('h'),
+});
+
+/** `GET /api/wells/:id/production` */
+export const wellProductionResponseSchema = z.object({
+  wellId: z.number().int(),
+  interval: z.enum(['day', 'month']),
+  units: productionUnitsSchema,
+  dates: z.array(isoDateSchema),
+  series: z.object({
+    oil: z.array(z.number().nullable()),
+    gas: z.array(z.number().nullable()),
+    water: z.array(z.number().nullable()),
+    waterInj: z.array(z.number().nullable()),
+    bhp: z.array(z.number().nullable()),
+    whp: z.array(z.number().nullable()),
+    bht: z.array(z.number().nullable()),
+    wht: z.array(z.number().nullable()),
+    choke: z.array(z.number().nullable()),
+    onStream: z.array(z.number().nullable()),
+  }),
+  source: sourceRefSchema,
+});
+export type WellProductionResponse = z.infer<typeof wellProductionResponseSchema>;
+
+export const trajectoryStationSchema = z.object({
+  mdM: z.number(),
+  tvdM: z.number(),
+  inclDeg: z.number().nullable(),
+  azimDeg: z.number().nullable(),
+});
+export type TrajectoryStation = z.infer<typeof trajectoryStationSchema>;
+
+/** `GET /api/wells/:id/trajectory` */
+export const wellTrajectoryResponseSchema = z.object({
+  wellId: z.number().int(),
+  stations: z.array(trajectoryStationSchema),
+  source: sourceRefSchema,
+});
+export type WellTrajectoryResponse = z.infer<typeof wellTrajectoryResponseSchema>;
+
+const fieldProductionUnitsSchema = z.object({
+  oil: z.literal('Sm3'),
+  gas: z.literal('Sm3'),
+  water: z.literal('Sm3'),
+});
+
+/** `GET /api/fields/:id/production` */
+export const fieldProductionResponseSchema = z.object({
+  fieldId: z.number().int(),
+  interval: z.literal('month'),
+  units: fieldProductionUnitsSchema,
+  dates: z.array(isoDateSchema),
+  series: z.object({
+    oil: z.array(z.number().nullable()),
+    gas: z.array(z.number().nullable()),
+    water: z.array(z.number().nullable()),
+  }),
+  source: sourceRefSchema,
+});
+export type FieldProductionResponse = z.infer<typeof fieldProductionResponseSchema>;
 
 // --- Sources ---
 

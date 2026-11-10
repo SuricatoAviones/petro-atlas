@@ -167,7 +167,7 @@ Las series van en columnas, no en filas, para reducir el tamaño de la respuesta
   "wellId": 12,
   "interval": "day",
   "units": {
-    "oil": "Sm3", "gas": "Sm3", "water": "Sm3",
+    "oil": "Sm3", "gas": "Sm3", "water": "Sm3", "waterInj": "Sm3",
     "bhp": "bar", "whp": "bar", "bht": "degC", "wht": "degC",
     "choke": "%", "onStream": "h"
   },
@@ -176,6 +176,7 @@ Las series van en columnas, no en filas, para reducir el tamaño de la respuesta
     "oil": [1520.4, 1498.2, 1503.9],
     "gas": [221300, 218900, 219700],
     "water": [310.5, 318.0, 322.4],
+    "waterInj": [null, null, null],
     "bhp": [241.7, 241.2, null],
     "whp": [38.6, 38.4, 38.5],
     "bht": [106.1, 106.1, null],
@@ -183,11 +184,45 @@ Las series van en columnas, no en filas, para reducir el tamaño de la respuesta
     "choke": [52.0, 52.0, 52.0],
     "onStream": [24, 24, 24]
   },
-  "source": { "name": "Volve", "license": "Equinor Open Data Licence" }
+  "source": { "name": "Volve (Equinor)", "license": "Equinor Open Data Licence: attribution required, not for resale" }
 }
 ```
 
-Los valores del ejemplo son ilustrativos.
+Los valores del ejemplo son ilustrativos. `interval=month` suma los volúmenes y promedia presiones, temperaturas, choke y horas en línea sobre los días con dato.
+
+`GET /api/wells/12/trajectory`
+
+```json
+{
+  "wellId": 12,
+  "stations": [
+    { "mdM": 0, "tvdM": 0, "inclDeg": 0, "azimDeg": 0 },
+    { "mdM": 100, "tvdM": 95.2, "inclDeg": 10.4, "azimDeg": 42.0 }
+  ],
+  "source": { "name": "Volve (Equinor)", "license": "Equinor Open Data Licence: attribution required, not for resale" }
+}
+```
+
+`GET /api/fields/3/production?from=2010-01-01&to=2010-03-31`
+
+La serie del campo es siempre mensual.
+
+```json
+{
+  "fieldId": 3,
+  "interval": "month",
+  "units": { "oil": "Sm3", "gas": "Sm3", "water": "Sm3" },
+  "dates": ["2010-01-01", "2010-02-01", "2010-03-01"],
+  "series": {
+    "oil": [42000, 40500, 39800],
+    "gas": [6100000, 5900000, 5800000],
+    "water": [2100, 2400, 2800]
+  },
+  "source": { "name": "Volve (Equinor)", "license": "Equinor Open Data Licence: attribution required, not for resale" }
+}
+```
+
+Los valores de los ejemplos de trayectoria y campo son ilustrativos.
 
 `GET /api/alerts`
 
