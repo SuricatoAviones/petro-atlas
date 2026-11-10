@@ -66,6 +66,15 @@ P-02,2026-10-21,9.7388,-63.1755,65.2,13300,30.2,22.5,,,
 
 La web no distingue de dónde viene un pozo. Una interfaz `WellRepository` tiene dos implementaciones: una que llama a la API y otra que lee IndexedDB. Las gráficas y las herramientas reciben siempre el mismo tipo `ProductionSeries`.
 
+## Comparación de pozos (RF-10)
+
+La pestaña Producción permite añadir otros pozos a la gráfica de tasas:
+
+- Los candidatos son los demás pozos con producción diaria del mismo campo y los pozos importados en ese navegador.
+- Se pueden comparar hasta cuatro pozos además del abierto. Cada uno usa un estilo de línea distinto y el color sigue indicando el fluido (docs/07, regla 11).
+- La selección de pozos públicos se guarda en `comparar`; los pozos importados solo viven en memoria, porque no existen fuera del navegador.
+- Un pozo abierto puede cambiar mientras la comparación sigue activa; el pozo abierto se excluye de la lista.
+
 ## Estado en la URL (RF-15)
 
 Filtros, pozo abierto, rango de fechas y pestaña activa viven en los parámetros de la URL. Copiar la dirección comparte exactamente la misma vista.

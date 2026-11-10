@@ -1,8 +1,10 @@
 # PetroAtlas
 
-Explorador web de campos petroleros, de código abierto: un mapa de pozos como entrada, fichas con gráficas de producción y presión, y herramientas de ingeniería que calculan sobre los datos del pozo seleccionado. El nombre es provisional.
+Explorador web de pozos petroleros, de código abierto: un mapa como entrada, fichas con series de producción y presión, herramientas de ingeniería que calculan en el navegador e importación de datos propios en CSV. El nombre es provisional.
 
-> **Estado: fase 3 funcionalmente completa y textos legales publicados.** El mapa muestra los pozos y campos públicos de Sodir con clustering, filtros, ficha de pozo, estado en la URL, series de producción y operación, mapa de burbujas, alertas, ajuste de declinación, calculadoras IPR y PVT, y diagnóstico de Chan. `petro-calc` supera el 90 % de cobertura. La web incluye aviso legal, privacidad, datos y cookies. Queda publicar el paquete en npm y desarrollar la fase 4. El plan completo está en [docs/11-plan-de-fases.md](docs/11-plan-de-fases.md).
+> **Estado: fase 4 completa.** Mapa con clustering, filtros y estado en la URL; fichas con producción, operación, trayectoria, registros, ingeniería y diagnóstico; alertas; comparación de pozos; importación CSV en IndexedDB; exportación CSV y PNG; páginas legales y revisión de accesibilidad con axe. `petro-calc` supera el 90 % de cobertura. Queda publicar el paquete en npm y decidir el alojamiento de la demo. El plan completo está en [docs/11-plan-de-fases.md](docs/11-plan-de-fases.md).
+
+![Mapa de pozos con filtros, clustering y alertas](docs/images/mapa.png)
 
 ## Arranque rápido
 
@@ -22,9 +24,29 @@ Cuando termina de arrancar:
 | Estado de la API     | <http://localhost:4000/api/health>            |
 | PostgreSQL + PostGIS | `localhost:55432`, base de datos `petroatlas` |
 
-`docker compose up` crea los usuarios de base de datos, aplica las migraciones y carga un campo sintético con 20 pozos y un año de producción diaria. No hace falta ningún archivo `.env`: todos los valores tienen un valor por defecto de desarrollo. Para cambiarlos (puertos, contraseñas), copia `.env.example` a `.env`.
+`docker compose up` crea los usuarios de base de datos, aplica las migraciones y carga un campo sintáctico con 20 pozos, un año de producción diaria y registros de pozo. No hace falta ningún archivo `.env`: todos los valores tienen un valor por defecto de desarrollo. Para cambiarlos (puertos, contraseñas), copia `.env.example` a `.env`.
 
 Para empezar de cero, borrando la base de datos: `docker compose down --volumes`.
+
+## Cómo se usa
+
+1. **Explora el mapa.** Filtra por campo, operadora, estado, tipo o año de perforación; cambia el color de los pozos y activa el mapa de burbujas de acumulados. La vista queda en la URL y se puede compartir.
+2. **Abre un pozo.** La ficha reúne metadatos, ubicación, series de producción y operación sincronizadas, trayectoria, registros por pistas, ajuste de declinación, IPR, PVT y diagnóstico de Chan.
+3. **Compara pozos.** En la pestaña Producción añade otros pozos del mismo campo. Cada pozo usa un estilo de línea distinto, el color sigue indicando el fluido y la selección viaja en el parámetro `comparar`.
+4. **Importa tus datos.** En el panel de filtros, elige un CSV con el formato de [docs/09](docs/09-alertas-importacion-url.md). El archivo se valida fila a fila y se guarda en IndexedDB: no se sube al servidor. Los pozos importados aparecen en el mapa con otro símbolo y usan las mismas gráficas, alertas y calculadoras.
+5. **Exporta.** Cada gráfica ofrece tabla, CSV de los datos visibles y PNG. La ficha descarga la serie completa del pozo en el mismo formato que acepta la importación.
+
+![Ficha de un pozo con producción y presión](docs/images/produccion.png)
+
+![Registros por pistas de un pozo](docs/images/registros.png)
+
+![Importación de un CSV y ficha del pozo importado](docs/images/importacion.png)
+
+![Comparación de dos pozos del mismo campo](docs/images/comparacion.png)
+
+![Herramientas de ingeniería con curvas IPR y PVT](docs/images/ingenieria.png)
+
+![GIF de uso: mapa, ficha, registros, ingeniería, comparación e importación](docs/images/uso.gif)
 
 ## Desarrollo local
 
@@ -35,49 +57,58 @@ pnpm install
 cp .env.example .env
 pnpm exec playwright install chromium    # solo la primera vez, para las pruebas e2e
 
-docker compose up --detach db db-setup   # base de datos, migraciones y datos sintéticos
+docker compose up --detach db db-setup   # base de datos, migraciones y datos sintácticos
 pnpm dev                                 # API en :4000 y web en :3000, con recarga
 ```
 
-| Comando              | Qué hace                                                                |
-| -------------------- | ----------------------------------------------------------------------- |
-| `pnpm dev`           | API y web en modo desarrollo                                            |
-| `pnpm lint`          | ESLint y comprobación de formato con Prettier                           |
-| `pnpm format`        | Aplica el formato de Prettier                                           |
-| `pnpm typecheck`     | `tsc --noEmit` en todos los paquetes                                    |
-| `pnpm test`          | Pruebas con Vitest; las de la API necesitan la base de datos en marcha  |
-| `pnpm test:coverage` | Cobertura de `petro-calc`; falla por debajo del 90%                     |
-| `pnpm test:e2e`      | Pruebas de extremo a extremo con Playwright; necesitan la base de datos |
-| `pnpm build`         | Compila paquetes, API y web                                             |
-| `pnpm db:migrate`    | Aplica las migraciones pendientes de `db/migrations`                    |
-| `pnpm db:seed`       | Carga los datos sintéticos; se puede repetir sin duplicar nada          |
-| `pnpm etl:sodir`     | Descarga los pozos y campos públicos de Sodir a `data/` y los carga     |
-| `pnpm etl:volve`     | Carga la producción y las trayectorias de Volve desde `data/volve`      |
+| Comando              | Qué hace                                                               |
+| -------------------- | ---------------------------------------------------------------------- |
+| `pnpm dev`           | API y web en modo desarrollo                                           |
+| `pnpm lint`          | ESLint y comprobación de formato con Prettier                          |
+| `pnpm format`        | Aplica el formato de Prettier                                          |
+| `pnpm typecheck`     | `tsc --noEmit` en todos los paquetes                                   |
+| `pnpm test`          | Pruebas con Vitest; las de la API necesitan la base de datos en marcha |
+| `pnpm test:coverage` | Cobertura de `petro-calc`; falla por debajo del 90 %                   |
+| `pnpm test:e2e`      | Pruebas de extremo a extremo y de accesibilidad con Playwright         |
+| `pnpm build`         | Compila paquetes, API y web                                            |
+| `pnpm db:migrate`    | Aplica las migraciones pendientes de `db/migrations`                   |
+| `pnpm db:seed`       | Carga los datos sintácticos; se puede repetir sin duplicar nada        |
+| `pnpm etl:sodir`     | Descarga los pozos y campos públicos de Sodir a `data/` y los carga    |
+| `pnpm etl:volve`     | Carga la producción y las trayectorias de Volve desde `data/volve`     |
 
-Un cambio está terminado cuando `pnpm lint`, `pnpm typecheck`, `pnpm test` y `pnpm build` pasan. El resto de reglas está en [docs/12-convenciones.md](docs/12-convenciones.md).
+Un cambio está terminado cuando `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:e2e` y `pnpm build` pasan. El resto de reglas está en [docs/12-convenciones.md](docs/12-convenciones.md).
 
-## Estructura
+## Arquitectura
 
 ```text
-apps/web/               Next.js: mapa, ficha de pozo, herramientas
-apps/api/               Express: API REST de solo lectura
+apps/web/               Next.js (App Router) + MapLibre + ECharts
+apps/api/               Express 5: API REST de solo lectura
 packages/petro-calc/    Cálculos de ingeniería en TypeScript puro
 packages/shared-types/  Tipos y esquemas Zod compartidos
-etl/                    Ingesta de datos públicos (Sodir)
+etl/                    Ingesta de datos públicos
 db/migrations/          SQL versionado
-db/seed/                Generador de datos sintéticos
+db/seed/                Generador de datos sintácticos
 db/init/                Creación de usuarios al inicializar PostgreSQL
 docs/                   Diseño: la fuente de verdad del proyecto
 ```
 
-La web pide datos a la API y calcula en el navegador con `petro-calc`. La API lee la base de datos con un usuario de solo lectura. Solo el ETL, las migraciones y el seed escriben. El detalle está en [docs/03-arquitectura.md](docs/03-arquitectura.md) y las decisiones, en [docs/adr/](docs/adr/README.md).
+La web pide los datos públicos a la API y calcula en el navegador con `petro-calc`. La API lee la base de datos con un usuario de solo lectura; solo el ETL, las migraciones y el seed escriben. Los pozos importados se guardan en IndexedDB y nunca salen del navegador, de modo que la API sigue siendo de solo lectura y la demo no necesita cuentas.
+
+La web no distingue el origen de un pozo: una interfaz `WellRepository` tiene una implementación para la API y otra para IndexedDB, y ambas entregan las mismas series a las gráficas y herramientas. Las alertas de los pozos públicos las calcula la vista `well_alert`; las de los importados, `petro-calc/alerts` en el navegador con los mismos umbrales.
+
+El detalle está en [docs/03-arquitectura.md](docs/03-arquitectura.md) y las decisiones, en [docs/adr/](docs/adr/README.md).
+
+## Accesibilidad
+
+La interfaz usa HTML semántico, etiquetas explícitas, foco visible y regiones anunciadas para los estados de carga. Las gráficas tienen una vista de tabla equivalente y los estados no se comunican solo con color. Las pruebas de Playwright incluyen una auditoría con [axe](https://github.com/dequelabs/axe-core) del mapa, la ficha y las páginas legales.
 
 ## Datos y licencias
 
 - El código se publica bajo licencia [MIT](LICENSE).
-- El repositorio **no incluye datos de terceros**. Los datos de `db/seed` son sintéticos: los genera un script, llevan nombres ficticios (`SYNTHETIC ALPHA`, `SYN-A-01`…) y no representan ningún campo real.
+- El repositorio **no incluye datos de terceros**. Los datos de `db/seed` son sintácticos: los genera un script, llevan nombres ficticios (`SYNTHETIC ALPHA`, `SYN-A-01`…) y no representan ningún campo real.
 - El ETL descarga los datos públicos de Sodir a `data/`, que Git ignora. Volve se obtiene de Equinor (Databricks Marketplace) y se coloca en `data/volve/`; el ETL lo normaliza y lo carga. Las fuentes y sus condiciones están en [docs/10-fuentes-de-datos.md](docs/10-fuentes-de-datos.md).
 - El mapa base usa las teselas de [OpenFreeMap](https://openfreemap.org/), con datos de © OpenMapTiles y © OpenStreetMap. Se puede cambiar con `NEXT_PUBLIC_MAP_STYLE_URL`.
+- Un CSV importado es responsabilidad de quien lo carga: se guarda solo en su navegador y no se redistribuye.
 
 ## Documentación
 
