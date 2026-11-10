@@ -42,6 +42,7 @@ export interface EngineeringChartProps {
   series: readonly EngineeringSeries[];
   axes: readonly EngineeringAxis[];
   source?: SourceRef;
+  note?: string;
   logX?: boolean;
   logY?: boolean;
 }
@@ -54,6 +55,7 @@ export function EngineeringChart({
   series,
   axes,
   source,
+  note,
   logX = false,
   logY = false,
 }: EngineeringChartProps) {
@@ -119,6 +121,7 @@ export function EngineeringChart({
     <section className="chart-card">
       <h4>{title}</h4>
       <div ref={containerRef} className="chart-card__canvas" role="img" aria-label={title} />
+      {note !== undefined && <p className="chart-card__note">{note}</p>}
       {source !== undefined && (
         <p className="chart-card__source">
           {messages.wellSheet.charts.source}:{' '}

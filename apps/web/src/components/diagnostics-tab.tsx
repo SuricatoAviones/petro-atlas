@@ -88,6 +88,7 @@ export function DiagnosticsTab({ data }: DiagnosticsTabProps) {
             ]}
             axes={[{ name: 'RAP′ (1/d)' }]}
             source={data.source}
+            note={messages.wellSheet.diagnostics.positiveOnly}
             logX
             logY
           />

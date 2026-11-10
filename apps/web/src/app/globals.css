@@ -666,6 +666,12 @@ body {
   font-size: 0.7rem;
 }
 
+.chart-card__note {
+  margin: 0.25rem 0 0;
+  color: var(--color-ink-muted);
+  font-size: 0.7rem;
+}
+
 .chart-card__table-toggle {
   padding: 0;
   border: 0;

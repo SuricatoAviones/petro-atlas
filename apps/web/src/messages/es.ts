@@ -199,6 +199,7 @@ export const messages = {
       productivityIndex: 'Índice de productividad',
       reservoirPressure: 'Presión de yacimiento (bar)',
       days: 'Días',
+      positiveOnly: 'Escala logarítmica: solo se dibujan los valores positivos.',
       pressureError: 'La presión de yacimiento debe ser mayor que cero.',
       noData: 'La fuente no publica las series necesarias para el diagnóstico.',
       noWater: 'La fuente no publica la producción de agua de este pozo.',
