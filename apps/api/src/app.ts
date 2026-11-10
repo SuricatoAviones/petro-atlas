@@ -2,19 +2,29 @@ import cors from 'cors';
 import express, { type Express } from 'express';
 import { rateLimit } from 'express-rate-limit';
 
-import type { DatabaseCheck } from './database.ts';
+import type { Database, DatabaseCheck } from './database.ts';
 import { errorHandler, notFoundHandler, sendError } from './http-errors.ts';
+import { createFieldsRouter } from './routes/fields.ts';
 import { createHealthRouter } from './routes/health.ts';
+import { createMetaRouter } from './routes/meta.ts';
+import { createWellsRouter } from './routes/wells.ts';
 
 export interface AppOptions {
+  /** Read-only connection (petroatlas_api, docs/05). */
+  database: Database;
   checkDatabase: DatabaseCheck;
   /** The only origin allowed by CORS (docs/12, "Seguridad"). */
   webOrigin: string;
   rateLimitPerMinute: number;
 }
 
-/** Builds the Express app. Dependencies are injected so tests run without a database. */
-export function createApp({ checkDatabase, webOrigin, rateLimitPerMinute }: AppOptions): Express {
+/** Builds the Express app. Dependencies are injected so they can be replaced in tests. */
+export function createApp({
+  database,
+  checkDatabase,
+  webOrigin,
+  rateLimitPerMinute,
+}: AppOptions): Express {
   const app = express();
   app.disable('x-powered-by');
 
@@ -32,6 +42,9 @@ export function createApp({ checkDatabase, webOrigin, rateLimitPerMinute }: AppO
   );
 
   app.use('/api', createHealthRouter(checkDatabase));
+  app.use('/api', createFieldsRouter(database));
+  app.use('/api', createWellsRouter(database));
+  app.use('/api', createMetaRouter(database));
 
   app.use(notFoundHandler);
   app.use(errorHandler);

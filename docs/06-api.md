@@ -7,7 +7,7 @@ La API es de solo lectura y sirve datos. Los cálculos de ingeniería corren en 
 | Método y ruta | Devuelve | Parámetros |
 | --- | --- | --- |
 | `GET /api/health` | Estado del servicio y de la base de datos | |
-| `GET /api/fields` | Lista de campos con operadora y estado | `status` |
+| `GET /api/fields` | Lista de campos con operadora, estado y número de pozos | `status` |
 | `GET /api/fields/:id` | Campo con su polígono GeoJSON y totales | |
 | `GET /api/fields/:id/production` | Serie de producción del campo | `from`, `to`, `interval` |
 | `GET /api/wells` | Pozos como GeoJSON FeatureCollection | `bbox`, `field`, `status`, `type`, `operator`, `spudFrom`, `spudTo` |
@@ -26,9 +26,14 @@ La API es de solo lectura y sirve datos. Los cálculos de ingeniería corren en 
 - Fechas en ISO 8601 (`2012-03-15`).
 - Valores en SI, con la unidad declarada en la respuesta.
 - `bbox` es `minLon,minLat,maxLon,maxLat` en EPSG:4326.
-- Las listas se paginan por cursor: `?limit=100&cursor=...`. La respuesta trae `nextCursor` o `null`.
+- `:id` admite el identificador numérico o el identificador legible (`slug`) del recurso: `/api/wells/1447` y `/api/wells/15-9-F-12` devuelven lo mismo. El parámetro `field` de `/api/wells` también admite ambos.
+- Los filtros `status`, `type`, `field` y `operator` admiten varios valores separados por coma. `status` y `type` solo aceptan los valores de las enumeraciones de `04-modelo-de-dominio.md`.
+- `operator` filtra por la operadora del campo del pozo. Los pozos sin campo no tienen operadora.
+- `spudFrom` y `spudTo` son fechas ISO e incluyen los extremos.
+- Las listas se paginan por cursor: `?limit=100&cursor=...`, con `limit` entre 1 y 1000. La respuesta trae `nextCursor` o `null`. `/api/wells` trae además `totalCount`, el número de pozos que cumplen los filtros en todas las páginas.
 - Los parámetros se validan con Zod. Un parámetro inválido responde 400.
-- Las respuestas de lectura llevan `Cache-Control`. Los datos solo cambian con una ingesta.
+- Las respuestas de lectura llevan `Cache-Control: public, max-age=300`. Los datos solo cambian con una ingesta.
+- Las propiedades numéricas con unidad la llevan en el nombre: `totalDepthM`, `oilSm3`, `lonDeg`.
 
 ## Errores
 
@@ -75,6 +80,7 @@ Si la base de datos no responde, devuelve 503 con el formato común de error:
       "geometry": { "type": "Point", "coordinates": [1.8876, 58.4415] },
       "properties": {
         "name": "15/9-F-12",
+        "slug": "15-9-F-12",
         "wellType": "producer",
         "status": "shut_in",
         "fieldId": 3,
@@ -84,7 +90,70 @@ Si la base de datos no responde, devuelve 503 con el formato común de error:
       }
     }
   ],
+  "totalCount": 1,
   "nextCursor": null
+}
+```
+
+`alertLevel` es siempre `null` hasta que exista la vista de alertas (fase 2).
+
+`GET /api/wells/15-9-F-12`
+
+`series` dice qué datos existen para el pozo, para que la interfaz deshabilite lo que falta. `daily` es `null` si el pozo no tiene producción diaria.
+
+```json
+{
+  "id": 12,
+  "slug": "15-9-F-12",
+  "name": "15/9-F-12",
+  "wellType": "producer",
+  "status": "shut_in",
+  "spudDate": "2007-06-14",
+  "totalDepthM": 3520,
+  "location": { "lonDeg": 1.8859, "latDeg": 58.441 },
+  "field": { "id": 3, "slug": "volve", "name": "VOLVE", "operator": "Equinor Energy AS" },
+  "series": {
+    "daily": { "from": "2008-02-12", "to": "2016-09-17", "days": 3056 },
+    "hasTrajectory": true,
+    "logCurves": ["GR", "RHOB"]
+  },
+  "source": { "name": "Sodir FactPages", "license": "…", "url": "https://factpages.sodir.no/" }
+}
+```
+
+`GET /api/fields`
+
+```json
+{
+  "items": [
+    {
+      "id": 3,
+      "slug": "volve",
+      "name": "VOLVE",
+      "operator": "Equinor Energy AS",
+      "status": "shut_down",
+      "wellCount": 25
+    }
+  ],
+  "nextCursor": null
+}
+```
+
+`GET /api/fields/volve` devuelve lo mismo para un campo y añade `geometry` (MultiPolygon GeoJSON o `null`), `totals` (`oilSm3`, `gasSm3`, `waterSm3` acumulados de la serie mensual del campo, `null` si no hay serie cargada) y `source`.
+
+`GET /api/meta/sources`
+
+```json
+{
+  "items": [
+    {
+      "id": 2,
+      "name": "Sodir FactPages",
+      "license": "…",
+      "url": "https://factpages.sodir.no/",
+      "ingestedAt": "2026-11-10T00:53:45.658Z"
+    }
+  ]
 }
 ```
 

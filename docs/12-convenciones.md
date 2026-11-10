@@ -61,6 +61,7 @@ Reglas que sigue todo cambio en el repositorio, lo escriba una persona o un agen
 
 - Una corrección de error llega con la prueba que lo habría detectado.
 - Las pruebas no dependen de la red ni de los datos reales. Usan los datos sintéticos de `db/seed`.
+- Las pruebas de rutas de la API consultan la base de datos de desarrollo con el usuario de solo lectura, así que necesitan `docker compose up --detach --wait db db-setup`. Solo comprueban el campo sintético, de modo que los datos que haya cargado el ETL no las afectan.
 - Los números se comparan con tolerancia explícita, no con igualdad exacta.
 
 ## Interfaz

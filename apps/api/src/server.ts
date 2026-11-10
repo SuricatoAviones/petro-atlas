@@ -5,6 +5,7 @@ import { createDatabaseCheck, createDatabasePool } from './database.ts';
 const config = loadConfig(process.env);
 const pool = createDatabasePool(config.databaseUrl);
 const app = createApp({
+  database: pool,
   checkDatabase: createDatabaseCheck(pool),
   webOrigin: config.webOrigin,
   rateLimitPerMinute: config.rateLimitPerMinute,

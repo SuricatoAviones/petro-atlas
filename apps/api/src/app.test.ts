@@ -1,38 +1,10 @@
-import { once } from 'node:events';
-import type { Server } from 'node:http';
-
 import { apiErrorSchema, healthResponseSchema } from '@petroatlas/shared-types';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { createApp, type AppOptions } from './app.ts';
+import { WEB_ORIGIN, startApi } from './test-support.ts';
 
-const WEB_ORIGIN = 'http://localhost:3000';
-const runningServers: Server[] = [];
-
-/** Starts the app on a free port with a stubbed database check and returns its base URL. */
-async function startApi(overrides: Partial<AppOptions> = {}): Promise<string> {
-  const app = createApp({
-    checkDatabase: () => Promise.resolve(true),
-    webOrigin: WEB_ORIGIN,
-    rateLimitPerMinute: 100,
-    ...overrides,
-  });
-  const server = app.listen(0, '127.0.0.1');
-  await once(server, 'listening');
-  runningServers.push(server);
-  const address = server.address();
-  if (address === null || typeof address === 'string') throw new Error('Expected a TCP address');
-  return `http://127.0.0.1:${String(address.port)}`;
-}
-
-afterEach(async () => {
+afterEach(() => {
   vi.restoreAllMocks();
-  await Promise.all(
-    runningServers.splice(0).map((server) => {
-      server.close();
-      return once(server, 'close');
-    }),
-  );
 });
 
 describe('GET /api/health', () => {
