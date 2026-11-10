@@ -66,7 +66,7 @@ Objetivo: calcular sobre los datos del pozo.
 - [x] Selección de ventana sobre la gráfica y curva de ajuste superpuesta.
 - [x] `petro-calc/ipr`: Vogel, Fetkovich y compuesta, con pruebas.
 - [x] `petro-calc/pvt`: Standing, Vasquez y Beggs, Beggs y Robinson, con pruebas.
-- [ ] Pestaña Ingeniería con parámetros editables y curvas que responden al instante.
+- [x] Pestaña Ingeniería con parámetros editables y curvas que responden al instante.
 - [ ] Pestaña Diagnóstico: Chan, tasa vs acumulado e índice de productividad.
 - [ ] Ventana de ajuste reflejada en la URL.
 - [ ] Publicar `petro-calc` en npm con su propio README.
