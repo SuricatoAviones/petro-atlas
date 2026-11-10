@@ -1,6 +1,7 @@
 import { Router, type Response } from 'express';
 import { z } from 'zod';
 
+import { WELL_ALERT_LEVEL_SQL } from '../alert-level.ts';
 import type { Database } from '../database.ts';
 import { HttpError } from '../http-errors.ts';
 import { parseParams, setReadCacheHeader } from '../params.ts';
@@ -23,7 +24,8 @@ const tileParamsSchema = z.object({
   y: z.coerce.number().int().min(0),
 });
 
-const WELL_PROPERTIES = 'id, name, slug, well_type AS "wellType", status';
+const WELL_PROPERTIES =
+  'id, name, slug, well_type AS "wellType", status, alert_level AS "alertLevel"';
 
 /** Validates `z/x/y` and returns them as placeholders of `filter`, ready for ST_TileEnvelope. */
 function tileArguments(filter: SqlFilter, params: unknown): { zoom: number; tile: string } {
@@ -77,8 +79,12 @@ export function createTilesRouter(database: Database): Router {
                ST_TileEnvelope(${tile}, margin => ${isClustered ? '0' : String(TILE_BUFFER / TILE_EXTENT)}) AS search
       ),
       candidates AS (
-        SELECT w.id, w.name, w.slug, w.well_type, w.status, ST_Transform(w.geom, 3857) AS geom
-        FROM ${WELL_FILTER_FROM} CROSS JOIN bounds
+        SELECT w.id, w.name, w.slug, w.well_type, w.status,
+               ${WELL_ALERT_LEVEL_SQL} AS alert_level,
+               ST_Transform(w.geom, 3857) AS geom
+        FROM ${WELL_FILTER_FROM}
+        LEFT JOIN well_alert a ON a.well_id = w.id
+        CROSS JOIN bounds
         ${filter.where()}
       )`;
     const mvtGeom = (buffer: number): string =>
@@ -102,7 +108,11 @@ export function createTilesRouter(database: Database): Router {
            SELECT count(*)::int AS point_count,
                   ST_Centroid(ST_Collect(geom)) AS geom,
                   min(id) AS id, min(name) AS name, min(slug) AS slug,
-                  min(well_type) AS well_type, min(status) AS status
+                  min(well_type) AS well_type, min(status) AS status,
+                  CASE
+                    WHEN bool_or(alert_level = 'critical') THEN 'critical'
+                    WHEN bool_or(alert_level = 'warning') THEN 'warning'
+                  END AS alert_level
            FROM cells
            WHERE cell_x BETWEEN 0 AND ${String(CLUSTER_GRID_SIZE - 1)}
              AND cell_y BETWEEN 0 AND ${String(CLUSTER_GRID_SIZE - 1)}
@@ -111,7 +121,7 @@ export function createTilesRouter(database: Database): Router {
          SELECT
            coalesce((
              SELECT ST_AsMVT(layer, 'clusters', ${String(TILE_EXTENT)}, 'geom')
-             FROM (SELECT point_count AS "pointCount", ${mvtGeom(0)}
+             FROM (SELECT point_count AS "pointCount", alert_level AS "alertLevel", ${mvtGeom(0)}
                    FROM grouped WHERE point_count > 1) layer
            ), '') ||
            coalesce((

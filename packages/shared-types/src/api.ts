@@ -215,6 +215,35 @@ export const fieldProductionResponseSchema = z.object({
 });
 export type FieldProductionResponse = z.infer<typeof fieldProductionResponseSchema>;
 
+// --- Alerts ---
+
+export const alertLevelSchema = z.enum(['warning', 'critical']);
+export const alertKindSchema = z.enum(['production_drop', 'high_water_cut', 'no_production']);
+
+export const alertItemSchema = z.object({
+  wellId: z.number().int(),
+  wellSlug: z.string(),
+  wellName: z.string(),
+  level: alertLevelSchema,
+  kinds: z.array(alertKindSchema),
+  /** Last date with data for this well; the rules are historical (docs/09). */
+  asOf: isoDateSchema,
+  detail: z.object({
+    oil7d: z.number().nullable(),
+    oilPrev30: z.number().nullable(),
+    waterCut7d: z.number().nullable(),
+    prod3d: z.number().nullable(),
+  }),
+});
+export type AlertItem = z.infer<typeof alertItemSchema>;
+
+/** `GET /api/alerts` */
+export const alertListResponseSchema = z.object({
+  asOfByWell: z.literal(true),
+  items: z.array(alertItemSchema),
+});
+export type AlertListResponse = z.infer<typeof alertListResponseSchema>;
+
 // --- Sources ---
 
 /** `GET /api/meta/sources` */

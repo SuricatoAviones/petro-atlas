@@ -123,6 +123,7 @@ describe('GET /api/tiles/wells/:z/:x/:y.mvt', () => {
       wellType: 'producer',
       status: 'producing',
     });
+    expect(byName.get('SYN-A-14')?.alertLevel).toBe('critical');
   });
 
   it('applies the same filters as GET /api/wells', async () => {

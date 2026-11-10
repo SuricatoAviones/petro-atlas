@@ -253,11 +253,17 @@ Los valores de los ejemplos de trayectoria y campo son ilustrativos.
   "items": [
     {
       "wellId": 14,
+      "wellSlug": "15-9-F-14",
       "wellName": "15/9-F-14",
       "level": "critical",
       "kinds": ["production_drop"],
       "asOf": "2016-07-13",
-      "detail": { "oil7d": 41.2, "oilPrev30": 96.8 }
+      "detail": {
+        "oil7d": 41.2,
+        "oilPrev30": 96.8,
+        "waterCut7d": 0.42,
+        "prod3d": 123.4
+      }
     }
   ]
 }

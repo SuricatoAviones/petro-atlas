@@ -14,6 +14,10 @@ export {
 } from './domain.ts';
 export { healthResponseSchema, type HealthResponse } from './health.ts';
 export {
+  alertItemSchema,
+  alertKindSchema,
+  alertLevelSchema,
+  alertListResponseSchema,
   fieldDetailSchema,
   fieldListResponseSchema,
   fieldProductionResponseSchema,
@@ -30,6 +34,8 @@ export {
   wellFeatureSchema,
   wellProductionResponseSchema,
   wellTrajectoryResponseSchema,
+  type AlertItem,
+  type AlertListResponse,
   type FieldDetail,
   type FieldListResponse,
   type FieldProductionResponse,

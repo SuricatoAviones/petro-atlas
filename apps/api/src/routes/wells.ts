@@ -9,6 +9,7 @@ import {
 import { Router } from 'express';
 import { z } from 'zod';
 
+import { WELL_ALERT_LEVEL_SQL } from '../alert-level.ts';
 import type { Database } from '../database.ts';
 import { HttpError } from '../http-errors.ts';
 import {
@@ -45,6 +46,7 @@ interface WellRow {
   lon_deg: number;
   lat_deg: number;
   has_daily_data: boolean;
+  alert_level: 'warning' | 'critical' | null;
 }
 
 interface CumulativeRow {
@@ -103,7 +105,8 @@ export function createWellsRouter(database: Database): Router {
     }, query.bbox);
     addWellFilters(filter, query);
 
-    const from = `FROM ${WELL_FILTER_FROM}`;
+    const from = `FROM ${WELL_FILTER_FROM}
+                  LEFT JOIN well_alert a ON a.well_id = w.id`;
     // Counted before the cursor is added, so it covers every page.
     const count = await database.query<{ total: number }>(
       `SELECT count(*)::int AS total ${from} ${filter.where()}`,
@@ -114,7 +117,8 @@ export function createWellsRouter(database: Database): Router {
     const { rows } = await database.query<WellRow>(
       `SELECT w.id, w.slug, w.name, w.well_type, w.status, w.field_id, f.name AS field_name,
               ST_X(w.geom) AS lon_deg, ST_Y(w.geom) AS lat_deg,
-              EXISTS (SELECT 1 FROM production_daily p WHERE p.well_id = w.id) AS has_daily_data
+              EXISTS (SELECT 1 FROM production_daily p WHERE p.well_id = w.id) AS has_daily_data,
+              ${WELL_ALERT_LEVEL_SQL} AS alert_level
        ${from}
        ${filter.where()}
        ORDER BY w.id
@@ -136,7 +140,7 @@ export function createWellsRouter(database: Database): Router {
           status: row.status,
           fieldId: row.field_id,
           fieldName: row.field_name,
-          alertLevel: null,
+          alertLevel: row.alert_level,
           hasDailyData: row.has_daily_data,
         },
       })),

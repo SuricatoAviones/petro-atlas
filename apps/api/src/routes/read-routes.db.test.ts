@@ -3,6 +3,7 @@
  * prueba"). They only assert on the synthetic field, so extra data loaded by the ETL is harmless.
  */
 import {
+  alertListResponseSchema,
   apiErrorSchema,
   fieldDetailSchema,
   fieldListResponseSchema,
@@ -115,6 +116,8 @@ describe('GET /api/wells', () => {
       hasDailyData: true,
     });
     expect(exploration?.properties.hasDailyData).toBe(false);
+    const shutIn = collection.features.find((feature) => feature.properties.name === 'SYN-A-14');
+    expect(shutIn?.properties.alertLevel).toBe('critical');
   });
 
   it('pages through results with a cursor, without repeating or skipping wells', async () => {
@@ -344,6 +347,40 @@ describe('GET /api/fields/:id/production', () => {
 
   it('responds 404 FIELD_NOT_FOUND for an unknown field', async () => {
     await expectError('/fields/no-such-field/production', 404, 'FIELD_NOT_FOUND');
+  });
+});
+
+describe('GET /api/alerts', () => {
+  it('lists active alerts, critical first, with their details', async () => {
+    const { status, body } = await get('/alerts');
+    const alerts = alertListResponseSchema.parse(body);
+    const shutIn = alerts.items.find((item) => item.wellName === 'SYN-A-14');
+    const levels = alerts.items.map((item) => item.level);
+
+    expect(status).toBe(200);
+    expect(alerts.asOfByWell).toBe(true);
+    expect(shutIn).toMatchObject({ level: 'critical' });
+    expect(shutIn?.kinds).toContain('no_production');
+    expect(shutIn?.asOf).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    const firstWarning = levels.indexOf('warning');
+    const lastCritical = levels.lastIndexOf('critical');
+    if (firstWarning !== -1 && lastCritical !== -1) {
+      expect(firstWarning).toBeGreaterThan(lastCritical);
+    }
+  });
+
+  it('filters by field and level', async () => {
+    const field = alertListResponseSchema.parse(
+      (await get(`/alerts?field=${SEED_FIELD_SLUG}`)).body,
+    );
+    const critical = alertListResponseSchema.parse((await get('/alerts?level=critical')).body);
+
+    expect(field.items.every((item) => item.wellName.startsWith('SYN-'))).toBe(true);
+    expect(critical.items.every((item) => item.level === 'critical')).toBe(true);
+  });
+
+  it('responds 400 INVALID_PARAMS for an invalid level', async () => {
+    await expectError('/alerts?level=urgent', 400, 'INVALID_PARAMS');
   });
 });
 
