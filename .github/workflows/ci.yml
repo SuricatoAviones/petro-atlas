@@ -27,7 +27,9 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - name: Start the seeded database for the API route tests
-        run: docker compose up --detach --wait db db-setup
+        run: |
+          docker compose up --detach --wait db
+          docker compose run --rm db-setup
       - run: pnpm test
       - run: pnpm build
 

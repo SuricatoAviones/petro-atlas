@@ -64,7 +64,7 @@ export async function connectToSeededDatabase(): Promise<Database> {
   } catch (error) {
     throw new Error(
       'The API route tests need the seeded database. Start it with: ' +
-        'docker compose up --detach --wait db db-setup',
+        'docker compose up --detach db db-setup',
       { cause: error },
     );
   }
