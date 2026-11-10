@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
     // condition. Without this, `next dev` only works after the package has been built.
     resolveAlias: {
       '@petroatlas/shared-types': '../../packages/shared-types/src/index.ts',
-      '@petroatlas/petro-calc': '../../packages/petro-calc/src/index.ts',
+      '@suricatoaviones/petro-calc': '../../packages/petro-calc/src/index.ts',
     },
   },
   reactStrictMode: true,

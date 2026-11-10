@@ -1,7 +1,7 @@
 'use client';
 
 import type { WellProductionResponse } from '@petroatlas/shared-types';
-import { fitArps, rateAt } from '@petroatlas/petro-calc';
+import { fitArps, rateAt } from '@suricatoaviones/petro-calc';
 import { useMemo } from 'react';
 
 import type { FitWindow, UnitSystem } from '@/lib/sheet-state';

@@ -1,7 +1,7 @@
 'use client';
 
 import type { WellProductionResponse } from '@petroatlas/shared-types';
-import { chan, productivityIndex } from '@petroatlas/petro-calc';
+import { chan, productivityIndex } from '@suricatoaviones/petro-calc';
 import { useMemo, useState } from 'react';
 
 import { EngineeringChart } from './engineering-chart';

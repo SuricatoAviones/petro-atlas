@@ -1,7 +1,7 @@
 'use client';
 
 import type { WellTrajectoryResponse } from '@petroatlas/shared-types';
-import { toField } from '@petroatlas/petro-calc';
+import { toField } from '@suricatoaviones/petro-calc';
 import * as echarts from 'echarts/core';
 import { LineChart } from 'echarts/charts';
 import { GridComponent, TooltipComponent } from 'echarts/components';
