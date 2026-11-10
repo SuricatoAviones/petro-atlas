@@ -1,7 +1,9 @@
 import {
   wellCollectionResponseSchema,
+  wellCumulativeResponseSchema,
   wellDetailSchema,
   type WellCollectionResponse,
+  type WellCumulativeResponse,
   type WellDetail,
 } from '@petroatlas/shared-types';
 import { Router } from 'express';
@@ -27,6 +29,11 @@ const listQuerySchema = z.object({
   ...paginationParams,
 });
 
+const cumulativeQuerySchema = z.object({
+  bbox: bboxParam.optional(),
+  ...wellFilterParams,
+});
+
 interface WellRow {
   id: number;
   slug: string;
@@ -38,6 +45,23 @@ interface WellRow {
   lon_deg: number;
   lat_deg: number;
   has_daily_data: boolean;
+}
+
+interface CumulativeRow {
+  id: number;
+  name: string;
+  lon_deg: number;
+  lat_deg: number;
+  oil_sm3: number | null;
+  gas_sm3: number | null;
+  water_sm3: number | null;
+}
+
+function addBboxFilter(filter: ReturnType<typeof createSqlFilter>, bbox: unknown): void {
+  filter.add((placeholder) => {
+    const corner = (index: number): string => `(${placeholder}::float8[])[${String(index)}]`;
+    return `w.geom && ST_MakeEnvelope(${corner(1)}, ${corner(2)}, ${corner(3)}, ${corner(4)}, 4326)`;
+  }, bbox);
 }
 
 interface WellDetailRow {
@@ -118,6 +142,40 @@ export function createWellsRouter(database: Database): Router {
       })),
       totalCount: count.rows[0]?.total ?? 0,
       nextCursor,
+    });
+    setReadCacheHeader(response);
+    response.json(body);
+  });
+
+  router.get('/wells/cumulative', async (request, response) => {
+    const query = parseParams(cumulativeQuerySchema, request.query);
+    const filter = createSqlFilter();
+    addBboxFilter(filter, query.bbox);
+    addWellFilters(filter, query);
+
+    const { rows } = await database.query<CumulativeRow>(
+      `SELECT w.id, w.name, ST_X(w.geom) AS lon_deg, ST_Y(w.geom) AS lat_deg,
+              sum(p.oil_sm3)::float8 AS oil_sm3,
+              sum(p.gas_sm3)::float8 AS gas_sm3,
+              sum(p.water_sm3)::float8 AS water_sm3
+       FROM ${WELL_FILTER_FROM}
+       LEFT JOIN production_daily p ON p.well_id = w.id
+       ${filter.where()}
+       GROUP BY w.id, w.name, w.geom
+       ORDER BY w.id`,
+      filter.values,
+    );
+
+    const body: WellCumulativeResponse = wellCumulativeResponseSchema.parse({
+      items: rows.map((row) => ({
+        wellId: row.id,
+        name: row.name,
+        lonDeg: row.lon_deg,
+        latDeg: row.lat_deg,
+        oilSm3: row.oil_sm3,
+        gasSm3: row.gas_sm3,
+        waterSm3: row.water_sm3,
+      })),
     });
     setReadCacheHeader(response);
     response.json(body);

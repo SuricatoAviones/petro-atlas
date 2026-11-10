@@ -9,6 +9,7 @@ import {
   fieldProductionResponseSchema,
   sourceListResponseSchema,
   wellCollectionResponseSchema,
+  wellCumulativeResponseSchema,
   wellDetailSchema,
   wellProductionResponseSchema,
   wellTrajectoryResponseSchema,
@@ -177,6 +178,36 @@ describe('GET /api/wells', () => {
     'limit=abc',
   ])('responds 400 INVALID_PARAMS for %s', async (filters) => {
     await expectError(`/wells?${filters}`, 400, 'INVALID_PARAMS');
+  });
+});
+
+describe('GET /api/wells/cumulative', () => {
+  it('returns accumulated volumes per well and accepts the well filters', async () => {
+    const all = wellCumulativeResponseSchema.parse(
+      (await get(`/wells/cumulative?field=${SEED_FIELD_SLUG}`)).body,
+    );
+    const producer = all.items.find((item) => item.name === 'SYN-A-01');
+    const injectors = wellCumulativeResponseSchema.parse(
+      (await get(`/wells/cumulative?field=${SEED_FIELD_SLUG}&type=injector`)).body,
+    );
+
+    expect(all.items).toHaveLength(20);
+    expect(producer?.oilSm3).toBeGreaterThan(0);
+    expect(producer?.gasSm3).toBeGreaterThan(0);
+    expect(injectors.items).toHaveLength(4);
+    expect(injectors.items.every((item) => item.oilSm3 === null)).toBe(true);
+  });
+
+  it('filters by bounding box', async () => {
+    const body = wellCumulativeResponseSchema.parse(
+      (await get('/wells/cumulative?bbox=2.9,64.55,3.1,64.65')).body,
+    );
+
+    expect(body.items).toHaveLength(20);
+  });
+
+  it('responds 400 INVALID_PARAMS for an invalid bounding box', async () => {
+    await expectError('/wells/cumulative?bbox=3,64,2,65', 400, 'INVALID_PARAMS');
   });
 });
 

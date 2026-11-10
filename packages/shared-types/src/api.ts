@@ -96,6 +96,23 @@ export const wellCollectionResponseSchema = z.object({
 });
 export type WellCollectionResponse = z.infer<typeof wellCollectionResponseSchema>;
 
+/** `GET /api/wells/cumulative`: one row per well with its cumulative produced volumes. */
+export const wellCumulativeSchema = z.object({
+  wellId: z.number().int(),
+  name: z.string(),
+  lonDeg: z.number(),
+  latDeg: z.number(),
+  oilSm3: z.number().nullable(),
+  gasSm3: z.number().nullable(),
+  waterSm3: z.number().nullable(),
+});
+export type WellCumulative = z.infer<typeof wellCumulativeSchema>;
+
+export const wellCumulativeResponseSchema = z.object({
+  items: z.array(wellCumulativeSchema),
+});
+export type WellCumulativeResponse = z.infer<typeof wellCumulativeResponseSchema>;
+
 /** `GET /api/wells/:id` */
 export const wellDetailSchema = z.object({
   id: z.number().int(),

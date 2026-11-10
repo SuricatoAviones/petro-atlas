@@ -11,6 +11,7 @@ La API es de solo lectura y sirve datos. Los cálculos de ingeniería corren en 
 | `GET /api/fields/:id` | Campo con su polígono GeoJSON y totales | |
 | `GET /api/fields/:id/production` | Serie de producción del campo | `from`, `to`, `interval` |
 | `GET /api/wells` | Pozos como GeoJSON FeatureCollection | `bbox`, `field`, `status`, `type`, `operator`, `spudFrom`, `spudTo` |
+| `GET /api/wells/cumulative` | Acumulados por pozo para el mapa de burbujas | `bbox`, `field`, `status`, `type`, `operator`, `spudFrom`, `spudTo` |
 | `GET /api/wells/:id` | Metadatos del pozo y series disponibles | |
 | `GET /api/wells/:id/production` | Tasas, presiones, temperaturas y choke | `from`, `to`, `interval` = `day` o `month` |
 | `GET /api/wells/:id/trajectory` | Estaciones de desviación | |
@@ -97,6 +98,26 @@ Si la base de datos no responde, devuelve 503 con el formato común de error:
 ```
 
 `alertLevel` es siempre `null` hasta que exista la vista de alertas (fase 2).
+
+`GET /api/wells/cumulative?field=volve`
+
+Devuelve una fila por pozo con los volúmenes acumulados de toda su serie diaria. Un fluido sin datos es `null`, no cero.
+
+```json
+{
+  "items": [
+    {
+      "wellId": 1447,
+      "name": "15/9-F-12",
+      "lonDeg": 1.8859,
+      "latDeg": 58.441,
+      "oilSm3": 10037078,
+      "gasSm3": 1475370112,
+      "waterSm3": 15318578
+    }
+  ]
+}
+```
 
 `GET /api/wells/15-9-F-12`
 
