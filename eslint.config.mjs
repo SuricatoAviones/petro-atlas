@@ -22,6 +22,7 @@ export default defineConfig([
   globalIgnores([
     '**/dist/',
     '**/.next/',
+    '**/.next-e2e/',
     '**/next-env.d.ts',
     'coverage/',
     'data/',

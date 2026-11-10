@@ -1,10 +1,10 @@
-import { Router } from 'express';
+import { Router, type Response } from 'express';
 import { z } from 'zod';
 
 import type { Database } from '../database.ts';
 import { HttpError } from '../http-errors.ts';
 import { parseParams, setReadCacheHeader } from '../params.ts';
-import { createSqlFilter } from '../sql-filter.ts';
+import { createSqlFilter, type SqlFilter } from '../sql-filter.ts';
 import { WELL_FILTER_FROM, addWellFilters, wellFilterSchema } from '../well-filters.ts';
 
 /** Up to this zoom, wells that fall in the same grid cell of a tile are served as one cluster. */
@@ -25,6 +25,25 @@ const tileParamsSchema = z.object({
 
 const WELL_PROPERTIES = 'id, name, slug, well_type AS "wellType", status';
 
+/** Validates `z/x/y` and returns them as placeholders of `filter`, ready for ST_TileEnvelope. */
+function tileArguments(filter: SqlFilter, params: unknown): { zoom: number; tile: string } {
+  const { z: zoom, x, y } = parseParams(tileParamsSchema, params);
+  if (x >= 2 ** zoom || y >= 2 ** zoom) {
+    throw new HttpError(400, 'INVALID_PARAMS', 'Parámetro inválido: x, y');
+  }
+  const tile = `${filter.param(zoom)}::int, ${filter.param(x)}::int, ${filter.param(y)}::int`;
+  return { zoom, tile };
+}
+
+function sendTile(response: Response, body: Buffer | undefined): void {
+  setReadCacheHeader(response);
+  if (body === undefined || body.length === 0) {
+    response.status(204).end();
+    return;
+  }
+  response.type(TILE_CONTENT_TYPE).send(body);
+}
+
 /**
  * `GET /tiles/wells/:z/:x/:y.mvt` (docs/06, ADR 0003): wells as Mapbox Vector Tiles built with
  * ST_AsMVT. A tile has two layers:
@@ -34,20 +53,19 @@ const WELL_PROPERTIES = 'id, name, slug, well_type AS "wellType", status';
  *   the well id.
  *
  * It accepts the attribute filters of `GET /wells`, so cluster counts match the filtered list.
+ *
+ * `GET /tiles/fields/:z/:x/:y.mvt`: field outlines in a `fields` layer with `name`, `slug` and
+ * `status`; the feature id is the field id.
  */
 export function createTilesRouter(database: Database): Router {
   const router = Router();
 
   router.get('/tiles/wells/:z/:x/:y.mvt', async (request, response) => {
-    const { z: zoom, x, y } = parseParams(tileParamsSchema, request.params);
-    if (x >= 2 ** zoom || y >= 2 ** zoom) {
-      throw new HttpError(400, 'INVALID_PARAMS', 'Parámetro inválido: x, y');
-    }
+    const filter = createSqlFilter();
+    const { zoom, tile } = tileArguments(filter, request.params);
     const filters = parseParams(wellFilterSchema, request.query);
     const isClustered = zoom <= CLUSTER_MAX_ZOOM;
 
-    const filter = createSqlFilter();
-    const tile = `${filter.param(zoom)}::int, ${filter.param(x)}::int, ${filter.param(y)}::int`;
     // `&&` uses the GiST index on well.geom. Clusters use the exact tile so no well is counted
     // in two tiles; single wells also come from the margin so their symbols are not cut.
     filter.addCondition('w.geom && ST_Transform(bounds.search, 4326)');
@@ -108,14 +126,30 @@ export function createTilesRouter(database: Database): Router {
          ), '') AS tile`;
 
     const { rows } = await database.query<{ tile: Buffer }>(sql, filter.values);
-    const body = rows[0]?.tile;
+    sendTile(response, rows[0]?.tile);
+  });
 
-    setReadCacheHeader(response);
-    if (body === undefined || body.length === 0) {
-      response.status(204).end();
-      return;
-    }
-    response.type(TILE_CONTENT_TYPE).send(body);
+  // Field outlines as polygons clipped to the tile. ST_AsMVTGeom drops what is smaller than a
+  // tile unit, so a low-zoom tile carries only the fields that can be drawn at that scale.
+  router.get('/tiles/fields/:z/:x/:y.mvt', async (request, response) => {
+    const filter = createSqlFilter();
+    const { tile } = tileArguments(filter, request.params);
+
+    const { rows } = await database.query<{ tile: Buffer }>(
+      `WITH bounds AS (SELECT ST_TileEnvelope(${tile}) AS geom)
+       SELECT ST_AsMVT(layer, 'fields', ${String(TILE_EXTENT)}, 'geom', 'id') AS tile
+       FROM (
+         SELECT f.id, f.name, f.slug, f.status,
+                ST_AsMVTGeom(ST_Transform(f.geom, 3857), bounds.geom,
+                             ${String(TILE_EXTENT)}, ${String(TILE_BUFFER)}, true) AS geom
+         FROM field f CROSS JOIN bounds
+         -- The bounding-box operator uses the GiST index on field.geom.
+         WHERE f.geom && ST_Transform(bounds.geom, 4326)
+       ) layer
+       WHERE geom IS NOT NULL`,
+      filter.values,
+    );
+    sendTile(response, rows[0]?.tile);
   });
 
   return router;

@@ -2,7 +2,7 @@
 
 Explorador web de campos petroleros, de código abierto: un mapa de pozos como entrada, fichas con gráficas de producción y presión, y herramientas de ingeniería que calculan sobre los datos del pozo seleccionado. El nombre es provisional.
 
-> **Estado: fase 1 en curso.** Hoy el repositorio levanta la base de datos con datos sintéticos, una API con `GET /api/health` y una web con el mapa base, y el ETL ya carga los pozos y campos públicos de Sodir. Los pozos en el mapa llegan con el resto de la fase 1. El plan completo está en [docs/11-plan-de-fases.md](docs/11-plan-de-fases.md).
+> **Estado: fase 1 funcionalmente completa.** El mapa muestra los pozos y campos públicos de Sodir con clustering, filtros, ficha de pozo y estado en la URL, y la página de fuentes y licencias. Queda publicar la demo. El plan completo está en [docs/11-plan-de-fases.md](docs/11-plan-de-fases.md).
 
 ## Arranque rápido
 
@@ -33,22 +33,24 @@ Requisitos: Node 26 (LTS, ver `.nvmrc`), pnpm 12 y Docker para la base de datos.
 ```bash
 pnpm install
 cp .env.example .env
+pnpm exec playwright install chromium    # solo la primera vez, para las pruebas e2e
 
 docker compose up --detach db db-setup   # base de datos, migraciones y datos sintéticos
 pnpm dev                                 # API en :4000 y web en :3000, con recarga
 ```
 
-| Comando           | Qué hace                                                               |
-| ----------------- | ---------------------------------------------------------------------- |
-| `pnpm dev`        | API y web en modo desarrollo                                           |
-| `pnpm lint`       | ESLint y comprobación de formato con Prettier                          |
-| `pnpm format`     | Aplica el formato de Prettier                                          |
-| `pnpm typecheck`  | `tsc --noEmit` en todos los paquetes                                   |
-| `pnpm test`       | Pruebas con Vitest; las de la API necesitan la base de datos en marcha |
-| `pnpm build`      | Compila paquetes, API y web                                            |
-| `pnpm db:migrate` | Aplica las migraciones pendientes de `db/migrations`                   |
-| `pnpm db:seed`    | Carga los datos sintéticos; se puede repetir sin duplicar nada         |
-| `pnpm etl:sodir`  | Descarga los pozos y campos públicos de Sodir a `data/` y los carga    |
+| Comando           | Qué hace                                                                |
+| ----------------- | ----------------------------------------------------------------------- |
+| `pnpm dev`        | API y web en modo desarrollo                                            |
+| `pnpm lint`       | ESLint y comprobación de formato con Prettier                           |
+| `pnpm format`     | Aplica el formato de Prettier                                           |
+| `pnpm typecheck`  | `tsc --noEmit` en todos los paquetes                                    |
+| `pnpm test`       | Pruebas con Vitest; las de la API necesitan la base de datos en marcha  |
+| `pnpm test:e2e`   | Pruebas de extremo a extremo con Playwright; necesitan la base de datos |
+| `pnpm build`      | Compila paquetes, API y web                                             |
+| `pnpm db:migrate` | Aplica las migraciones pendientes de `db/migrations`                    |
+| `pnpm db:seed`    | Carga los datos sintéticos; se puede repetir sin duplicar nada          |
+| `pnpm etl:sodir`  | Descarga los pozos y campos públicos de Sodir a `data/` y los carga     |
 
 Un cambio está terminado cuando `pnpm lint`, `pnpm typecheck`, `pnpm test` y `pnpm build` pasan. El resto de reglas está en [docs/12-convenciones.md](docs/12-convenciones.md).
 

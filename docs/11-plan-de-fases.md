@@ -34,12 +34,12 @@ Objetivo: explorar pozos y campos reales.
 - [x] ETL de Sodir: campos con polígonos y pozos con coordenadas.
 - [x] `GET /api/fields`, `GET /api/fields/:id`, `GET /api/wells`, `GET /api/wells/:id`, `GET /api/meta/sources`.
 - [x] Teselas vectoriales de pozos con `ST_AsMVT`.
-- [ ] Mapa con clustering, color por estado o tipo, y capa de campos visible según el zoom.
-- [ ] Panel de filtros con conteo de resultados, indicador de carga y leyenda.
-- [ ] Ficha del pozo con metadatos y ubicación.
-- [ ] Estado en la URL: filtros, pozo abierto y vista del mapa.
-- [ ] Página "Fuentes y licencias".
-- [ ] Prueba de extremo a extremo: abrir el mapa, filtrar, abrir un pozo, recargar y ver la misma vista.
+- [x] Mapa con clustering, color por estado o tipo, y capa de campos visible según el zoom.
+- [x] Panel de filtros con conteo de resultados, indicador de carga y leyenda.
+- [x] Ficha del pozo con metadatos y ubicación.
+- [x] Estado en la URL: filtros, pozo abierto y vista del mapa.
+- [x] Página "Fuentes y licencias".
+- [x] Prueba de extremo a extremo: abrir el mapa, filtrar, abrir un pozo, recargar y ver la misma vista.
 
 Cierre: demo pública con todos los pozos de Sodir, fluida al navegar.
 

@@ -65,6 +65,7 @@ services:
       args:
         # Passed only when set in the environment or in .env; the Dockerfile has the default.
         - NEXT_PUBLIC_MAP_STYLE_URL
+        - NEXT_PUBLIC_API_URL
     ports:
       - '${WEB_PORT:-3000}:3000'
     depends_on:

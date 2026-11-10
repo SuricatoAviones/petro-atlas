@@ -4,12 +4,15 @@ node_modules/
 # Build output
 dist/
 .next/
+.next-e2e/
 out/
 next-env.d.ts
 *.tsbuildinfo
 
 # Test output
 coverage/
+test-results/
+playwright-report/
 
 # Third-party data downloaded by the ETL (never committed, see docs/10)
 data/

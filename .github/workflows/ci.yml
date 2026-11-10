@@ -31,6 +31,10 @@ jobs:
           docker compose up --detach --wait db
           docker compose run --rm db-setup
       - run: pnpm test
+      - name: Install the Playwright browser
+        run: pnpm exec playwright install --with-deps chromium
+      - name: End-to-end tests
+        run: pnpm test:e2e
       - run: pnpm build
 
   compose:
