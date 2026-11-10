@@ -81,13 +81,25 @@ describe('Beggs-Robinson viscosity', () => {
 
 describe('PVT input validation', () => {
   it('rejects invalid fluid properties', () => {
+    expect(() => standing({ ...EXAMPLE, api: Number.NaN })).toThrow(
+      'API gravity must be a finite number',
+    );
     expect(() => standing({ ...EXAMPLE, gasGravity: 0 })).toThrow('Gas gravity must be positive');
+    expect(() => standing({ ...EXAMPLE, temperatureF: -460 })).toThrow(
+      'Temperature must be above absolute zero',
+    );
     expect(() => standing({ ...EXAMPLE, solutionGasScfStb: -1 })).toThrow(
       'Solution gas must be non-negative',
     );
     expect(() => standingSolutionGas({ ...EXAMPLE, pressurePsia: 0 })).toThrow(
       'Pressure must be positive',
     );
+    expect(() => standingSolutionGas({ ...EXAMPLE, gasGravity: 0, pressurePsia: 1000 })).toThrow(
+      'Gas gravity must be positive',
+    );
+    expect(() =>
+      standingSolutionGas({ ...EXAMPLE, temperatureF: -460, pressurePsia: 1000 }),
+    ).toThrow('Temperature must be above absolute zero');
     expect(() => beggsRobinsonDeadOil(35, -460)).toThrow('Temperature must be above absolute zero');
   });
 });

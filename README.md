@@ -46,6 +46,7 @@ pnpm dev                                 # API en :4000 y web en :3000, con reca
 | `pnpm format`     | Aplica el formato de Prettier                                           |
 | `pnpm typecheck`  | `tsc --noEmit` en todos los paquetes                                    |
 | `pnpm test`       | Pruebas con Vitest; las de la API necesitan la base de datos en marcha  |
+| `pnpm test:coverage` | Cobertura de `petro-calc`; falla por debajo del 90%                  |
 | `pnpm test:e2e`   | Pruebas de extremo a extremo con Playwright; necesitan la base de datos |
 | `pnpm build`      | Compila paquetes, API y web                                             |
 | `pnpm db:migrate` | Aplica las migraciones pendientes de `db/migrations`                    |

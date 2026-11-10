@@ -219,7 +219,7 @@ function toFit(
   const mean = logQ.reduce((sum, value) => sum + value, 0) / logQ.length;
   let sst = 0;
   for (const value of logQ) sst += (value - mean) ** 2;
-  const r2 = sst === 0 ? (candidate.sse === 0 ? 1 : 0) : Math.max(0, 1 - candidate.sse / sst);
+  const r2 = sst < 1e-12 ? 1 : Math.max(0, 1 - candidate.sse / sst);
   return {
     model,
     qi: candidate.qi,
@@ -255,7 +255,6 @@ export function forecast(fit: ArpsFit, days: number, step = 1): { t: number[]; q
   if (!Number.isFinite(step) || step <= 0) throw new Error('step must be positive');
   const t: number[] = [];
   for (let index = 0; index * step <= days + 1e-9; index += 1) t.push(index * step);
-  if (t.length === 0) t.push(0);
   const last = t.at(-1) ?? 0;
   if (last < days - 1e-9) t.push(days);
   return { t, q: t.map((time) => rateAt(fit, time)) };

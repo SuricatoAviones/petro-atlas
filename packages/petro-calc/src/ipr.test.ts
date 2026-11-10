@@ -54,6 +54,18 @@ describe('fetkovich', () => {
         { pwf: 3000, q: 10 },
       ]),
     ).toThrow('Flowing pressure must be between 0 and the reservoir pressure');
+    expect(() =>
+      fetkovich(3000, [
+        { pwf: 1000, q: -1 },
+        { pwf: 2000, q: 10 },
+      ]),
+    ).toThrow('Fetkovich test rates must be positive');
+    expect(() =>
+      fetkovich(3000, [
+        { pwf: 0, q: 50 },
+        { pwf: 1500, q: 100 },
+      ]),
+    ).toThrow('The Fetkovich fit did not converge');
   });
 });
 

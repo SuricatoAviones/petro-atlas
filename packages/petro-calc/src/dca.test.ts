@@ -76,6 +76,19 @@ describe('fitArps', () => {
     );
   });
 
+  it('reports a perfect fit for a constant rate', () => {
+    const t = [0, 1, 2, 3, 4, 5];
+    const fit = fitArps(
+      t,
+      t.map(() => 100),
+      { model: 'exponential' },
+    );
+
+    expect(fit.qi).toBeCloseTo(100, 8);
+    expect(fit.di).toBeCloseTo(0, 10);
+    expect(fit.r2).toBe(1);
+  });
+
   it('rejects mismatched arrays and an invalid bMax', () => {
     expect(() => fitArps([0, 1], [100])).toThrow('t and q must have the same length');
     expect(() =>
@@ -104,7 +117,7 @@ describe('rateAt and cumulativeAt', () => {
     const harmonic = manualFit(100, 0.01, 1, 'harmonic');
 
     expect(cumulativeAt(exponential, 10)).toBeCloseTo(951.6258196, 6);
-    expect(cumulativeAt(harmonic, 10)).toBeCloseTo(953.1017980, 6);
+    expect(cumulativeAt(harmonic, 10)).toBeCloseTo(953.101798, 6);
   });
 
   it('matches a numerical integral for the hyperbolic equation', () => {
@@ -144,6 +157,11 @@ describe('forecast', () => {
     expect(result.q).toHaveLength(4);
     expect(result.q[0]).toBeCloseTo(100, 10);
     expect(result.q.at(-1)).toBeCloseTo(rateAt(fit, 2.5), 10);
+  });
+
+  it('returns the initial point for a zero-day forecast', () => {
+    const fit = manualFit(100, 0.01, 0, 'exponential');
+    expect(forecast(fit, 0)).toEqual({ t: [0], q: [100] });
   });
 
   it('rejects invalid ranges', () => {
