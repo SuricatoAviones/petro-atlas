@@ -33,6 +33,14 @@ export default defineConfig({
       {
         extends: true,
         test: {
+          name: 'etl',
+          root: './etl',
+          include: ['src/**/*.test.ts'],
+        },
+      },
+      {
+        extends: true,
+        test: {
           name: 'db',
           root: './db',
           include: ['seed/**/*.test.ts'],
