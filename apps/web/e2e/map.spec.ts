@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
 
-const FIELD_SLUG = 'synthetic-alpha';
-const FIELD_NAME = 'SYNTHETIC ALPHA';
-/** Synthetic well SYNA-01 and the zoom at which the wells layer shows individual symbols. */
-const INITIAL_VIEW = '64.5651,2.93883,12';
+const FIELD_SLUG = 'campo-escuela-venezuela';
+const FIELD_NAME = 'CAMPO ESCUELA VENEZUELA';
+/** Synthetic well VE-01 and the zoom at which the wells layer shows individual symbols. */
+const INITIAL_VIEW = '9.63021,-63.21117,12';
 
 function parseView(value: string | null): [number, number, number] {
   const [lat, lon, zoom] = (value ?? '').split(',').map(Number);
@@ -45,7 +45,7 @@ test('filters the map, opens a well and keeps the view after a reload', async ({
   const sheet = page.getByTestId('well-sheet');
   await expect(sheet).toBeVisible();
   const heading = sheet.getByRole('heading', { level: 2 });
-  await expect(heading).toHaveText(/SYN-A-\d+/);
+  await expect(heading).toHaveText(/VE-\d+/);
   const wellName = (await heading.textContent())?.trim() ?? '';
 
   await sheet.getByRole('tab', { name: 'Producción' }).click();
@@ -104,6 +104,6 @@ test('filters the map, opens a well and keeps the view after a reload', async ({
   await expect(filterPanel.getByText('Volumen acumulado')).toBeVisible();
 
   await expect(filterPanel.getByText('Sin producción')).toBeVisible();
-  await filterPanel.getByRole('button', { name: 'SYN-A-14' }).click();
-  await expect(sheet.getByRole('heading', { level: 2 })).toHaveText('SYN-A-14');
+  await filterPanel.getByRole('button', { name: 'VE-14' }).click();
+  await expect(sheet.getByRole('heading', { level: 2 })).toHaveText('VE-14');
 });

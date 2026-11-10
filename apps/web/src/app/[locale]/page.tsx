@@ -1,13 +1,25 @@
+import type { Metadata } from 'next';
 import { Suspense } from 'react';
 
 import { AppFooter } from '@/components/app-footer';
 import { AppHeader } from '@/components/app-header';
 import { MapExplorer } from '@/components/map-explorer';
-import { getRequestLocale } from '@/lib/locale';
-import { getMessages } from '@/messages';
+import { pageMetadata } from '@/lib/page-metadata';
+import { getMessages, parseLocale } from '@/messages';
 
-export default async function HomePage() {
-  const messages = getMessages(await getRequestLocale());
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const locale = parseLocale((await params).locale);
+  const messages = getMessages(locale);
+  return pageMetadata(locale, '', messages.app.tagline, messages.app.description);
+}
+
+export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
+  const locale = parseLocale((await params).locale);
+  const messages = getMessages(locale);
 
   return (
     <div className="app-shell">

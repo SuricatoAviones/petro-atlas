@@ -86,8 +86,8 @@ erDiagram
 - `production_daily`, `field_production_monthly` y `trajectory_station` guardan su `source_id`, para que la interfaz muestre la fuente y la licencia de cada serie (RNF-02).
 - Un dato ausente es `NULL`, nunca cero. Un cero significa que se midió cero.
 - Las series usan clave compuesta (pozo, fecha), lo que hace la ingesta idempotente con `ON CONFLICT`.
-- Las geometrías están en EPSG:4326. Las fuentes que publican en otro datum (Sodir usa ED50, EPSG:4230) se transforman al cargar.
-- `well.slug` y `field.slug` son columnas generadas a partir de `name`, con índice único: el identificador legible que usa la URL (`15/9-F-12` → `15-9-F-12`, `VOLVE` → `volve`). Las añade `0002_slugs.sql`; nadie las escribe a mano.
+- Las geometrías están en EPSG:4326. Los datos de ejemplo ya están en EPSG:4326.
+- `well.slug` y `field.slug` son columnas generadas a partir de `name`, con índice único: el identificador legible que usa la URL (`VE-01` → `VE-01`, `CAMPO ESCUELA VENEZUELA` → `campo-escuela-venezuela`). Las añade `0002_slugs.sql`; nadie las escribe a mano.
 - `production_daily` guarda volúmenes del día, no tasas. La tasa diaria es el volumen del día; la tasa en flujo se obtiene dividiendo entre `on_stream_h / 24`.
 - Las curvas de registro guardan sus muestras en un arreglo con paso de profundidad constante entre `top_m` y `base_m`. Evita millones de filas por pozo y basta para un visor.
 
@@ -218,7 +218,7 @@ SELECT well_id, as_of, oil_7d, oil_prev30,
 FROM agg;
 ```
 
-Los umbrales de la vista deben coincidir con los valores por defecto de `petro-calc/alerts`. Si se cambian en un lado, se cambian en el otro en el mismo PR. Si el cálculo resulta lento con muchos pozos, la vista pasa a ser materializada y el ETL la refresca al terminar.
+Los umbrales de la vista deben coincidir con los valores por defecto de `petro-calc/alerts`. Si se cambian en un lado, se cambian en el otro en el mismo PR. Si el cálculo resulta lento con muchos pozos, la vista pasa a ser materializada y el seed la refresca al terminar.
 
 ## Migraciones
 
@@ -232,7 +232,7 @@ Los umbrales de la vista deben coincidir con los valores por defecto de `petro-c
 
 | Usuario | Permisos | Quién lo usa |
 | --- | --- | --- |
-| `petroatlas_etl` | Lectura y escritura | ETL y migraciones |
+| `petroatlas_etl` | Lectura y escritura | Migraciones y seed |
 | `petroatlas_api` | Solo `SELECT` | API |
 
 Los usuarios no se crean en una migración, porque sus contraseñas vienen del entorno: los crea `db/init/20-petroatlas-roles.sh` cuando el contenedor de PostgreSQL inicializa la base de datos. El mismo script instala PostGIS, que exige superusuario, y deja privilegios por defecto para que toda tabla creada por `petroatlas_etl` sea legible, y solo legible, por `petroatlas_api`.

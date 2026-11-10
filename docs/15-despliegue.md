@@ -23,9 +23,7 @@ El Blueprint crea los tres recursos dentro del proyecto `PetroAtlas`, entorno `P
    ```powershell
    $env:ETL_DATABASE_URL='postgres://...@.../petroatlas?sslmode=require'
    pnpm db:migrate
-   pnpm db:seed       # datos sintéticos; opcional
-   pnpm etl:sodir     # datos públicos; opcional
-   pnpm etl:volve     # datos de Volve; opcional
+   pnpm db:seed       # datos sintéticos de Venezuela
    ```
 
 6. Abre `https://petroatlas-web.onrender.com` y comprueba el mapa y la ficha de un pozo.
@@ -62,4 +60,4 @@ El Blueprint entrega a la API la conexión del usuario propietario de la base de
 
 ## Datos y licencias
 
-El despliegue no cambia las reglas de `10-fuentes-de-datos.md`: el repositorio no redistribuye datos de terceros. Antes de publicar una demo con datos de Volve o Sodir, revisa las condiciones de la fuente y mantén la atribución que muestra la interfaz.
+El despliegue no cambia las reglas de `10-fuentes-de-datos.md`: la demo usa solo el conjunto sintético de Venezuela y no redistribuye datos de terceros.

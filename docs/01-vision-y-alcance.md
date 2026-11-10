@@ -50,13 +50,13 @@ Fuera de alcance:
 
 | ID | Requisito | Cómo se verifica |
 | --- | --- | --- |
-| RNF-01 Rendimiento | El mapa responde con fluidez con 10.000 pozos; las series se sirven agregadas según el rango visible | Prueba de carga con datos de Sodir; la ficha de un pozo abre en menos de 1 s en local |
+| RNF-01 Rendimiento | El mapa responde con fluidez con 10.000 pozos; las series se sirven agregadas según el rango visible | Prueba de carga con el seed sintético; la ficha de un pozo abre en menos de 1 s en local |
 | RNF-02 Trazabilidad | Cada registro guarda su fuente y fecha de ingesta; cada gráfica muestra de dónde vienen sus datos | Columna `source_id` y pie de fuente en cada gráfica |
 | RNF-03 Unidades | Almacenamiento en SI; la interfaz alterna entre SI y unidades de campo (bbl, psi, °F) | Pruebas de conversión en `petro-calc/units` |
 | RNF-04 Calidad | El paquete de cálculos tiene pruebas unitarias contra casos publicados | Cobertura de 90% o más en `petro-calc` |
 | RNF-05 Despliegue | Un solo `docker compose up` levanta base de datos, API y web con datos de ejemplo | Paso del CI |
 | RNF-06 Accesibilidad | Navegable por teclado, contraste AA, cada gráfica con vista de tabla alternativa | Revisión con axe en las pruebas de extremo a extremo |
-| RNF-07 Licencias | El repositorio no redistribuye datos de terceros; el ETL los descarga | Revisión del PR; `.gitignore` de `data/` |
+| RNF-07 Licencias | El repositorio solo incluye datos sintéticos generados por el seed | Revisión del PR; `.gitignore` de `data/` |
 
 ## Glosario
 

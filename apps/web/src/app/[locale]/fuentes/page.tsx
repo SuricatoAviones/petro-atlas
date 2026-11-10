@@ -4,19 +4,23 @@ import Link from 'next/link';
 import { AppFooter } from '@/components/app-footer';
 import { AppHeader } from '@/components/app-header';
 import { SourcesList } from '@/components/sources-list';
-import { getRequestLocale } from '@/lib/locale';
-import { getMessages } from '@/messages';
+import { pageMetadata } from '@/lib/page-metadata';
+import { getMessages, parseLocale } from '@/messages';
 
-export async function generateMetadata(): Promise<Metadata> {
-  const messages = getMessages(await getRequestLocale());
-  return {
-    title: `${messages.sources.title} — ${messages.app.name}`,
-    description: messages.sources.intro,
-  };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const locale = parseLocale((await params).locale);
+  const messages = getMessages(locale);
+  return pageMetadata(locale, '/fuentes', messages.sources.title, messages.sources.intro);
 }
 
-export default async function SourcesPage() {
-  const messages = getMessages(await getRequestLocale());
+export default async function SourcesPage({ params }: { params: Promise<{ locale: string }> }) {
+  const locale = parseLocale((await params).locale);
+  const messages = getMessages(locale);
+
   return (
     <div className="app-shell">
       <AppHeader current="sources" />
@@ -26,7 +30,7 @@ export default async function SourcesPage() {
           <p className="page__intro">{messages.sources.intro}</p>
           <SourcesList />
           <p className="page__note">{messages.sources.syntheticNote}</p>
-          <Link className="page__back" href="/">
+          <Link className="page__back" href={`/${locale}`}>
             {messages.sources.backToMap}
           </Link>
         </div>

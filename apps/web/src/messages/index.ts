@@ -7,8 +7,6 @@ export const LOCALES = ['es', 'en'] as const;
 export type Locale = (typeof LOCALES)[number];
 
 export const DEFAULT_LOCALE: Locale = 'es';
-/** Functional cookie that remembers the chosen interface language. */
-export const LOCALE_COOKIE = 'petroatlas-locale';
 
 export function parseLocale(value: string | null | undefined): Locale {
   return value === 'en' ? 'en' : DEFAULT_LOCALE;

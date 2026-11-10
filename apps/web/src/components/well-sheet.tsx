@@ -26,6 +26,7 @@ import { LazyDiagnosticsTab } from './lazy-diagnostics-tab';
 import { LazyEngineeringTab } from './lazy-engineering-tab';
 import { LazyProductionCharts } from './lazy-production-charts';
 import { LazyTrajectoryChart } from './lazy-trajectory-chart';
+import { LocalLogs } from './local-logs';
 import { useLocale, useMessages } from './locale-provider';
 import { LogsChart } from './logs-chart';
 import { WellComparison } from './well-comparison';
@@ -418,6 +419,7 @@ export function WellSheet({
             )}
             {tab === 'logs' && (
               <>
+                <LocalLogs key={`las:${selectedKey}`} wellKey={selectedKey} />
                 {selectedOrigin === 'imported' ? (
                   <p className="well-sheet__notice">
                     {messages.wellSheet.logs.unavailableForImported}

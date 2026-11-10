@@ -9,7 +9,7 @@ import { SEED_FIELD_SLUG, connectToSeededDatabase, startApi } from '../test-supp
 import { CLUSTER_MAX_ZOOM } from './tiles.ts';
 
 // Corners of the synthetic field (db/seed/generate.ts).
-const FIELD_BOUNDS = { minLon: 2.9, maxLon: 3.1, minLat: 64.55, maxLat: 64.65 };
+const FIELD_BOUNDS = { minLon: -63.25, maxLon: -63.05, minLat: 9.6, maxLat: 9.8 };
 
 let baseUrl: string;
 let database: Database;
@@ -117,13 +117,13 @@ describe('GET /api/tiles/wells/:z/:x/:y.mvt', () => {
     const byName = new Map(wells.map((well) => [well.properties.name, well.properties]));
 
     expect(byName.size).toBe(20);
-    expect(byName.get('SYN-A-01')).toEqual({
-      name: 'SYN-A-01',
-      slug: 'SYN-A-01',
+    expect(byName.get('VE-01')).toEqual({
+      name: 'VE-01',
+      slug: 'VE-01',
       wellType: 'producer',
       status: 'producing',
     });
-    expect(byName.get('SYN-A-14')?.alertLevel).toBe('critical');
+    expect(byName.get('VE-14')?.alertLevel).toBe('critical');
   });
 
   it('applies the same filters as GET /api/wells', async () => {

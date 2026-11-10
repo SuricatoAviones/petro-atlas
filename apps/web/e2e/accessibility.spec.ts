@@ -1,8 +1,8 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
-/** Same view as map.spec: synthetic well SYNA-01 at the zoom of individual symbols. */
-const INITIAL_VIEW = '64.5651,2.93883,12';
+/** Same view as map.spec: synthetic well VE-01 at the zoom of individual symbols. */
+const INITIAL_VIEW = '9.63021,-63.21117,12';
 
 async function openMap(page: Page): Promise<void> {
   // The test basemap has no glyph server; labels are not needed for these checks.
@@ -39,6 +39,11 @@ test('the map and the well sheet have no axe violations', async ({ page }) => {
 });
 
 test('the legal pages have no axe violations', async ({ page }) => {
-  await page.goto('/cookies');
+  await page.goto('/es/cookies');
+  await expectNoViolations(page);
+});
+
+test('the English legal pages have no axe violations', async ({ page }) => {
+  await page.goto('/en/aviso-legal');
   await expectNoViolations(page);
 });

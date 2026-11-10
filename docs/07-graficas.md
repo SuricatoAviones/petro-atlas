@@ -27,7 +27,16 @@ Las gráficas son el núcleo de la ficha del pozo. Se agrupan en pestañas y com
 
 ## Disponibilidad
 
-Las series de presión, temperatura y choke solo existen donde la fuente las publica: en este diseño, los pozos de Volve y los pozos importados que las traigan. Para el resto, la pestaña Operación aparece deshabilitada con una nota que lo explica. Nunca se muestra una gráfica vacía sin explicación.
+Las series de presión, temperatura y choke existen en el seed sintético y en los pozos importados que las traigan. Para el resto, la pestaña Operación aparece deshabilitada con una nota que lo explica. Nunca se muestra una gráfica vacía sin explicación.
+
+## Archivos LAS locales
+
+La pestaña Registros permite abrir un archivo LAS 2.0 desde el navegador. El archivo no se sube a la API ni se guarda en IndexedDB: sus curvas se dibujan con el mismo visor por pistas y desaparecen al cambiar de pozo o al cerrar la pestaña.
+
+- La primera curva debe ser de profundidad (`DEPT`, `DEPTH`, `MD` o `TVD`).
+- Se respetan los valores nulos de la cabecera `NULL` y los huecos se dibujan como cortes.
+- Si la profundidad viene en pies, se convierte a metros para el eje.
+- Los archivos con `WRAP. YES` no son compatibles.
 
 ## Reglas de comportamiento
 

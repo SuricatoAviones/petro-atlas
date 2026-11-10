@@ -79,7 +79,7 @@ Rombo relleno: composición. Rombo vacío: agregación. Flecha punteada: depende
 
 | Clase | Dónde vive | Nota |
 | --- | --- | --- |
-| `Field`, `Well`, `ProductionRecord`, `TrajectoryStation`, `LogCurve` | PostgreSQL | Cargadas por el ETL |
+| `Field`, `Well`, `ProductionRecord`, `TrajectoryStation`, `LogCurve` | PostgreSQL | Cargadas por el seed sintético |
 | `Alert` de pozos públicos | Vista `well_alert` | Se calcula al consultar |
 | `Alert` de pozos importados | Memoria del navegador | La calcula `petro-calc/alerts` |
 | `DeclineFit`, curvas IPR y PVT | Memoria del navegador | Se construyen a partir de una serie y viven mientras dura la sesión |
@@ -96,7 +96,7 @@ export type AlertKind = 'production_drop' | 'high_water_cut' | 'no_production';
 export type AlertLevel = 'warning' | 'critical';
 ```
 
-Los valores de estado de cada fuente se traducen a estas enumeraciones en el ETL. El valor original se conserva en una columna de texto aparte si hace falta para depurar.
+Los valores de estado se asignan en el seed. El valor original se conserva en una columna de texto aparte si hace falta para depurar.
 
 ## Tipos compartidos
 

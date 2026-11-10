@@ -23,12 +23,12 @@ describe('generateSyntheticDataset', () => {
     expect(generateSyntheticDataset()).toEqual(dataset);
   });
 
-  it('creates one field and twenty wells with clearly fictitious, unique names', () => {
-    expect(dataset.field.name).toMatch(/SYNTHETIC/);
+  it('creates one Venezuelan example field and twenty wells with fictitious names', () => {
+    expect(dataset.field.name).toBe('CAMPO ESCUELA VENEZUELA');
     expect(dataset.wells).toHaveLength(20);
     const names = dataset.wells.map((well) => well.name);
     expect(new Set(names).size).toBe(names.length);
-    for (const name of names) expect(name).toMatch(/^SYN-/);
+    for (const name of names) expect(name).toMatch(/^VE-/);
   });
 
   it('places every well inside the field boundary', () => {
@@ -126,7 +126,7 @@ describe('generateSyntheticDataset', () => {
   });
 
   it('declines oil production over the year for a producing well', () => {
-    const rows = rowsOf('SYN-A-01').filter((row) => row.onStreamH === 24);
+    const rows = rowsOf('VE-01').filter((row) => row.onStreamH === 24);
     const firstMonthOilSm3 = rows.slice(0, 30).reduce((sum, row) => sum + (row.oilSm3 ?? 0), 0);
     const lastMonthOilSm3 = rows.slice(-30).reduce((sum, row) => sum + (row.oilSm3 ?? 0), 0);
     expect(lastMonthOilSm3).toBeLessThan(firstMonthOilSm3);
@@ -164,8 +164,6 @@ describe('generateSyntheticDataset', () => {
       }
     }
     const missing = dataset.logs.filter((curve) => curve.samples.includes(null));
-    expect(missing.map((curve) => [curve.wellName, curve.mnemonic])).toEqual([
-      ['SYN-A-01', 'RHOB'],
-    ]);
+    expect(missing.map((curve) => [curve.wellName, curve.mnemonic])).toEqual([['VE-01', 'RHOB']]);
   });
 });

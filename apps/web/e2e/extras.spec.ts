@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const INITIAL_VIEW = '64.5651,2.93883,12';
+const INITIAL_VIEW = '9.63021,-63.21117,12';
 
 const IMPORT_CSV = [
   'well,date,lat,lon,oil_sm3,gas_sm3,water_sm3,on_stream_h,bhp_bar,whp_bar,choke_pct',
@@ -26,11 +26,13 @@ async function openPublicWell(page: Page): Promise<void> {
     const url = new URL(response.url());
     return (
       url.pathname.startsWith('/api/tiles/wells/') &&
-      url.searchParams.get('field') === 'synthetic-alpha' &&
+      url.searchParams.get('field') === 'campo-escuela-venezuela' &&
       response.status() === 200
     );
   });
-  await page.getByRole('combobox', { name: 'Campo' }).selectOption({ label: 'SYNTHETIC ALPHA' });
+  await page
+    .getByRole('combobox', { name: 'Campo' })
+    .selectOption({ label: 'CAMPO ESCUELA VENEZUELA' });
   await tiles;
   await expect(page.getByTestId('well-count')).toHaveText('20 pozos');
   const map = page.getByRole('region', { name: 'Mapa de pozos' });
@@ -53,7 +55,7 @@ test('shows the log tracks of a public well', async ({ page }) => {
   ).toBeVisible();
 });
 
-test('compares another well of the field and writes it to the URL', async ({ page }) => {
+test('compares more than four wells and writes them to the URL', async ({ page }) => {
   await openMap(page);
   await openPublicWell(page);
   const sheet = page.getByTestId('well-sheet');
@@ -61,14 +63,51 @@ test('compares another well of the field and writes it to the URL', async ({ pag
   const select = sheet.getByLabel('Pozo para comparar');
   await expect
     .poll(async () => select.locator('option').count(), { timeout: 10_000 })
-    .toBeGreaterThan(1);
-  const value = await select.locator('option').nth(1).getAttribute('value');
-  if (value === null) throw new Error('The comparison select has no value');
-  await select.selectOption(value);
+    .toBeGreaterThan(5);
+
+  for (let index = 0; index < 5; index += 1) {
+    const value = await select.locator('option').nth(1).getAttribute('value');
+    if (value === null) throw new Error('The comparison select has no value');
+    await select.selectOption(value);
+  }
+
   await expect(sheet.getByRole('heading', { name: 'Tasas comparadas' })).toBeVisible();
   await expect
-    .poll(() => new URL(page.url()).searchParams.get('comparar'), { timeout: 5_000 })
-    .not.toBeNull();
+    .poll(() => new URL(page.url()).searchParams.get('comparar')?.split(',').length ?? 0, {
+      timeout: 5_000,
+    })
+    .toBe(5);
+});
+
+test('opens a LAS file in the log viewer without uploading it', async ({ page }) => {
+  await openMap(page);
+  await openPublicWell(page);
+  const sheet = page.getByTestId('well-sheet');
+  await sheet.getByRole('tab', { name: 'Registros' }).click();
+  await sheet.getByLabel('Abrir archivo LAS').setInputFiles({
+    name: 'ejemplo.las',
+    mimeType: 'text/plain',
+    buffer: Buffer.from(
+      [
+        '~W',
+        'STRT.M 1000',
+        'STOP.M 1002',
+        'STEP.M 1',
+        'NULL. -999',
+        'WELL. VE-01',
+        '~C',
+        'DEPT.M',
+        'GR.GAPI',
+        'RHOB.G/C3',
+        '~A',
+        '1000 45 2.35',
+        '1001 -999 2.4',
+        '1002 52 2.45',
+      ].join('\n'),
+      'utf8',
+    ),
+  });
+  await expect(sheet.getByRole('img', { name: /Registros de pozo: GR, RHOB/ })).toBeVisible();
 });
 
 test('imports a CSV, opens the well and exports it', async ({ page }) => {

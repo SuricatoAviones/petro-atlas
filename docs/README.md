@@ -17,12 +17,13 @@ Esta carpeta es la fuente de verdad del diseño. Si el código y la documentaci�
 | [07-graficas.md](07-graficas.md) | Catálogo de gráficas y reglas de comportamiento |
 | [08-motor-de-calculos.md](08-motor-de-calculos.md) | Paquete `petro-calc`: módulos, firmas, fórmulas y casos de validación |
 | [09-alertas-importacion-url.md](09-alertas-importacion-url.md) | Alertas, importación CSV y estado en la URL |
-| [10-fuentes-de-datos.md](10-fuentes-de-datos.md) | Sodir, Diskos y Volve: qué aportan, licencias y reglas del ETL |
+| [10-fuentes-de-datos.md](10-fuentes-de-datos.md) | Datos sintéticos de Venezuela: por qué, contenido y reglas |
 | [11-plan-de-fases.md](11-plan-de-fases.md) | Fases 0 a 4 con tareas y criterios de cierre |
 | [12-convenciones.md](12-convenciones.md) | Reglas de código, Git, pruebas, seguridad y definición de terminado |
 | [13-publicacion.md](13-publicacion.md) | Publicación de `petro-calc` en npm: requisitos, versiones y verificación |
 | [14-textos-legales.md](14-textos-legales.md) | Páginas legales, estado y revisión pendiente antes de la explotación pública |
 | [15-despliegue.md](15-despliegue.md) | Despliegue en Render: Blueprint, base de datos, migraciones y limitaciones |
+| [16-accesibilidad.md](16-accesibilidad.md) | Pruebas automáticas con axe y revisión manual de accesibilidad |
 | [adr/](adr/README.md) | Decisiones de arquitectura registradas |
 | [PROMPT-INICIAL.md](PROMPT-INICIAL.md) | Prompt para arrancar el desarrollo con un agente de IA |
 

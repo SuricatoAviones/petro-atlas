@@ -15,7 +15,7 @@ const TEST_DATABASE_URL =
   'postgres://petroatlas_api:api_dev_password@localhost:55432/petroatlas';
 
 /** The fictitious field loaded by `pnpm db:seed`; route tests only assert on its data. */
-export const SEED_FIELD_SLUG = 'synthetic-alpha';
+export const SEED_FIELD_SLUG = 'campo-escuela-venezuela';
 
 const runningServers: Server[] = [];
 

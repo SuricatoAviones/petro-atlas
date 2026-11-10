@@ -70,7 +70,7 @@ export default defineConfig([
   {
     files: [
       '**/*.config.{js,mjs,ts}',
-      'apps/web/src/app/**/{page,layout,not-found,error,global-error,loading}.tsx',
+      'apps/web/src/app/**/{page,layout,not-found,error,global-error,loading,sitemap,robots}.{ts,tsx}',
     ],
     rules: { 'no-restricted-exports': 'off' },
   },

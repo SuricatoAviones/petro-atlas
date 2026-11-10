@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 
-import { useMessages } from './locale-provider';
+import { useLocale, useMessages } from './locale-provider';
 import { AppFooter } from './app-footer';
 import { AppHeader } from './app-header';
 
@@ -24,6 +24,7 @@ interface LegalPageProps {
 }
 
 function SectionLink({ link }: { link: LegalLink }) {
+  const { locale } = useLocale();
   if (link.href.startsWith('http')) {
     return (
       <a href={link.href} target="_blank" rel="noreferrer">
@@ -31,12 +32,13 @@ function SectionLink({ link }: { link: LegalLink }) {
       </a>
     );
   }
-  return <Link href={link.href}>{link.label}</Link>;
+  return <Link href={`/${locale}${link.href}`}>{link.label}</Link>;
 }
 
 /** Shared shell and section renderer for the legal pages. */
 export function LegalPage({ title, intro, sections }: LegalPageProps) {
   const messages = useMessages();
+  const { locale } = useLocale();
 
   return (
     <div className="app-shell">
@@ -62,7 +64,7 @@ export function LegalPage({ title, intro, sections }: LegalPageProps) {
             </section>
           ))}
           <p className="page__note">{messages.legal.draftNote}</p>
-          <Link className="page__back" href="/">
+          <Link className="page__back" href={`/${locale}`}>
             {messages.legal.backToMap}
           </Link>
         </article>

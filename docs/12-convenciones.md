@@ -45,8 +45,8 @@ Reglas que sigue todo cambio en el repositorio, lo escriba una persona o un agen
 
 - Rama principal: `main`, siempre desplegable.
 - Ramas cortas: `feat/well-detail-panel`, `fix/null-pressure-gap`, `docs/api-errors`.
-- Commits con [Conventional Commits](https://www.conventionalcommits.org/): `feat(web): add well clustering`, `fix(etl): skip negative volumes`, `docs: update API errors`.
-- Ámbitos: `web`, `api`, `calc`, `types`, `etl`, `db`, `docs`, `ci`.
+- Commits con [Conventional Commits](https://www.conventionalcommits.org/): `feat(web): add well clustering`, `fix(db): skip negative volumes`, `docs: update API errors`.
+- Ámbitos: `web`, `api`, `calc`, `types`, `db`, `docs`, `ci`.
 - Un PR hace una cosa. Si el título necesita una "y", son dos PR.
 - No se sube a `main` sin que pase el CI.
 
@@ -63,13 +63,12 @@ Reglas que sigue todo cambio en el repositorio, lo escriba una persona o un agen
 | `petro-calc` | Vitest | Cada función contra valores publicados y casos límite; cobertura de 90% o más |
 | `shared-types` | Vitest | Esquemas: aceptan lo válido y rechazan lo inválido |
 | `api` | Vitest + base de datos de prueba | Cada ruta: caso feliz, parámetros inválidos y recurso inexistente |
-| `etl` | Vitest | Normalización y descarte con archivos pequeños de ejemplo |
 | `web` | Playwright | Flujos principales: mapa, filtros, ficha, ajuste, importación |
 
 - Una corrección de error llega con la prueba que lo habría detectado.
 - Las pruebas no dependen de la red ni de los datos reales. Usan los datos sintéticos de `db/seed`.
 - La cobertura de `petro-calc` se comprueba con `pnpm test:coverage`; el umbral es 90% en sentencias, ramas, funciones y líneas.
-- Las pruebas de rutas de la API consultan la base de datos de desarrollo con el usuario de solo lectura, así que necesitan `docker compose up --detach db db-setup`. Solo comprueban el campo sintético, de modo que los datos que haya cargado el ETL no las afectan.
+- Las pruebas de rutas de la API consultan la base de datos de desarrollo con el usuario de solo lectura, así que necesitan `docker compose up --detach db db-setup`. Solo comprueban el campo sintético, de modo que no dependen de otros datos que haya en la base.
 - Las pruebas de extremo a extremo (`pnpm test:e2e`) levantan su propia API y su propia web en los puertos 4100 y 3100, y usan un estilo de mapa local sin red. También necesitan la base de datos de desarrollo en marcha.
 - Los números se comparan con tolerancia explícita, no con igualdad exacta.
 

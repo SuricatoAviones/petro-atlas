@@ -20,10 +20,7 @@
     "typecheck": "tsc --noEmit && pnpm --recursive --if-present run typecheck",
     "db:migrate": "pnpm --filter @petroatlas/db migrate",
     "db:seed": "pnpm --filter @petroatlas/db seed",
-    "skills:link": "node scripts/link-skills.mjs",
-    "etl:sodir": "pnpm --filter @petroatlas/etl sodir",
-    "etl:volve": "pnpm --filter @petroatlas/etl volve",
-    "etl:all": "pnpm etl:sodir && pnpm etl:volve"
+    "skills:link": "node scripts/link-skills.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",

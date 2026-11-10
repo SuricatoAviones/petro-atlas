@@ -1,6 +1,6 @@
 # Arquitectura
 
-Tres capas más un proceso de ingesta independiente. La web pide datos a la API y calcula en el cliente con `petro-calc`. El ETL es el único componente que escribe en la base de datos.
+Tres capas y un seed de datos sintéticos. La web pide datos a la API y calcula en el cliente con `petro-calc`. El seed es el único componente que escribe en la base de datos.
 
 ```mermaid
 flowchart TB
@@ -18,17 +18,11 @@ flowchart TB
 
   db[("PostgreSQL + PostGIS")]
 
-  subgraph src["Fuentes externas"]
-    sodir["Sodir FactPages"]
-    volve["Volve (Equinor)"]
-  end
-
-  etl["ETL · etl/ (Node)"]
+  seed["Seed sintético · db/seed<br/>CAMPO ESCUELA VENEZUELA"]
 
   nav -- "HTTPS: JSON y teselas" --> srv
   srv -- "SQL, solo lectura" --> db
-  src -- "CSV, Excel" --> etl
-  etl -- "carga idempotente" --> db
+  seed -- "carga idempotente" --> db
 ```
 
 ## Stack
@@ -39,12 +33,12 @@ flowchart TB
 | Mapa | MapLibre GL JS | Código abierto, sin token, soporta teselas vectoriales y clustering |
 | Gráficas | ECharts | Series largas con zoom sincronizado y ejes logarítmicos |
 | Estado de URL | Parámetros de búsqueda de Next.js | Vistas compartibles sin librería extra |
-| Idiomas | Diccionarios `messages/es.ts` y `messages/en.ts` | Español e inglés; la elección se guarda en una cookie funcional |
+| Idiomas | Diccionarios `messages/es.ts` y `messages/en.ts`; rutas `/es` y `/en` | Español e inglés con `hreflang`, sitemap y metadatos por idioma |
 | Almacenamiento local | IndexedDB | Pozos importados que no salen del navegador |
 | API | Express 5 + Zod | Validación de parámetros y tipos compartidos con la web |
 | Acceso a datos | SQL parametrizado con `pg` | Las consultas espaciales y de teselas son SQL directo |
 | Base de datos | PostgreSQL 16 + PostGIS | Consultas por área visible y generación de teselas |
-| Ingesta | Scripts Node + TypeScript | Mismo lenguaje y tipos que el resto del repositorio |
+| Datos de ejemplo | Seed Node + TypeScript | Datos sintéticos de Venezuela, deterministas e idempotentes |
 | Pruebas | Vitest + Playwright | Unitarias para los cálculos, extremo a extremo para el mapa |
 | Calidad | ESLint + Prettier + `tsc --noEmit` | Un solo estilo en todo el monorepo |
 | CI | GitHub Actions | Lint, tipos, pruebas y build en cada push |
@@ -62,13 +56,11 @@ petroatlas/
 ├── packages/
 │   ├── petro-calc/     Cálculos de ingeniería + pruebas
 │   └── shared-types/   Tipos y esquemas Zod compartidos
-├── etl/                Descarga, normalización y carga de datos
 ├── db/
 │   ├── init/           Usuarios de base de datos al inicializar PostgreSQL
 │   ├── migrations/     SQL versionado
 │   ├── scripts/        Ejecutor de migraciones
 │   └── seed/           Datos de ejemplo para desarrollo
-├── data/               Descargas del ETL (ignorada por Git)
 ├── docs/               Esta documentación
 ├── docker-compose.yml
 └── README.md
@@ -80,7 +72,7 @@ petroatlas/
 - `packages/shared-types` solo depende de Zod.
 - `apps/web` importa `petro-calc` y `shared-types`. Nunca accede a la base de datos.
 - `apps/api` importa `shared-types`. No importa `petro-calc`: los cálculos no se hacen en el servidor.
-- `etl` importa `shared-types` y escribe en la base de datos. La API se conecta con un usuario de solo lectura.
+- `db/seed` genera datos sintéticos y escribe en la base de datos. La API se conecta con un usuario de solo lectura.
 
 ## Flujo de una petición del mapa
 
