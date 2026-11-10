@@ -2,6 +2,9 @@ import pg from 'pg';
 
 import { logError } from './log.ts';
 
+/** What the routes need from the pool: parametrized queries. */
+export type Database = Pick<pg.Pool, 'query'>;
+
 /** Returns true when the database answers a trivial query. */
 export type DatabaseCheck = () => Promise<boolean>;
 
@@ -19,10 +22,10 @@ export function createDatabasePool(connectionString: string): pg.Pool {
   return pool;
 }
 
-export function createDatabaseCheck(pool: pg.Pool): DatabaseCheck {
+export function createDatabaseCheck(database: Database): DatabaseCheck {
   return async () => {
     try {
-      await pool.query('SELECT 1');
+      await database.query('SELECT 1');
       return true;
     } catch (error) {
       logError('Database health check failed', error);
