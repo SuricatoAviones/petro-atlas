@@ -1,6 +1,6 @@
 # 0006 — TypeScript 6 y ESLint 9 en lugar de las últimas versiones
 
-- **Estado:** Propuesta
+- **Estado:** Aceptada
 - **Fecha:** 2026-11-09
 
 ## Contexto
