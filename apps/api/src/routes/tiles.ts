@@ -15,6 +15,7 @@ const TILE_EXTENT = 4096;
 /** Margin around a tile, in tile units, so symbols are not cut at tile edges. */
 const TILE_BUFFER = 64;
 const MAX_ZOOM = 22;
+export const TILE_CONTENT_TYPE = 'application/vnd.mapbox-vector-tile';
 
 const tileParamsSchema = z.object({
   z: z.coerce.number().int().min(0).max(MAX_ZOOM),
@@ -114,7 +115,7 @@ export function createTilesRouter(database: Database): Router {
       response.status(204).end();
       return;
     }
-    response.type('application/vnd.mapbox-vector-tile').send(body);
+    response.type(TILE_CONTENT_TYPE).send(body);
   });
 
   return router;

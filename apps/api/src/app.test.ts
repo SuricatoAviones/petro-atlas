@@ -72,3 +72,13 @@ describe('cross-cutting behavior', () => {
     expect(statuses).toEqual([200, 200, 429]);
   });
 });
+
+describe('response hardening', () => {
+  it('sends security headers and hides the framework', async () => {
+    const response = await fetch(`${await startApi()}/api/health`);
+
+    expect(response.headers.get('x-content-type-options')).toBe('nosniff');
+    expect(response.headers.get('cross-origin-resource-policy')).toBe('cross-origin');
+    expect(response.headers.get('x-powered-by')).toBeNull();
+  });
+});

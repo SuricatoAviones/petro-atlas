@@ -12,14 +12,17 @@
   },
   "dependencies": {
     "@petroatlas/shared-types": "workspace:*",
+    "compression": "1.8.2",
     "cors": "2.8.6",
     "express": "5.3.0",
     "express-rate-limit": "8.7.3",
+    "helmet": "8.3.0",
     "pg": "8.23.1",
     "zod": "4.6.7"
   },
   "devDependencies": {
     "@mapbox/vector-tile": "3.0.0",
+    "@types/compression": "1.8.1",
     "@types/cors": "2.8.19",
     "@types/express": "5.0.6",
     "@types/pg": "8.23.1",

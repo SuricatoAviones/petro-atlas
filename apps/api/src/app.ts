@@ -1,13 +1,15 @@
+import compression from 'compression';
 import cors from 'cors';
 import express, { type Express } from 'express';
 import { rateLimit } from 'express-rate-limit';
+import helmet from 'helmet';
 
 import type { Database, DatabaseCheck } from './database.ts';
 import { errorHandler, notFoundHandler, sendError } from './http-errors.ts';
 import { createFieldsRouter } from './routes/fields.ts';
 import { createHealthRouter } from './routes/health.ts';
 import { createMetaRouter } from './routes/meta.ts';
-import { createTilesRouter } from './routes/tiles.ts';
+import { TILE_CONTENT_TYPE, createTilesRouter } from './routes/tiles.ts';
 import { createWellsRouter } from './routes/wells.ts';
 
 export interface AppOptions {
@@ -29,6 +31,9 @@ export function createApp({
   const app = express();
   app.disable('x-powered-by');
 
+  // Security headers. The web reads the API from another origin, so responses must be loadable
+  // cross-origin; CORS below still restricts which origin may read them.
+  app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
   app.use(cors({ origin: webOrigin, methods: ['GET'] }));
   app.use(
     rateLimit({
@@ -39,6 +44,15 @@ export function createApp({
       handler: (_request, response) => {
         sendError(response, 429, 'RATE_LIMITED', 'Demasiadas peticiones; inténtalo en un minuto');
       },
+    }),
+  );
+  // GeoJSON and vector tiles shrink several times over. Tiles are not in the default list of
+  // compressible types.
+  app.use(
+    compression({
+      filter: (request, response) =>
+        String(response.getHeader('Content-Type')).startsWith(TILE_CONTENT_TYPE) ||
+        compression.filter(request, response),
     }),
   );
 

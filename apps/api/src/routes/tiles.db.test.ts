@@ -156,3 +156,15 @@ describe('GET /api/tiles/wells/:z/:x/:y.mvt', () => {
     expect(apiErrorSchema.parse(await response.json()).error.code).toBe('INVALID_PARAMS');
   });
 });
+
+describe('compression', () => {
+  // Seed tiles are below the 1 kB threshold, so the assertion is on the GeoJSON list.
+  it('compresses responses for clients that accept it', async () => {
+    baseUrl = await startApi({ database });
+    const wells = await fetch(`${baseUrl}/api/wells?limit=1000`, {
+      headers: { 'Accept-Encoding': 'gzip' },
+    });
+
+    expect(wells.headers.get('content-encoding')).toBe('gzip');
+  });
+});
