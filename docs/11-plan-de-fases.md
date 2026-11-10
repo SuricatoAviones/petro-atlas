@@ -64,7 +64,7 @@ Objetivo: calcular sobre los datos del pozo.
 
 - [x] `petro-calc/dca`: ajuste de Arps, pronóstico y EUR, con pruebas.
 - [x] Selección de ventana sobre la gráfica y curva de ajuste superpuesta.
-- [ ] `petro-calc/ipr`: Vogel, Fetkovich y compuesta, con pruebas.
+- [x] `petro-calc/ipr`: Vogel, Fetkovich y compuesta, con pruebas.
 - [ ] `petro-calc/pvt`: Standing, Vasquez y Beggs, Beggs y Robinson, con pruebas.
 - [ ] Pestaña Ingeniería con parámetros editables y curvas que responden al instante.
 - [ ] Pestaña Diagnóstico: Chan, tasa vs acumulado e índice de productividad.
