@@ -169,7 +169,7 @@ export const messages = {
     lastIngest: 'Última ingesta',
     neverIngested: 'Sin ingesta registrada',
     syntheticNote:
-      'El conjunto de desarrollo incluye un campo sintético (SYNTHETIC ALPHA) generado por db/seed. No representa un yacimiento real.',
+      'El conjunto de desarrollo incluye un campo ficticio, CAMPO ESCUELA VENEZUELA, situado en Venezuela y generado por db/seed. No representa un yacimiento real.',
     backToMap: 'Volver al mapa',
   },
   legal: {
@@ -266,7 +266,7 @@ export const messages = {
         {
           title: 'Datos que se tratan',
           paragraphs: [
-            'La aplicación no tiene cuentas de usuario, formularios de contacto ni cookies de seguimiento. Guarda una cookie técnica para recordar el idioma elegido. No se recogen nombres, correos electrónicos ni datos de perfil.',
+            'La aplicación no tiene cuentas de usuario, formularios de contacto ni cookies. No se recogen nombres, correos electrónicos ni datos de perfil.',
             'El servidor que aloja la aplicación puede registrar direcciones IP, fecha, ruta solicitada, agente de usuario y código de respuesta en sus registros de acceso. Son datos técnicos necesarios para la seguridad y el diagnóstico.',
             'El mapa solicita teselas a OpenFreeMap, que recibe la dirección IP y los datos técnicos necesarios para servir las teselas.',
           ],
@@ -311,16 +311,16 @@ export const messages = {
         'PetroAtlas muestra datos públicos de pozos y calcula sobre ellos en el navegador. Esta página resume su origen, sus límites y cómo se atribuyen.',
       sections: [
         {
-          title: 'Datos de pozos',
+          title: 'Datos de ejemplo',
           paragraphs: [
-            'Los datos de campos, pozos, producción, presión y trayectorias proceden de fuentes públicas. Sodir aporta los datos de la plataforma noruega; Volve, los datos de producción y trayectorias publicados por Equinor.',
-            'El ETL descarga los datos a data/, que Git ignora. El repositorio no incluye ni redistribuye datos de terceros.',
+            'Este despliegue usa únicamente datos sintéticos de ejemplo: un campo ficticio en Venezuela llamado CAMPO ESCUELA VENEZUELA y veinte pozos VE-01 a VE-20, generados por db/seed.',
+            'No son mediciones reales ni representan ningún yacimiento, operadora o pozo existente. No se usan datos de Sodir, Volve ni Diskos.',
           ],
         },
         {
           title: 'Datos sintéticos',
           paragraphs: [
-            'El conjunto de desarrollo incluye SYNTHETIC ALPHA, generado por db/seed. Es un conjunto ficticio y no representa ningún yacimiento real.',
+            'CAMPO ESCUELA VENEZUELA es un conjunto ficticio generado por db/seed. Las cifras siguen tendencias plausibles, pero no son mediciones de ningún pozo real.',
           ],
         },
         {
@@ -367,8 +367,8 @@ export const messages = {
         {
           title: 'Cookies que usamos',
           paragraphs: [
-            'PetroAtlas utiliza una cookie técnica, petroatlas-locale, para recordar si elegiste español o inglés. No contiene datos personales y no se usa para seguimiento.',
-            'No utiliza cookies de analítica, publicidad ni seguimiento de terceros. Por ese motivo no se muestra un panel de consentimiento de cookies.',
+            'Actualmente PetroAtlas no utiliza cookies propias ni de terceros, ni herramientas de analítica, publicidad o seguimiento.',
+            'Por ese motivo no se muestra un panel de consentimiento de cookies.',
           ],
         },
         {
@@ -381,7 +381,6 @@ export const messages = {
           title: 'Almacenamiento local',
           paragraphs: [
             'Si importas un CSV, los pozos se guardan en IndexedDB dentro de tu navegador. El archivo no se envía al servidor y esos datos no se comparten con otras personas. Puedes borrarlos desde el panel de datos propios o eliminando los datos del sitio en la configuración del navegador.',
-            'La cookie petroatlas-locale solo guarda el idioma de la interfaz y puedes borrarla desde la configuración del navegador.',
           ],
         },
         {
@@ -527,6 +526,26 @@ export const messages = {
       zoomHint:
         'Arrastra o rueda sobre una pista para hacer zoom en profundidad; las pistas se sincronizan.',
       unavailableForImported: 'Los pozos importados desde CSV no incluyen registros.',
+      las: {
+        title: 'Archivo LAS',
+        open: 'Abrir archivo LAS',
+        reading: 'Leyendo el archivo LAS…',
+        clear: 'Cerrar LAS',
+        hint: 'El archivo se lee en tu navegador y no se sube al servidor.',
+        sourceName: 'Archivo LAS local',
+        sourceLicense: 'Datos locales; no se suben',
+        errors: {
+          empty: 'El archivo está vacío.',
+          no_curves: 'No se encontraron curvas en la sección ~C.',
+          no_data: 'No hay datos en la sección ~A.',
+          no_depth: 'La primera curva debe ser de profundidad (DEPT, DEPTH, MD o TVD).',
+          bad_value: 'Hay un valor no numérico en los datos.',
+          incomplete_row: 'Una fila no tiene tantos valores como curvas.',
+          wrapped: 'Los archivos con WRAP. YES no son compatibles.',
+          too_large: 'El archivo supera los 20 MB.',
+          read_error: 'No se pudo leer el archivo.',
+        },
+      },
     },
     comparison: {
       title: 'Comparación de pozos',

@@ -19,10 +19,10 @@ export function AppHeader({ current }: AppHeaderProps) {
       <h1 className="app-header__title">{messages.app.name}</h1>
       <p className="app-header__tagline">{messages.app.tagline}</p>
       <nav className="app-header__nav" aria-label={messages.app.navigation}>
-        <Link href="/" aria-current={current === 'map' ? 'page' : undefined}>
+        <Link href={`/${locale}`} aria-current={current === 'map' ? 'page' : undefined}>
           {messages.app.map}
         </Link>
-        <Link href="/fuentes" aria-current={current === 'sources' ? 'page' : undefined}>
+        <Link href={`/${locale}/fuentes`} aria-current={current === 'sources' ? 'page' : undefined}>
           {messages.app.sources}
         </Link>
       </nav>

@@ -7,9 +7,9 @@ export const mapConfig = {
   // Both are inlined at build time.
   styleUrl: process.env.NEXT_PUBLIC_MAP_STYLE_URL ?? DEFAULT_MAP_STYLE_URL,
   apiUrl: (process.env.NEXT_PUBLIC_API_URL ?? DEFAULT_API_URL).replace(/\/+$/, ''),
-  // Norwegian continental shelf, where the public data sources live (docs/10).
-  initialCenter: { lon: 4.5, lat: 62.5 },
-  initialZoom: 4.2,
+  // Fictitious Venezuelan example field, where the synthetic dataset lives (docs/10).
+  initialCenter: { lon: -63.15, lat: 9.7 },
+  initialZoom: 7.5,
   /** Field outlines appear from this zoom, so they do not clutter the overview (docs/03). */
   fieldMinZoom: 6,
   /** Field names need more room than their outlines. */

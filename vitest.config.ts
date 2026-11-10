@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url';
+
 import { defaultServerConditions } from 'vite';
 import { defineConfig } from 'vitest/config';
 
@@ -44,19 +46,14 @@ export default defineConfig({
       },
       {
         extends: true,
+        resolve: {
+          alias: { '@': fileURLToPath(new URL('./apps/web/src', import.meta.url)) },
+        },
         test: {
           name: 'web',
           root: './apps/web',
           // Only the pure modules of the web; its flows are covered by Playwright (docs/12).
           include: ['src/lib/**/*.test.ts'],
-        },
-      },
-      {
-        extends: true,
-        test: {
-          name: 'etl',
-          root: './etl',
-          include: ['src/**/*.test.ts'],
         },
       },
       {

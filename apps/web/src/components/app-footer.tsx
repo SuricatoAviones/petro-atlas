@@ -2,16 +2,17 @@
 
 import Link from 'next/link';
 
-import { useMessages } from './locale-provider';
+import { useLocale, useMessages } from './locale-provider';
 
 /** Footer with the legal pages and the data attribution of the whole site. */
 export function AppFooter() {
   const messages = useMessages();
+  const { locale } = useLocale();
   const legalLinks = [
-    { href: '/aviso-legal', label: messages.legal.notice.title },
-    { href: '/privacidad', label: messages.legal.privacy.title },
-    { href: '/datos', label: messages.legal.data.title },
-    { href: '/cookies', label: messages.legal.cookies.title },
+    { href: `/${locale}/aviso-legal`, label: messages.legal.notice.title },
+    { href: `/${locale}/privacidad`, label: messages.legal.privacy.title },
+    { href: `/${locale}/datos`, label: messages.legal.data.title },
+    { href: `/${locale}/cookies`, label: messages.legal.cookies.title },
   ] as const;
 
   return (

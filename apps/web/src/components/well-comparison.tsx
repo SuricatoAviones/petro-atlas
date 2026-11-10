@@ -27,7 +27,17 @@ export type ComparisonFluid = 'oil' | 'gas' | 'water';
 
 const FLUIDS: readonly ComparisonFluid[] = ['oil', 'gas', 'water'];
 /** Colour follows the fluid; the line style tells the wells apart (docs/07, rule 11). */
-const LINE_TYPES: readonly LineType[] = ['solid', 'dashed', 'dotted', [6, 2, 1, 2], [2, 2]];
+const LINE_TYPES: readonly LineType[] = [
+  'solid',
+  'dashed',
+  'dotted',
+  [6, 2, 1, 2],
+  [2, 2],
+  [8, 2],
+  [1, 4],
+  [10, 3, 1, 3],
+  [4, 2, 1, 2, 1, 2],
+];
 
 interface Candidate {
   key: WellKey;

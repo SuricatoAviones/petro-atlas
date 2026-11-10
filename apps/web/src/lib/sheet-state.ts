@@ -29,4 +29,4 @@ export function parseUnitSystem(value: string | null): UnitSystem {
 }
 
 /** Other wells that can be added to the comparison of the open one (RF-10). */
-export const MAX_COMPARED_WELLS = 4;
+export const MAX_COMPARED_WELLS = 8;

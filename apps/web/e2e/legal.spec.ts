@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 const LEGAL_PAGES = [
   { link: 'Aviso legal', path: '/aviso-legal', heading: 'Aviso legal', text: 'Titular' },
   { link: 'Privacidad', path: '/privacidad', heading: 'Privacidad', text: 'Datos que se tratan' },
-  { link: 'Datos', path: '/datos', heading: 'Datos', text: 'Datos de pozos' },
+  { link: 'Datos', path: '/datos', heading: 'Datos', text: 'Datos de ejemplo' },
   { link: 'Cookies', path: '/cookies', heading: 'Cookies', text: 'Cookies que usamos' },
 ] as const;
 

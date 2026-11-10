@@ -1,8 +1,9 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { createContext, useContext, type ReactNode } from 'react';
 
-import { getMessages, LOCALE_COOKIE, type Locale, type Messages } from '@/messages';
+import { getMessages, type Locale, type Messages } from '@/messages';
 
 interface LocaleContextValue {
   locale: Locale;
@@ -12,12 +13,20 @@ interface LocaleContextValue {
 
 const LocaleContext = createContext<LocaleContextValue | null>(null);
 
-/** Stores the language and reloads so server-rendered pages and charts use it too. */
+/** Changes the locale segment of the current URL, keeping the query string and hash. */
 export function LocaleProvider({ locale, children }: { locale: Locale; children: ReactNode }) {
+  const pathname = usePathname();
+
   const setLocale = (nextLocale: Locale): void => {
-    // A functional cookie: it only remembers the language chosen by the visitor.
-    document.cookie = `${LOCALE_COOKIE}=${nextLocale}; path=/; max-age=31536000; samesite=lax`;
-    window.location.reload();
+    if (nextLocale === locale) return;
+    const withoutLocale = pathname.replace(/^\/(?:es|en)(?=\/|$)/, '');
+    // A full reload guarantees that the map's URL writer cannot restore the old locale segment.
+    window.location.replace(
+      new URL(
+        `/${nextLocale}${withoutLocale}${window.location.search}${window.location.hash}`,
+        window.location.origin,
+      ).href,
+    );
   };
 
   return (
