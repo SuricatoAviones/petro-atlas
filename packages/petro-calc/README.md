@@ -2,7 +2,7 @@
 
 Cálculos de ingeniería de petróleo en TypeScript puro, sin dependencias. Se ejecuta igual en el navegador, en Node o en un worker, y no conoce la interfaz ni la base de datos.
 
-> **Estado:** versión `0.1.0` preparada. El ámbito `@petroatlas` está confirmado; falta completar la verificación en dos pasos de npm (OTP o token granular) para publicar. Hasta entonces, el paquete se consume desde el monorepo.
+> **Estado:** versión `0.2.0` preparada. El ámbito `@petroatlas` está confirmado; falta completar la verificación en dos pasos de npm (OTP o token granular) para publicar. Hasta entonces, el paquete se consume desde el monorepo.
 
 ## Instalación
 
@@ -21,6 +21,7 @@ El paquete es un módulo ESM con tipos incluidos.
 | `dca`         | Ajuste de declinación de Arps, pronóstico, acumulado y EUR.             |
 | `ipr`         | Vogel, Fetkovich y la curva compuesta.                                  |
 | `pvt`         | Standing, Vasquez-Beggs y Beggs-Robinson.                               |
+| `alerts`      | Alertas de caída de producción, corte de agua alto y pozo sin producir. |
 
 Todo se importa desde la raíz del paquete:
 
@@ -83,6 +84,24 @@ import { chan, productivityIndex } from '@petroatlas/petro-calc';
 
 const diagnostic = chan(waterSm3PerDay, oilSm3PerDay); // RAP y su derivada
 const j = productivityIndex(50, 250, 180); // Sm3/d/bar
+```
+
+### Alertas
+
+Las reglas miran hacia atrás desde la última fecha de la serie, no desde hoy.
+
+```ts
+import { defaultThresholds, evaluate } from '@petroatlas/petro-calc';
+
+const alerts = evaluate({
+  dates, // fechas ISO, una por muestra
+  oil: oilSm3PerDay,
+  gas: gasSm3PerDay,
+  water: waterSm3PerDay,
+});
+// [{ kind: 'production_drop', level: 'critical', asOf: '2026-10-22', value: 41.2 }]
+
+const stricter = evaluate(series, { ...defaultThresholds, dropWarningFraction: 0.1 });
 ```
 
 ## Convenciones

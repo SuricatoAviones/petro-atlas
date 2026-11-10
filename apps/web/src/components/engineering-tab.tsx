@@ -18,6 +18,7 @@ import {
 } from '@petroatlas/petro-calc';
 import { useMemo, useState } from 'react';
 
+import { downloadCsv } from '@/lib/export';
 import { messages } from '@/messages/es';
 
 import { EngineeringChart } from './engineering-chart';
@@ -390,6 +391,38 @@ export function EngineeringTab({ data }: EngineeringTabProps) {
                 </tr>
               </tbody>
             </table>
+            <button
+              type="button"
+              className="chart-card__action"
+              onClick={() => {
+                downloadCsv('resultados-pvt.csv', {
+                  headers: [
+                    messages.wellSheet.engineering.result,
+                    messages.wellSheet.engineering.standing,
+                    messages.wellSheet.engineering.vasquez,
+                  ],
+                  rows: [
+                    [
+                      `${messages.wellSheet.engineering.bubble} (psia)`,
+                      pvt.standingResult.bubblePointPsia,
+                      pvt.vasquezResult.bubblePointPsia,
+                    ],
+                    [
+                      `${messages.wellSheet.engineering.formationVolume} (bbl/STB)`,
+                      pvt.standingResult.oilFormationVolumeFactor,
+                      pvt.vasquezResult.oilFormationVolumeFactor,
+                    ],
+                    [
+                      `${messages.wellSheet.engineering.viscosity} (cP)`,
+                      pvt.standingResult.oilViscosityCp,
+                      pvt.vasquezResult.oilViscosityCp,
+                    ],
+                  ],
+                });
+              }}
+            >
+              {messages.wellSheet.charts.exportCsv}
+            </button>
             <EngineeringChart
               title={messages.wellSheet.engineering.pvtBo}
               xType="value"

@@ -16,7 +16,7 @@ Las cuatro están enlazadas desde el pie de página de todas las pantallas. Los 
 - El contenido describe la aplicación tal como está construida hoy: sin cuentas, sin formularios, sin cookies y sin analítica.
 - La privacidad menciona los registros técnicos del alojamiento y las peticiones de teselas a OpenFreeMap.
 - La página de datos remite a `10-fuentes-de-datos.md` y a `/fuentes`.
-- La política de cookies se actualizará antes de activar la importación CSV con IndexedDB.
+- La política de cookies describe el uso de IndexedDB por la importación CSV: los datos se quedan en el navegador, no se suben al servidor y se pueden borrar desde la propia interfaz o desde el navegador.
 
 ## Revisión pendiente antes de la explotación pública
 

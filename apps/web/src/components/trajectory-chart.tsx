@@ -6,14 +6,15 @@ import * as echarts from 'echarts/core';
 import { LineChart } from 'echarts/charts';
 import { GridComponent, TooltipComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 import { messages } from '@/messages/es';
+import type { TableData } from '@/lib/export';
 import type { UnitSystem } from '@/lib/sheet-state';
 
-echarts.use([LineChart, GridComponent, TooltipComponent, CanvasRenderer]);
+import { ChartSource, ChartTools, PNG_EXPORT_OPTIONS } from './chart-tools';
 
-const NUMBER_FORMAT = new Intl.NumberFormat('es', { maximumFractionDigits: 1 });
+echarts.use([LineChart, GridComponent, TooltipComponent, CanvasRenderer]);
 
 interface StationPoint {
   mdM: number;
@@ -58,13 +59,31 @@ export interface TrajectoryChartProps {
 export function TrajectoryChart({ data, unitSystem }: TrajectoryChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<ReturnType<typeof echarts.init> | null>(null);
-  const [showTable, setShowTable] = useState(false);
   const unit = unitSystem === 'si' ? 'm' : 'ft';
-  const points = stationPoints(data);
+  const points = useMemo(() => stationPoints(data), [data]);
   const chartData = points.map((point) => [
     lengthValue(point.horizontalM, unitSystem),
     lengthValue(point.tvdM, unitSystem),
   ]);
+  const table = useMemo(
+    (): TableData => ({
+      headers: [
+        `${messages.wellSheet.trajectory.measuredDepth} (${unit})`,
+        `${messages.wellSheet.trajectory.depth} (${unit})`,
+        `${messages.wellSheet.trajectory.displacement} (${unit})`,
+        messages.wellSheet.trajectory.inclination,
+        messages.wellSheet.trajectory.azimuth,
+      ],
+      rows: points.map((point) => [
+        lengthValue(point.mdM, unitSystem),
+        lengthValue(point.tvdM, unitSystem),
+        lengthValue(point.horizontalM, unitSystem),
+        point.inclDeg,
+        point.azimDeg,
+      ]),
+    }),
+    [points, unit, unitSystem],
+  );
 
   useEffect(() => {
     const container = containerRef.current;
@@ -129,49 +148,12 @@ export function TrajectoryChart({ data, unitSystem }: TrajectoryChartProps) {
         role="img"
         aria-label={messages.wellSheet.trajectory.title}
       />
-      <p className="chart-card__source">
-        {messages.wellSheet.charts.source}:{' '}
-        <a href={data.source.url} target="_blank" rel="noreferrer">
-          {data.source.name}
-        </a>{' '}
-        · {data.source.license}
-      </p>
-      <button
-        type="button"
-        className="chart-card__table-toggle"
-        aria-expanded={showTable}
-        onClick={() => {
-          setShowTable((current) => !current);
-        }}
-      >
-        {showTable ? messages.wellSheet.charts.hideTable : messages.wellSheet.charts.table}
-      </button>
-      {showTable && (
-        <div className="chart-card__table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">{messages.wellSheet.trajectory.measuredDepth}</th>
-                <th scope="col">{messages.wellSheet.trajectory.depth}</th>
-                <th scope="col">{messages.wellSheet.trajectory.displacement}</th>
-                <th scope="col">{messages.wellSheet.trajectory.inclination}</th>
-                <th scope="col">{messages.wellSheet.trajectory.azimuth}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {points.map((point) => (
-                <tr key={point.mdM}>
-                  <td>{NUMBER_FORMAT.format(lengthValue(point.mdM, unitSystem))}</td>
-                  <td>{NUMBER_FORMAT.format(lengthValue(point.tvdM, unitSystem))}</td>
-                  <td>{NUMBER_FORMAT.format(lengthValue(point.horizontalM, unitSystem))}</td>
-                  <td>{point.inclDeg === null ? '—' : NUMBER_FORMAT.format(point.inclDeg)}</td>
-                  <td>{point.azimDeg === null ? '—' : NUMBER_FORMAT.format(point.azimDeg)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <ChartSource source={data.source} />
+      <ChartTools
+        title={messages.wellSheet.trajectory.title}
+        table={table}
+        getImage={() => chartRef.current?.getDataURL(PNG_EXPORT_OPTIONS) ?? null}
+      />
     </section>
   );
 }

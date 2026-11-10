@@ -10,6 +10,17 @@ export {
   type Unit,
 } from './units.ts';
 export {
+  alertIndicators,
+  defaultThresholds,
+  evaluate,
+  type Alert,
+  type AlertIndicators,
+  type AlertKind,
+  type AlertLevel,
+  type AlertSeries,
+  type AlertThresholds,
+} from './alerts.ts';
+export {
   chan,
   gor,
   productivityIndex,

@@ -78,13 +78,13 @@ Cierre: cobertura de 90% o más en `petro-calc` y cada fórmula con al menos una
 Objetivo: cerrar el producto y dejarlo presentable.
 
 - [x] Páginas legales: aviso legal, privacidad, datos y cookies, enlazadas desde el pie.
-- [ ] Comparación de pozos en una misma gráfica.
-- [ ] `GET /api/wells/:id/logs` y visor de registros por pistas.
-- [ ] Exportación CSV de series y resultados, y PNG de gráficas.
-- [ ] Importación CSV en el navegador con IndexedDB, según `09-alertas-importacion-url.md`.
-- [ ] `petro-calc/alerts` aplicado a los pozos importados.
-- [ ] Revisión de accesibilidad con axe.
-- [ ] README con capturas, GIF de uso, arquitectura resumida y guía de instalación.
+- [x] Comparación de pozos en una misma gráfica.
+- [x] `GET /api/wells/:id/logs` y visor de registros por pistas.
+- [x] Exportación CSV de series y resultados, y PNG de gráficas.
+- [x] Importación CSV en el navegador con IndexedDB, según `09-alertas-importacion-url.md`.
+- [x] `petro-calc/alerts` aplicado a los pozos importados.
+- [x] Revisión de accesibilidad con axe.
+- [x] README con capturas, GIF de uso, arquitectura resumida y guía de instalación.
 
 Cierre: un visitante puede importar un CSV propio, ajustar una declinación y exportar el resultado sin leer documentación.
 

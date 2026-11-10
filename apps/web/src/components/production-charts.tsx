@@ -1,275 +1,17 @@
 'use client';
 
-import type { SourceRef, WellProductionResponse } from '@petroatlas/shared-types';
-import { fitArps, rateAt, toField, type Quantity } from '@petroatlas/petro-calc';
-import * as echarts from 'echarts/core';
-import { LineChart } from 'echarts/charts';
-import {
-  DataZoomComponent,
-  GridComponent,
-  LegendComponent,
-  MarkAreaComponent,
-  TooltipComponent,
-} from 'echarts/components';
-import { CanvasRenderer } from 'echarts/renderers';
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import type { WellProductionResponse } from '@petroatlas/shared-types';
+import { fitArps, rateAt } from '@petroatlas/petro-calc';
+import { useMemo } from 'react';
 
 import { messages } from '@/messages/es';
 
 import type { FitWindow, UnitSystem } from '@/lib/sheet-state';
 
 import { CHART_COLORS } from './chart-colors';
-
-echarts.use([
-  LineChart,
-  GridComponent,
-  TooltipComponent,
-  LegendComponent,
-  DataZoomComponent,
-  MarkAreaComponent,
-  CanvasRenderer,
-]);
+import { SeriesChart, convertSeries, unitOf, type ChartSeries } from './series-chart';
 
 const NUMBER_FORMAT = new Intl.NumberFormat('es', { maximumFractionDigits: 2 });
-
-interface ChartSeries {
-  name: string;
-  color: string;
-  values: readonly (number | null)[];
-  /** Index into `axes`; defaults to the left axis. */
-  axis?: number;
-  dashed?: boolean;
-}
-
-interface ChartAxis {
-  name: string;
-  position?: 'left' | 'right';
-}
-
-interface SeriesChartProps {
-  title: string;
-  dates: readonly string[];
-  series: readonly ChartSeries[];
-  axes: readonly ChartAxis[];
-  source: SourceRef;
-  closedDates: readonly string[];
-  groupId: string;
-  onSelectVisibleRange?: (startDate: string, endDate: string) => void;
-}
-
-function formatValue(value: number | null): string {
-  return value === null ? '—' : NUMBER_FORMAT.format(value);
-}
-
-function addDays(isoDate: string, days: number): string {
-  const date = new Date(`${isoDate}T00:00:00Z`);
-  date.setUTCDate(date.getUTCDate() + days);
-  return `${date.toISOString().slice(0, 10)} 00:00:00`;
-}
-
-function chartOption({
-  dates,
-  series,
-  axes,
-  closedDates,
-}: Pick<SeriesChartProps, 'dates' | 'series' | 'axes' | 'closedDates'>): echarts.EChartsCoreOption {
-  const closedRanges = closedDates.map((date) => [
-    { xAxis: `${date} 00:00:00` },
-    { xAxis: addDays(date, 1) },
-  ]);
-  return {
-    animation: false,
-    axisPointer: { link: [{ xAxisIndex: 'all' }] },
-    tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
-    legend: {
-      top: 0,
-      textStyle: { fontSize: 10 },
-      itemWidth: 14,
-      itemHeight: 8,
-    },
-    grid: { left: 52, right: axes.length > 1 ? 58 : 18, top: 32, bottom: 12 },
-    xAxis: {
-      type: 'time',
-      boundaryGap: false,
-      axisLabel: { fontSize: 10 },
-    },
-    yAxis: axes.map((axis, index) => ({
-      type: 'value',
-      name: axis.name,
-      position: axis.position ?? (index === 0 ? 'left' : 'right'),
-      scale: true,
-      nameTextStyle: { fontSize: 10 },
-      axisLabel: { fontSize: 10 },
-      splitLine: { show: index === 0 },
-    })),
-    dataZoom: [{ type: 'inside', xAxisIndex: 0 }],
-    series: series.map((item, index) => ({
-      type: 'line',
-      name: item.name,
-      data: dates.map((date, dateIndex) => [`${date} 00:00:00`, item.values[dateIndex] ?? null]),
-      showSymbol: false,
-      connectNulls: false,
-      lineStyle: { width: 1.5, color: item.color, type: item.dashed === true ? 'dashed' : 'solid' },
-      itemStyle: { color: item.color },
-      yAxisIndex: item.axis ?? 0,
-      markArea:
-        index === 0 && closedRanges.length > 0
-          ? {
-              silent: true,
-              itemStyle: { color: 'rgb(107 119 128 / 12%)' },
-              data: closedRanges,
-            }
-          : undefined,
-    })),
-  };
-}
-
-function SeriesChart({
-  title,
-  dates,
-  series,
-  axes,
-  source,
-  closedDates,
-  groupId,
-  onSelectVisibleRange,
-}: SeriesChartProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const chartRef = useRef<ReturnType<typeof echarts.init> | null>(null);
-  const [showTable, setShowTable] = useState(false);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (container === null) return;
-    const chart = echarts.init(container);
-    chart.group = groupId;
-    echarts.connect(groupId);
-    chartRef.current = chart;
-    const observer = new ResizeObserver(() => {
-      chart.resize();
-    });
-    observer.observe(container);
-    return () => {
-      observer.disconnect();
-      chartRef.current = null;
-      chart.dispose();
-    };
-  }, [groupId]);
-
-  useEffect(() => {
-    chartRef.current?.setOption(chartOption({ dates, series, axes, closedDates }), true);
-  }, [axes, closedDates, dates, series]);
-
-  const useVisibleRange = (): void => {
-    if (onSelectVisibleRange === undefined) return;
-    const option: unknown = chartRef.current?.getOption();
-    const root =
-      typeof option === 'object' && option !== null ? (option as Record<string, unknown>) : null;
-    const dataZoom = root?.dataZoom;
-    const zooms: unknown[] = Array.isArray(dataZoom) ? dataZoom : [];
-    const first = zooms[0];
-    const zoom =
-      typeof first === 'object' && first !== null ? (first as Record<string, unknown>) : null;
-    const startPercent = typeof zoom?.start === 'number' ? zoom.start : 0;
-    const endPercent = typeof zoom?.end === 'number' ? zoom.end : 100;
-    const lastIndex = Math.max(0, dates.length - 1);
-    const startIndex = Math.min(
-      lastIndex,
-      Math.max(0, Math.round((startPercent / 100) * lastIndex)),
-    );
-    const endIndex = Math.min(lastIndex, Math.max(0, Math.round((endPercent / 100) * lastIndex)));
-    const startDate = dates[Math.min(startIndex, endIndex)];
-    const endDate = dates[Math.max(startIndex, endIndex)];
-    if (startDate === undefined || endDate === undefined) return;
-    onSelectVisibleRange(startDate, endDate);
-  };
-
-  return (
-    <section className="chart-card">
-      <div className="chart-card__header">
-        <h4>{title}</h4>
-        {onSelectVisibleRange !== undefined && (
-          <button type="button" className="chart-card__action" onClick={useVisibleRange}>
-            {messages.wellSheet.fit.useView}
-          </button>
-        )}
-      </div>
-      <div ref={containerRef} className="chart-card__canvas" role="img" aria-label={title} />
-      <p className="chart-card__source">
-        {messages.wellSheet.charts.source}:{' '}
-        <a href={source.url} target="_blank" rel="noreferrer">
-          {source.name}
-        </a>{' '}
-        · {source.license}
-      </p>
-      <button
-        type="button"
-        className="chart-card__table-toggle"
-        aria-expanded={showTable}
-        onClick={() => {
-          setShowTable((current) => !current);
-        }}
-      >
-        {showTable ? messages.wellSheet.charts.hideTable : messages.wellSheet.charts.table}
-      </button>
-      {showTable && (
-        <div className="chart-card__table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">{messages.wellSheet.charts.date}</th>
-                {series.map((item) => (
-                  <th key={item.name} scope="col">
-                    {item.name}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {dates.map((date, index) => (
-                <tr key={date}>
-                  <th scope="row">{date}</th>
-                  {series.map((item) => (
-                    <td key={item.name}>{formatValue(item.values[index] ?? null)}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </section>
-  );
-}
-
-function convertSeries(
-  values: readonly (number | null)[],
-  quantity: Quantity,
-  unitSystem: UnitSystem,
-): (number | null)[] {
-  if (unitSystem === 'si') return [...values];
-  return values.map((value) => (value === null ? null : toField(value, quantity)));
-}
-
-function unitOf(quantity: Quantity, unitSystem: UnitSystem): string {
-  const si: Record<Quantity, string> = {
-    pressure: 'bar',
-    liquidVolume: 'Sm³',
-    gasVolume: 'Sm³',
-    gasOilRatio: 'Sm³/Sm³',
-    temperature: '°C',
-    length: 'm',
-  };
-  const field: Record<Quantity, string> = {
-    pressure: 'psi',
-    liquidVolume: 'bbl',
-    gasVolume: 'scf',
-    gasOilRatio: 'scf/STB',
-    temperature: '°F',
-    length: 'ft',
-  };
-  return unitSystem === 'si' ? si[quantity] : field[quantity];
-}
 
 function cumulative(values: readonly (number | null)[]): (number | null)[] {
   let total = 0;
@@ -350,6 +92,8 @@ export interface ProductionChartsProps {
   section: ChartSection;
   fitWindow: FitWindow | null;
   onFitWindowChange: (fitWindow: FitWindow | null) => void;
+  /** Shared by every time chart of the sheet, so zoom and cursor stay in sync (docs/07). */
+  groupId: string;
 }
 
 /** Charts of the Production and Operation tabs (docs/07). All charts share a time zoom. */
@@ -359,8 +103,8 @@ export function ProductionCharts({
   section,
   fitWindow,
   onFitWindowChange,
+  groupId,
 }: ProductionChartsProps) {
-  const groupId = useId();
   const source = data.source;
   const closedDates = data.dates.filter((_, index) => data.series.onStream[index] === 0);
   const liquidUnit = unitOf('liquidVolume', unitSystem);
@@ -403,7 +147,7 @@ export function ProductionCharts({
       name: messages.wellSheet.fit.title,
       color: '#7a4fa3',
       values: fit.values,
-      dashed: true,
+      lineType: 'dashed',
     });
   }
   const waterCut = waterCutSeries(data);

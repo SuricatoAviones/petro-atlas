@@ -202,6 +202,29 @@ async function upsertTrajectories(
   );
 }
 
+async function upsertLogs(
+  client: pg.Client,
+  sourceId: number,
+  wellIds: Map<string, number>,
+  dataset: SyntheticDataset,
+): Promise<void> {
+  for (const curve of dataset.logs) {
+    const wellId = wellIds.get(curve.wellName);
+    if (wellId === undefined) throw new Error(`Unknown well ${curve.wellName}`);
+    await client.query(
+      `INSERT INTO log_curve (well_id, source_id, mnemonic, unit, top_m, base_m, samples)
+       VALUES ($1, $2, $3, $4, $5, $6, $7::real[])
+       ON CONFLICT (well_id, mnemonic) DO UPDATE SET
+         source_id = EXCLUDED.source_id,
+         unit = EXCLUDED.unit,
+         top_m = EXCLUDED.top_m,
+         base_m = EXCLUDED.base_m,
+         samples = EXCLUDED.samples`,
+      [wellId, sourceId, curve.mnemonic, curve.unit, curve.topM, curve.baseM, curve.samples],
+    );
+  }
+}
+
 async function main(): Promise<void> {
   const dataset = generateSyntheticDataset();
   const client = new pg.Client({ connectionString: requireEnv('ETL_DATABASE_URL') });
@@ -214,6 +237,7 @@ async function main(): Promise<void> {
     await upsertProduction(client, sourceId, wellIds, dataset);
     await upsertFieldProduction(client, sourceId, fieldId, dataset);
     await upsertTrajectories(client, sourceId, wellIds, dataset);
+    await upsertLogs(client, sourceId, wellIds, dataset);
     await client.query('UPDATE data_source SET ingested_at = now() WHERE id = $1', [sourceId]);
     await client.query('COMMIT');
     console.log(

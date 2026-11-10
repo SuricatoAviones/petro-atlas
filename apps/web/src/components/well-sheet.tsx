@@ -1,22 +1,34 @@
-'use client';
+﻿'use client';
 
 import type {
-  AlertItem,
   WellDetail,
+  WellLogsResponse,
   WellProductionResponse,
   WellTrajectoryResponse,
 } from '@petroatlas/shared-types';
 import { useEffect, useId, useRef, useState } from 'react';
 
 import { messages } from '@/messages/es';
-import { fetchWellDetail, fetchWellProduction, fetchWellTrajectory } from '@/lib/api';
+import { wellExportUrl } from '@/lib/api';
+import { downloadCsv, safeFileName, type TableData } from '@/lib/export';
+import type { ImportedWell } from '@/lib/imported-wells';
 import type { FitWindow, SheetTab, UnitSystem } from '@/lib/sheet-state';
+import type { WellAlert } from '@/lib/well-alerts';
+import {
+  repositoryOf,
+  wellKeyId,
+  type ProductionSeries,
+  type WellKey,
+  type WellOrigin,
+} from '@/lib/well-repository';
 
 import { AlertsList } from './alerts-list';
 import { LazyDiagnosticsTab } from './lazy-diagnostics-tab';
 import { LazyEngineeringTab } from './lazy-engineering-tab';
 import { LazyProductionCharts } from './lazy-production-charts';
 import { LazyTrajectoryChart } from './lazy-trajectory-chart';
+import { LogsChart } from './logs-chart';
+import { WellComparison } from './well-comparison';
 import type { WellAtPoint } from './well-map';
 
 export interface WellSelection {
@@ -24,6 +36,7 @@ export interface WellSelection {
   id: number | null;
   slug: string;
   name: string | null;
+  origin: WellOrigin;
 }
 
 interface WellSheetProps {
@@ -33,7 +46,10 @@ interface WellSheetProps {
   tab: SheetTab;
   unitSystem: UnitSystem;
   fitWindow: FitWindow | null;
-  alerts: readonly AlertItem[];
+  alerts: readonly WellAlert[];
+  importedWells: readonly ImportedWell[];
+  compareKeys: readonly WellKey[];
+  onCompareKeysChange: (keys: WellKey[]) => void;
   onSelectWell: (well: WellAtPoint) => void;
   onTabChange: (tab: SheetTab) => void;
   onUnitSystemChange: (unitSystem: UnitSystem) => void;
@@ -41,37 +57,25 @@ interface WellSheetProps {
   onClose: () => void;
 }
 
-interface DetailState {
+interface LoadState<T> {
   status: 'idle' | 'loading' | 'ready' | 'error';
-  slug: string | null;
-  detail: WellDetail | null;
+  key: string | null;
+  data: T | null;
 }
 
-const IDLE_STATE: DetailState = { status: 'idle', slug: null, detail: null };
+function idleState<T>(): LoadState<T> {
+  return { status: 'idle', key: null, data: null };
+}
+
 const TABS: readonly SheetTab[] = [
   'summary',
   'production',
   'operation',
   'trajectory',
+  'logs',
   'engineering',
   'diagnostics',
 ];
-
-interface ProductionState {
-  status: 'idle' | 'loading' | 'ready' | 'error';
-  slug: string | null;
-  data: WellProductionResponse | null;
-}
-
-const IDLE_PRODUCTION: ProductionState = { status: 'idle', slug: null, data: null };
-
-interface TrajectoryState {
-  status: 'idle' | 'loading' | 'ready' | 'error';
-  slug: string | null;
-  data: WellTrajectoryResponse | null;
-}
-
-const IDLE_TRAJECTORY: TrajectoryState = { status: 'idle', slug: null, data: null };
 
 const DATE_FORMATTER = new Intl.DateTimeFormat('es', {
   dateStyle: 'medium',
@@ -91,7 +95,39 @@ function openStreetMapUrl(latDeg: number, lonDeg: number): string {
   return `https://www.openstreetmap.org/?mlat=${String(latDeg)}&mlon=${String(lonDeg)}#map=13/${String(latDeg)}/${String(lonDeg)}`;
 }
 
-/** Metadata, production and operation tabs of a well (RF-03 to RF-05). */
+/** The exported columns follow the import format of docs/09, so the file can be re-imported. */
+function productionTable(detail: WellDetail, data: ProductionSeries): TableData {
+  return {
+    headers: [
+      'well',
+      'date',
+      'lat',
+      'lon',
+      'oil_sm3',
+      'gas_sm3',
+      'water_sm3',
+      'on_stream_h',
+      'bhp_bar',
+      'whp_bar',
+      'choke_pct',
+    ],
+    rows: data.dates.map((date, index) => [
+      detail.name,
+      date,
+      detail.location.latDeg,
+      detail.location.lonDeg,
+      data.series.oil[index] ?? null,
+      data.series.gas[index] ?? null,
+      data.series.water[index] ?? null,
+      data.series.onStream[index] ?? null,
+      data.series.bhp[index] ?? null,
+      data.series.whp[index] ?? null,
+      data.series.choke[index] ?? null,
+    ]),
+  };
+}
+
+/** Metadata, series, logs and engineering tools of a well (docs/07, docs/09). */
 export function WellSheet({
   wells,
   selectedWell,
@@ -99,6 +135,9 @@ export function WellSheet({
   unitSystem,
   fitWindow,
   alerts,
+  importedWells,
+  compareKeys,
+  onCompareKeysChange,
   onSelectWell,
   onTabChange,
   onUnitSystemChange,
@@ -106,12 +145,16 @@ export function WellSheet({
   onClose,
 }: WellSheetProps) {
   const headingId = useId();
+  const chartGroupId = useId();
   const closeRef = useRef<HTMLButtonElement>(null);
-  const [state, setState] = useState<DetailState>(IDLE_STATE);
-  const [production, setProduction] = useState<ProductionState>(IDLE_PRODUCTION);
-  const [trajectory, setTrajectory] = useState<TrajectoryState>(IDLE_TRAJECTORY);
-  const selectedId = selectedWell.id;
+  const [state, setState] = useState<LoadState<WellDetail>>(idleState);
+  const [production, setProduction] = useState<LoadState<WellProductionResponse>>(idleState);
+  const [trajectory, setTrajectory] = useState<LoadState<WellTrajectoryResponse>>(idleState);
+  const [logs, setLogs] = useState<LoadState<WellLogsResponse>>(idleState);
   const selectedSlug = selectedWell.slug;
+  const selectedOrigin = selectedWell.origin;
+  const selectedKey = wellKeyId({ origin: selectedOrigin, slug: selectedSlug });
+  const repository = repositoryOf(selectedOrigin);
 
   useEffect(() => {
     closeRef.current?.focus();
@@ -119,57 +162,78 @@ export function WellSheet({
 
   useEffect(() => {
     const controller = new AbortController();
-    fetchWellDetail(selectedId ?? selectedSlug, controller.signal)
+    repository
+      .getDetail(selectedSlug, controller.signal)
       .then((detail) => {
         if (!controller.signal.aborted) {
-          setState({ status: 'ready', slug: selectedSlug, detail });
+          setState({ status: 'ready', key: selectedKey, data: detail });
         }
       })
       .catch(() => {
-        if (!controller.signal.aborted) {
-          setState({ status: 'error', slug: selectedSlug, detail: null });
-        }
+        if (!controller.signal.aborted) setState({ status: 'error', key: selectedKey, data: null });
       });
     return () => {
       controller.abort();
     };
-  }, [selectedId, selectedSlug]);
+  }, [repository, selectedKey, selectedSlug]);
 
   useEffect(() => {
     const controller = new AbortController();
-    fetchWellProduction(selectedId ?? selectedSlug, controller.signal)
+    repository
+      .getProduction(selectedSlug, controller.signal)
       .then((data) => {
         if (!controller.signal.aborted) {
-          setProduction({ status: 'ready', slug: selectedSlug, data });
+          setProduction({ status: 'ready', key: selectedKey, data });
         }
       })
       .catch(() => {
         if (!controller.signal.aborted) {
-          setProduction({ status: 'error', slug: selectedSlug, data: null });
+          setProduction({ status: 'error', key: selectedKey, data: null });
         }
       });
     return () => {
       controller.abort();
     };
-  }, [selectedId, selectedSlug]);
+  }, [repository, selectedKey, selectedSlug]);
 
   useEffect(() => {
     const controller = new AbortController();
-    fetchWellTrajectory(selectedId ?? selectedSlug, controller.signal)
+    repository
+      .getTrajectory(selectedSlug, controller.signal)
       .then((data) => {
         if (!controller.signal.aborted) {
-          setTrajectory({ status: 'ready', slug: selectedSlug, data });
+          setTrajectory({ status: 'ready', key: selectedKey, data });
         }
       })
       .catch(() => {
         if (!controller.signal.aborted) {
-          setTrajectory({ status: 'error', slug: selectedSlug, data: null });
+          setTrajectory({ status: 'error', key: selectedKey, data: null });
         }
       });
     return () => {
       controller.abort();
     };
-  }, [selectedId, selectedSlug]);
+  }, [repository, selectedKey, selectedSlug]);
+
+  useEffect(() => {
+    if (tab !== 'logs' || selectedOrigin !== 'public') return;
+    const controller = new AbortController();
+    repository
+      .getLogs(selectedSlug, controller.signal)
+      .then((data) => {
+        if (!controller.signal.aborted) {
+          setLogs({ status: 'ready', key: selectedKey, data });
+        }
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setLogs({ status: 'error', key: selectedKey, data: null });
+        }
+      });
+    return () => {
+      controller.abort();
+    };
+  }, [repository, selectedKey, selectedOrigin, selectedSlug, tab]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent): void => {
@@ -181,28 +245,38 @@ export function WellSheet({
     };
   }, [onClose]);
 
-  const isCurrent = state.slug === selectedSlug;
-  const detail = isCurrent && state.status === 'ready' ? state.detail : null;
+  const isCurrent = state.key === selectedKey;
+  const detail = isCurrent && state.status === 'ready' ? state.data : null;
   const isLoading = !isCurrent || state.status === 'idle' || state.status === 'loading';
-  const isProductionCurrent = production.slug === selectedSlug;
+  const isProductionCurrent = production.key === selectedKey;
   const productionData =
     isProductionCurrent && production.status === 'ready' ? production.data : null;
   const isProductionLoading =
     !isProductionCurrent || production.status === 'idle' || production.status === 'loading';
   const isProductionError = isProductionCurrent && production.status === 'error';
-  const isTrajectoryCurrent = trajectory.slug === selectedSlug;
+  const isTrajectoryCurrent = trajectory.key === selectedKey;
   const trajectoryData =
     isTrajectoryCurrent && trajectory.status === 'ready' ? trajectory.data : null;
   const isTrajectoryLoading =
     !isTrajectoryCurrent || trajectory.status === 'idle' || trajectory.status === 'loading';
   const isTrajectoryError = isTrajectoryCurrent && trajectory.status === 'error';
-  const wellAlerts = detail === null ? [] : alerts.filter((alert) => alert.wellId === detail.id);
+  const isLogsCurrent = logs.key === selectedKey;
+  const logsData = isLogsCurrent && logs.status === 'ready' ? logs.data : null;
+  const isLogsLoading = !isLogsCurrent || logs.status === 'idle' || logs.status === 'loading';
+  const isLogsError = isLogsCurrent && logs.status === 'error';
+  const wellAlerts =
+    selectedOrigin === 'public'
+      ? alerts.filter(
+          (alert) => alert.origin === 'public' && detail !== null && alert.wellId === detail.id,
+        )
+      : alerts.filter((alert) => alert.origin === 'imported' && alert.wellSlug === selectedSlug);
+  const currentKey: WellKey = { origin: selectedOrigin, slug: selectedSlug };
 
   return (
     <aside className="well-sheet" aria-labelledby={headingId} data-testid="well-sheet">
       <div className="well-sheet__header">
         <div>
-          <h2 id={headingId}>{detail?.name ?? messages.wellSheet.title}</h2>
+          <h2 id={headingId}>{detail?.name ?? selectedWell.name ?? messages.wellSheet.title}</h2>
           {detail !== null && <p className="well-sheet__subtitle">{detail.slug}</p>}
         </div>
         <button
@@ -212,7 +286,9 @@ export function WellSheet({
           aria-label={messages.wellSheet.close}
           onClick={onClose}
         >
-          ×
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+            <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" strokeWidth="1.8" />
+          </svg>
         </button>
       </div>
 
@@ -220,10 +296,14 @@ export function WellSheet({
         <nav aria-label={messages.wellSheet.wellsAtPoint}>
           <ul className="well-sheet__list">
             {wells.map((well) => (
-              <li key={well.id}>
+              <li key={`${well.origin}:${String(well.id)}`}>
                 <button
                   type="button"
-                  aria-current={well.slug === selectedSlug ? 'true' : undefined}
+                  aria-current={
+                    well.slug === selectedSlug && well.origin === selectedOrigin
+                      ? 'true'
+                      : undefined
+                  }
                   onClick={() => {
                     onSelectWell(well);
                   }}
@@ -234,6 +314,10 @@ export function WellSheet({
             ))}
           </ul>
         </nav>
+      )}
+
+      {selectedOrigin === 'imported' && (
+        <p className="well-sheet__notice">{messages.wellSheet.importedNotice}</p>
       )}
 
       <div className="well-sheet__tabs" role="tablist" aria-label={messages.wellSheet.tabs.label}>
@@ -269,7 +353,17 @@ export function WellSheet({
                 {messages.wellSheet.loadError}
               </p>
             )}
-            {detail !== null && <WellSheetDetails detail={detail} />}
+            {detail !== null && (
+              <>
+                <WellSheetDetails detail={detail} />
+                <WellExport
+                  detail={detail}
+                  production={productionData}
+                  origin={selectedOrigin}
+                  slug={selectedSlug}
+                />
+              </>
+            )}
             {wellAlerts.length > 0 && (
               <section className="well-sheet__alerts">
                 <h3>{messages.alerts.title}</h3>
@@ -317,6 +411,34 @@ export function WellSheet({
                 )}
               </>
             )}
+            {tab === 'logs' && (
+              <>
+                {selectedOrigin === 'imported' ? (
+                  <p className="well-sheet__notice">
+                    {messages.wellSheet.logs.unavailableForImported}
+                  </p>
+                ) : (
+                  <>
+                    {isLogsLoading && (
+                      <p className="well-sheet__notice" role="status">
+                        {messages.wellSheet.logs.loading}
+                      </p>
+                    )}
+                    {isLogsError && (
+                      <p className="well-sheet__notice well-sheet__notice--error" role="alert">
+                        {messages.wellSheet.logs.error}
+                      </p>
+                    )}
+                    {logsData !== null &&
+                      (logsData.curves.length === 0 ? (
+                        <p className="well-sheet__notice">{messages.wellSheet.logs.noData}</p>
+                      ) : (
+                        <LogsChart curves={logsData.curves} source={logsData.source} />
+                      ))}
+                  </>
+                )}
+              </>
+            )}
             {(tab === 'production' || tab === 'operation') && (
               <>
                 {isProductionLoading && (
@@ -330,14 +452,28 @@ export function WellSheet({
                   </p>
                 )}
                 {productionData !== null && (
-                  <LazyProductionCharts
-                    key={productionData.wellId}
-                    data={productionData}
-                    unitSystem={unitSystem}
-                    section={tab}
-                    fitWindow={fitWindow}
-                    onFitWindowChange={onFitWindowChange}
-                  />
+                  <>
+                    <LazyProductionCharts
+                      key={`${selectedKey}:${tab}`}
+                      data={productionData}
+                      unitSystem={unitSystem}
+                      section={tab}
+                      fitWindow={fitWindow}
+                      onFitWindowChange={onFitWindowChange}
+                      groupId={chartGroupId}
+                    />
+                    {tab === 'production' && detail !== null && (
+                      <WellComparison
+                        current={{ key: currentKey, name: detail.name, data: productionData }}
+                        fieldSlug={detail.field?.slug ?? null}
+                        importedWells={importedWells}
+                        compareKeys={compareKeys}
+                        onCompareKeysChange={onCompareKeysChange}
+                        unitSystem={unitSystem}
+                        groupId={chartGroupId}
+                      />
+                    )}
+                  </>
                 )}
               </>
             )}
@@ -365,6 +501,45 @@ export function WellSheet({
         )}
       </div>
     </aside>
+  );
+}
+
+function WellExport({
+  detail,
+  production,
+  origin,
+  slug,
+}: {
+  detail: WellDetail;
+  production: ProductionSeries | null;
+  origin: WellOrigin;
+  slug: string;
+}) {
+  if (origin === 'public') {
+    return (
+      <p className="well-sheet__export">
+        <a href={wellExportUrl(slug)} download>
+          {messages.wellSheet.exportCsv}
+        </a>
+        <span>{messages.wellSheet.exportCsvNote}</span>
+      </p>
+    );
+  }
+  return (
+    <p className="well-sheet__export">
+      <button
+        type="button"
+        disabled={production === null}
+        onClick={() => {
+          if (production !== null) {
+            downloadCsv(`${safeFileName(detail.name)}.csv`, productionTable(detail, production));
+          }
+        }}
+      >
+        {messages.wellSheet.exportCsv}
+      </button>
+      <span>{messages.wellSheet.exportCsvNote}</span>
+    </p>
   );
 }
 
@@ -449,9 +624,13 @@ function WellSheetDetails({ detail }: { detail: WellDetail }) {
       <footer className="well-sheet__source">
         <h3>{messages.wellSheet.source}</h3>
         <p>
-          <a href={detail.source.url} target="_blank" rel="noreferrer">
-            {detail.source.name}
-          </a>
+          {detail.source.url === '' ? (
+            detail.source.name
+          ) : (
+            <a href={detail.source.url} target="_blank" rel="noreferrer">
+              {detail.source.name}
+            </a>
+          )}
         </p>
         <p>
           {messages.wellSheet.license}: {detail.source.license}

@@ -20,13 +20,17 @@ import type { WellColorMode } from './well-colors';
 import {
   CLUSTER_LAYER_ID,
   FIELD_SOURCE_ID,
+  IMPORTED_CENTER_LAYER_ID,
+  IMPORTED_LAYER_ID,
   WELL_LAYER_ID,
   WELL_SOURCE_ID,
   addWellLayers,
   setBubbleLayer,
+  setImportedWells,
   setWellColorMode,
   setWellFilters,
   type BubbleLayerState,
+  type ImportedWellPoint,
 } from './well-layers';
 
 type MapStatus = 'loading' | 'ready' | 'error';
@@ -44,6 +48,7 @@ export interface WellAtPoint {
   id: number;
   name: string;
   slug: string;
+  origin: 'public' | 'imported';
 }
 
 function readStringProperty(properties: unknown, key: string): string | null {
@@ -62,7 +67,21 @@ function wellsAtPoint(features: readonly MapGeoJSONFeature[] | undefined): WellA
     const slug = readStringProperty(feature.properties, 'slug');
     if (name === null || slug === null) continue;
     seen.add(feature.id);
-    wells.push({ id: feature.id, name, slug });
+    wells.push({ id: feature.id, name, slug, origin: 'public' });
+  }
+  return wells;
+}
+
+/** Features of the imported layer under a click; they have no database id. */
+function importedWellsAtPoint(features: readonly MapGeoJSONFeature[] | undefined): WellAtPoint[] {
+  const seen = new Set<string>();
+  const wells: WellAtPoint[] = [];
+  for (const feature of features ?? []) {
+    const name = readStringProperty(feature.properties, 'name');
+    const slug = readStringProperty(feature.properties, 'slug');
+    if (name === null || slug === null || seen.has(slug)) continue;
+    seen.add(slug);
+    wells.push({ id: -wells.length - 1, name, slug, origin: 'imported' });
   }
   return wells;
 }
@@ -75,6 +94,8 @@ export interface WellMapProps {
   initialView: MapView;
   /** Cumulative bubbles replace the well points while this is set. */
   bubbles: BubbleLayerState | null;
+  /** Wells imported in this browser, drawn as a separate symbol (docs/09). */
+  importedWells: readonly ImportedWellPoint[];
   onSelectWells: (wells: readonly WellAtPoint[]) => void;
   onViewChange: (view: MapView) => void;
 }
@@ -85,6 +106,7 @@ export function WellMap({
   filtersQuery,
   initialView,
   bubbles,
+  importedWells,
   onSelectWells,
   onViewChange,
 }: WellMapProps) {
@@ -96,6 +118,7 @@ export function WellMap({
   const latestOnSelectWells = useRef(onSelectWells);
   const latestOnViewChange = useRef(onViewChange);
   const latestBubbles = useRef(bubbles);
+  const latestImportedWells = useRef(importedWells);
   const [status, setStatus] = useState<MapStatus>('loading');
   const [hasDataError, setHasDataError] = useState(false);
 
@@ -120,6 +143,10 @@ export function WellMap({
   }, [bubbles]);
 
   useEffect(() => {
+    latestImportedWells.current = importedWells;
+  }, [importedWells]);
+
+  useEffect(() => {
     const container = containerRef.current;
     if (container === null) return;
 
@@ -140,6 +167,7 @@ export function WellMap({
 
     map.once('load', () => {
       addWellLayers(map, latestColorMode.current, latestFiltersQuery.current);
+      setImportedWells(map, latestImportedWells.current);
       setBubbleLayer(map, latestBubbles.current);
       mapRef.current = map;
       setStatus('ready');
@@ -167,7 +195,18 @@ export function WellMap({
       const wells = wellsAtPoint(event.features);
       if (wells.length > 0) latestOnSelectWells.current(wells);
     });
-    for (const layerId of [CLUSTER_LAYER_ID, WELL_LAYER_ID]) {
+    for (const importedLayerId of [IMPORTED_LAYER_ID, IMPORTED_CENTER_LAYER_ID]) {
+      map.on('click', importedLayerId, (event: MapLayerMouseEvent) => {
+        const wells = importedWellsAtPoint(event.features);
+        if (wells.length > 0) latestOnSelectWells.current(wells);
+      });
+    }
+    for (const layerId of [
+      CLUSTER_LAYER_ID,
+      WELL_LAYER_ID,
+      IMPORTED_LAYER_ID,
+      IMPORTED_CENTER_LAYER_ID,
+    ]) {
       map.on('mouseenter', layerId, () => {
         map.getCanvas().style.cursor = 'pointer';
       });
@@ -193,6 +232,7 @@ export function WellMap({
   useEffect(() => {
     if (status === 'ready' && mapRef.current !== null) {
       setWellFilters(mapRef.current, filtersQuery, latestColorMode.current);
+      setImportedWells(mapRef.current, latestImportedWells.current);
       setBubbleLayer(mapRef.current, latestBubbles.current);
     }
   }, [status, filtersQuery]);
@@ -202,6 +242,12 @@ export function WellMap({
       setBubbleLayer(mapRef.current, bubbles);
     }
   }, [status, bubbles]);
+
+  useEffect(() => {
+    if (status === 'ready' && mapRef.current !== null) {
+      setImportedWells(mapRef.current, importedWells);
+    }
+  }, [status, importedWells]);
 
   return (
     <div className="well-map">

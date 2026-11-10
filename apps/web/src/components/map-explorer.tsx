@@ -6,9 +6,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { fetchAlerts, fetchCumulativeWells, fetchFields, fetchWellCount } from '@/lib/api';
 import { bubbleMaximum, type BubbleFluid } from '@/lib/bubble';
+import { listImportedWells, type ImportedWell } from '@/lib/imported-wells';
 import type { FitWindow, SheetTab, UnitSystem } from '@/lib/sheet-state';
 import { parseMapUrlState, writeMapUrlState, type MapView } from '@/lib/url-state';
+import { importedWellAlert, publicWellAlert, sortAlerts, type WellAlert } from '@/lib/well-alerts';
 import { toWellQuery, type WellFilters } from '@/lib/well-filters';
+import type { WellKey } from '@/lib/well-repository';
 
 import {
   FilterPanel,
@@ -16,6 +19,7 @@ import {
   type FilterOptionsStatus,
   type WellCountState,
 } from './filter-panel';
+import { ImportPanel } from './import-panel';
 import { LazyWellMap } from './lazy-well-map';
 import type { WellColorMode } from './well-colors';
 import type { WellAtPoint } from './well-map';
@@ -170,7 +174,11 @@ export function MapExplorer() {
   const [selectedWell, setSelectedWell] = useState<WellSelection | null>(
     initialUrlState.wellSlug === null
       ? null
-      : { id: null, slug: initialUrlState.wellSlug, name: null },
+      : { id: null, slug: initialUrlState.wellSlug, name: null, origin: 'public' },
+  );
+  const [importedWells, setImportedWells] = useState<ImportedWell[]>([]);
+  const [compareKeys, setCompareKeys] = useState<WellKey[]>(
+    initialUrlState.compareSlugs.map((slug) => ({ origin: 'public', slug })),
   );
   const filterQuery = useMemo(() => toWellQuery(filters), [filters]);
   const options = useFieldOptions();
@@ -188,7 +196,53 @@ export function MapExplorer() {
         : { fluid: bubbleFluid, items: cumulative.items },
     [bubbleFluid, cumulative.items, cumulative.status],
   );
-  const selectedWellSlug = selectedWell?.slug ?? null;
+  const selectedWellSlug = selectedWell?.origin === 'public' ? selectedWell.slug : null;
+  const compareSlugs = useMemo(
+    () => compareKeys.filter((key) => key.origin === 'public').map((key) => key.slug),
+    [compareKeys],
+  );
+
+  const keepImported = useCallback((wells: ImportedWell[]): void => {
+    setImportedWells(wells);
+    setCompareKeys((keys) =>
+      keys.filter((key) => key.origin === 'public' || wells.some((well) => well.slug === key.slug)),
+    );
+    setSelectedWell((current) =>
+      current?.origin === 'imported' && !wells.some((well) => well.slug === current.slug)
+        ? null
+        : current,
+    );
+  }, []);
+
+  const refreshImportedWells = useCallback(async (): Promise<void> => {
+    try {
+      keepImported(await listImportedWells());
+    } catch {
+      keepImported([]);
+    }
+  }, [keepImported]);
+
+  useEffect(() => {
+    let cancelled = false;
+    listImportedWells()
+      .then((wells) => {
+        if (!cancelled) keepImported(wells);
+      })
+      .catch(() => {
+        if (!cancelled) keepImported([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [keepImported]);
+
+  const allAlerts = useMemo(() => {
+    const imported = importedWells.flatMap((well) => {
+      const alert = importedWellAlert(well);
+      return alert === null ? [] : [alert];
+    });
+    return sortAlerts([...alerts.items.map(publicWellAlert), ...imported]);
+  }, [alerts.items, importedWells]);
 
   useEffect(() => {
     writeMapUrlState({
@@ -198,18 +252,21 @@ export function MapExplorer() {
       tab: sheetTab,
       unitSystem,
       fitWindow,
+      compareSlugs,
     });
-  }, [filters, fitWindow, selectedWellSlug, sheetTab, unitSystem, view]);
+  }, [compareSlugs, filters, fitWindow, selectedWellSlug, sheetTab, unitSystem, view]);
 
   const handleSelectWells = useCallback((wells: readonly WellAtPoint[]) => {
     const first = wells[0];
     setWellsAtPoint(wells);
     setSelectedWell(
-      first === undefined ? null : { id: first.id, slug: first.slug, name: first.name },
+      first === undefined
+        ? null
+        : { id: first.id, slug: first.slug, name: first.name, origin: first.origin },
     );
   }, []);
   const handleSelectWell = useCallback((well: WellAtPoint) => {
-    setSelectedWell({ id: well.id, slug: well.slug, name: well.name });
+    setSelectedWell({ id: well.id, slug: well.slug, name: well.name, origin: well.origin });
   }, []);
   const closeWellSheet = useCallback(() => {
     setWellsAtPoint([]);
@@ -218,9 +275,18 @@ export function MapExplorer() {
   const handleViewChange = useCallback((nextView: MapView) => {
     setView(nextView);
   }, []);
-  const handleOpenAlert = useCallback((alert: AlertItem) => {
+  const handleOpenAlert = useCallback((alert: WellAlert) => {
     setWellsAtPoint([]);
-    setSelectedWell({ id: alert.wellId, slug: alert.wellSlug, name: alert.wellName });
+    setSelectedWell({
+      id: alert.wellId,
+      slug: alert.wellSlug,
+      name: alert.wellName,
+      origin: alert.origin,
+    });
+  }, []);
+  const handleOpenImported = useCallback((well: ImportedWell) => {
+    setWellsAtPoint([]);
+    setSelectedWell({ id: null, slug: well.slug, name: well.name, origin: 'imported' });
   }, []);
 
   return (
@@ -235,19 +301,26 @@ export function MapExplorer() {
         bubbleFluid={bubbleFluid}
         bubbleMax={bubbleMax}
         bubbleStatus={cumulative.status}
-        alerts={alerts.items}
+        alerts={allAlerts}
         alertsStatus={alerts.status}
         onFiltersChange={setFilters}
         onColorModeChange={setColorMode}
         onBubbleFluidChange={setBubbleFluid}
         onOpenWell={handleOpenAlert}
-      />
+      >
+        <ImportPanel
+          importedWells={importedWells}
+          onImportedChange={refreshImportedWells}
+          onOpenImported={handleOpenImported}
+        />
+      </FilterPanel>
       <div className="map-explorer__map">
         <LazyWellMap
           colorMode={colorMode}
           filtersQuery={filterQuery}
           initialView={initialUrlState.view}
           bubbles={bubbleLayer}
+          importedWells={importedWells}
           onSelectWells={handleSelectWells}
           onViewChange={handleViewChange}
         />
@@ -258,7 +331,10 @@ export function MapExplorer() {
             tab={sheetTab}
             unitSystem={unitSystem}
             fitWindow={fitWindow}
-            alerts={alerts.items}
+            alerts={allAlerts}
+            importedWells={importedWells}
+            compareKeys={compareKeys}
+            onCompareKeysChange={setCompareKeys}
             onSelectWell={handleSelectWell}
             onTabChange={setSheetTab}
             onUnitSystemChange={setUnitSystem}

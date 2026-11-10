@@ -1,15 +1,15 @@
 import {
   wellStatusSchema,
   wellTypeSchema,
-  type AlertItem,
   type FieldSummary,
   type WellStatus,
   type WellType,
 } from '@petroatlas/shared-types';
-import { useId } from 'react';
+import { useId, type ReactNode } from 'react';
 
 import { BUBBLE_FLUIDS, bubbleRadius, formatVolume, type BubbleFluid } from '@/lib/bubble';
 import { messages } from '@/messages/es';
+import type { WellAlert } from '@/lib/well-alerts';
 import { EMPTY_WELL_FILTERS, hasActiveWellFilters, type WellFilters } from '@/lib/well-filters';
 
 import { AlertsList } from './alerts-list';
@@ -42,12 +42,14 @@ interface FilterPanelProps {
   bubbleFluid: BubbleFluid | null;
   bubbleMax: number;
   bubbleStatus: BubbleStatus;
-  alerts: readonly AlertItem[];
+  alerts: readonly WellAlert[];
   alertsStatus: BubbleStatus;
   onFiltersChange: (filters: WellFilters) => void;
   onColorModeChange: (mode: WellColorMode) => void;
   onBubbleFluidChange: (fluid: BubbleFluid | null) => void;
-  onOpenWell: (alert: AlertItem) => void;
+  onOpenWell: (alert: WellAlert) => void;
+  /** Sections below the alerts, such as the CSV import of docs/09. */
+  children?: ReactNode;
 }
 
 function toggleItem<T>(items: readonly T[], item: T, selected: boolean): T[] {
@@ -71,6 +73,7 @@ export function FilterPanel({
   onColorModeChange,
   onBubbleFluidChange,
   onOpenWell,
+  children,
 }: FilterPanelProps) {
   const fieldId = useId();
   const operatorId = useId();
@@ -347,6 +350,7 @@ export function FilterPanel({
         )}
         {alertsStatus === 'ready' && <AlertsList alerts={alerts} onOpenWell={onOpenWell} />}
       </section>
+      {children}
     </aside>
   );
 }

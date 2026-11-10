@@ -34,6 +34,10 @@ export const WELL_OUTLINE_COLOR = '#13212b';
 export const CLUSTER_COLOR = '#12303a';
 export const CLUSTER_TEXT_COLOR = '#ffffff';
 
+/** Imported wells are a separate layer and must not be confused with the public ones. */
+export const IMPORTED_WELL_COLOR = '#b45309';
+export const IMPORTED_WELL_CENTER_COLOR = '#ffffff';
+
 export const BUBBLE_COLORS = {
   oil: '#1a7f4b',
   gas: '#c0392b',

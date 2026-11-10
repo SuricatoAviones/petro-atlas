@@ -61,6 +61,19 @@ export interface SyntheticTrajectoryStation {
   azimDeg: number | null;
 }
 
+/**
+ * A log curve sampled at a constant depth step between `topM` and `baseM` (docs/05). A sample
+ * the tool did not record is `null`.
+ */
+export interface SyntheticLogCurve {
+  wellName: string;
+  mnemonic: string;
+  unit: string;
+  topM: number;
+  baseM: number;
+  samples: (number | null)[];
+}
+
 export interface SyntheticFieldProductionMonth {
   /** First day of the month, YYYY-MM-01. */
   month: string;
@@ -76,6 +89,7 @@ export interface SyntheticDataset {
   production: DailyProductionRow[];
   fieldProduction: SyntheticFieldProductionMonth[];
   trajectories: SyntheticTrajectoryStation[];
+  logs: SyntheticLogCurve[];
 }
 
 const RANDOM_SEED = 20_250_101;
@@ -346,6 +360,70 @@ function generateTrajectories(wells: readonly SyntheticWell[]): SyntheticTraject
   );
 }
 
+/** Wells with logs: the first producers, enough to exercise the viewer and the "no logs" case. */
+export const LOGGED_WELL_COUNT = 6;
+const LOG_RANDOM_SEED = 20_250_202;
+const LOG_STEP_M = 1;
+const LOG_INTERVAL_M = 400;
+/** Samples the density tool misses in one well, a gap the viewer must show as a gap. */
+const LOG_GAP = { wellIndex: 0, mnemonic: 'RHOB', fromSample: 120, toSample: 140 };
+
+/**
+ * Gamma ray, deep resistivity, bulk density and neutron porosity over the last 400 m of each
+ * logged well. Beds alternate between shale and sand; the upper sands carry oil and read a high
+ * resistivity, the lower ones carry water.
+ */
+function generateLogs(wells: readonly SyntheticWell[]): SyntheticLogCurve[] {
+  const random = createRandom(LOG_RANDOM_SEED);
+  return wells.slice(0, LOGGED_WELL_COUNT).flatMap((well, wellIndex) => {
+    const baseM = well.totalDepthM;
+    const topM = baseM - LOG_INTERVAL_M;
+    const sampleCount = LOG_INTERVAL_M / LOG_STEP_M + 1;
+    const oilWaterContactSample = Math.floor(sampleCount * (0.55 + random() * 0.2));
+
+    const gr: number[] = [];
+    const rt: number[] = [];
+    const rhob: number[] = [];
+    const nphi: number[] = [];
+    let isSand = false;
+    let bedEnd = 0;
+    for (let sample = 0; sample < sampleCount; sample += 1) {
+      if (sample === bedEnd) {
+        isSand = !isSand;
+        bedEnd += 8 + Math.floor(random() * (isSand ? 30 : 45));
+      }
+      const hasOil = isSand && sample < oilWaterContactSample;
+      const sandRtOhmM = hasOil ? 25 + random() * 120 : 0.6 + random() * 1.2;
+      gr.push(round(isSand ? 28 + random() * 18 : 88 + random() * 32));
+      rt.push(round(isSand ? sandRtOhmM : 2 + random() * 3, 2));
+      rhob.push(round(isSand ? 2.18 + random() * 0.1 : 2.45 + random() * 0.1, 3));
+      nphi.push(round(isSand ? 0.18 + random() * 0.07 : 0.3 + random() * 0.06, 3));
+    }
+
+    const curve = (mnemonic: string, unit: string, values: number[]): SyntheticLogCurve => ({
+      wellName: well.name,
+      mnemonic,
+      unit,
+      topM,
+      baseM,
+      samples: values.map((value, sample) =>
+        wellIndex === LOG_GAP.wellIndex &&
+        mnemonic === LOG_GAP.mnemonic &&
+        sample >= LOG_GAP.fromSample &&
+        sample < LOG_GAP.toSample
+          ? null
+          : value,
+      ),
+    });
+    return [
+      curve('GR', 'gAPI', gr),
+      curve('RT', 'ohm.m', rt),
+      curve('RHOB', 'g/cm3', rhob),
+      curve('NPHI', 'v/v', nphi),
+    ];
+  });
+}
+
 /** Builds the full synthetic dataset. The same call always returns the same data. */
 export function generateSyntheticDataset(): SyntheticDataset {
   const random = createRandom(RANDOM_SEED);
@@ -387,5 +465,6 @@ export function generateSyntheticDataset(): SyntheticDataset {
     production,
     fieldProduction: generateFieldProduction(production),
     trajectories: generateTrajectories(wells),
+    logs: generateLogs(wells),
   };
 }
