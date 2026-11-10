@@ -157,6 +157,56 @@ describe('GET /api/tiles/wells/:z/:x/:y.mvt', () => {
   });
 });
 
+describe('GET /api/tiles/fields/:z/:x/:y.mvt', () => {
+  async function getFieldTile(tile: string) {
+    baseUrl = await startApi({ database });
+    const response = await fetch(`${baseUrl}/api/tiles/fields/${tile}.mvt`);
+    const fields: { id: number | undefined; type: number; properties: Record<string, unknown> }[] =
+      [];
+    if (response.status === 200) {
+      const layer = new VectorTile(new PbfReader(await response.arrayBuffer())).layers.fields;
+      for (let index = 0; index < (layer?.length ?? 0); index += 1) {
+        const feature = layer?.feature(index);
+        if (feature !== undefined) {
+          fields.push({ id: feature.id, type: feature.type, properties: feature.properties });
+        }
+      }
+    }
+    return { response, fields };
+  }
+
+  it('serves the field outline as a polygon with its attributes', async () => {
+    const [tile = ''] = fieldTiles(8);
+    const { response, fields } = await getFieldTile(tile);
+    const field = fields.find((candidate) => candidate.properties.slug === SEED_FIELD_SLUG);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toBe('application/vnd.mapbox-vector-tile');
+    expect(response.headers.get('cache-control')).toBe('public, max-age=300');
+    expect(field?.id).toEqual(expect.any(Number));
+    // 3 is the polygon geometry type of the vector tile specification.
+    expect(field?.type).toBe(3);
+    expect(field?.properties).toEqual({
+      name: expect.any(String) as unknown,
+      slug: SEED_FIELD_SLUG,
+      status: 'producing',
+    });
+  });
+
+  it('responds 204 for a tile without fields', async () => {
+    const { response } = await getFieldTile('5/0/0');
+
+    expect(response.status).toBe(204);
+  });
+
+  it.each(['23/0/0', '2/4/0', '2/a/0'])('responds 400 INVALID_PARAMS for %s', async (tile) => {
+    const { response } = await getFieldTile(tile);
+
+    expect(response.status).toBe(400);
+    expect(apiErrorSchema.parse(await response.json()).error.code).toBe('INVALID_PARAMS');
+  });
+});
+
 describe('compression', () => {
   // Seed tiles are below the 1 kB threshold, so the assertion is on the GeoJSON list.
   it('compresses responses for clients that accept it', async () => {

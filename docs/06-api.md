@@ -18,6 +18,7 @@ La API es de solo lectura y sirve datos. Los cálculos de ingeniería corren en 
 | `GET /api/wells/:id/export.csv` | Series del pozo en CSV | `from`, `to` |
 | `GET /api/alerts` | Pozos con alertas activas, críticas primero | `field`, `level` |
 | `GET /api/tiles/wells/{z}/{x}/{y}.mvt` | Teselas vectoriales de pozos | `field`, `status`, `type`, `operator`, `spudFrom`, `spudTo` |
+| `GET /api/tiles/fields/{z}/{x}/{y}.mvt` | Teselas vectoriales de campos | |
 | `GET /api/meta/sources` | Fuentes de datos, licencias y fecha de última ingesta | |
 | `GET /api/docs` | Especificación OpenAPI generada desde el código | |
 
@@ -218,6 +219,17 @@ Los valores del ejemplo son ilustrativos.
 - Hasta el zoom 8, la tesela se divide en una cuadrícula de 8 × 8 celdas. Los pozos de una misma celda se sirven como un grupo en su centroide; una celda con un solo pozo lo sirve en la capa `wells`.
 - A partir del zoom 9 cada pozo es una entidad. Varios pozos pueden compartir coordenadas, porque salen de la misma plataforma: la interfaz debe listar todos los que haya bajo el clic.
 - Admite los mismos filtros de atributos que `GET /api/wells`, de modo que los conteos de los grupos coinciden con la lista filtrada. Cada combinación de filtros es una URL distinta y se cachea por separado.
+- `z` va de 0 a 22; `x` e `y` deben existir en ese zoom. Si no, responde 400.
+
+## Teselas de campos
+
+`GET /api/tiles/fields/{z}/{x}/{y}.mvt` responde `application/vnd.mapbox-vector-tile`, generado con `ST_AsMVT`. Una tesela sin campos responde 204 sin cuerpo.
+
+| Capa | Contenido |
+| --- | --- |
+| `fields` | Un polígono por campo, con `name`, `slug` y `status`; el identificador de la entidad es el del campo |
+
+- Los polígonos se recortan a la tesela. En zooms bajos solo aparecen los campos lo bastante grandes para dibujarse a esa escala.
 - `z` va de 0 a 22; `x` e `y` deben existir en ese zoom. Si no, responde 400.
 
 ## Agregación de series
