@@ -39,20 +39,20 @@ docker compose up --detach db db-setup   # base de datos, migraciones y datos si
 pnpm dev                                 # API en :4000 y web en :3000, con recarga
 ```
 
-| Comando           | Qué hace                                                                |
-| ----------------- | ----------------------------------------------------------------------- |
-| `pnpm dev`        | API y web en modo desarrollo                                            |
-| `pnpm lint`       | ESLint y comprobación de formato con Prettier                           |
-| `pnpm format`     | Aplica el formato de Prettier                                           |
-| `pnpm typecheck`  | `tsc --noEmit` en todos los paquetes                                    |
-| `pnpm test`       | Pruebas con Vitest; las de la API necesitan la base de datos en marcha  |
-| `pnpm test:coverage` | Cobertura de `petro-calc`; falla por debajo del 90%                  |
-| `pnpm test:e2e`   | Pruebas de extremo a extremo con Playwright; necesitan la base de datos |
-| `pnpm build`      | Compila paquetes, API y web                                             |
-| `pnpm db:migrate` | Aplica las migraciones pendientes de `db/migrations`                    |
-| `pnpm db:seed`    | Carga los datos sintéticos; se puede repetir sin duplicar nada          |
-| `pnpm etl:sodir`  | Descarga los pozos y campos públicos de Sodir a `data/` y los carga     |
-| `pnpm etl:volve`  | Carga la producción y las trayectorias de Volve desde `data/volve`      |
+| Comando              | Qué hace                                                                |
+| -------------------- | ----------------------------------------------------------------------- |
+| `pnpm dev`           | API y web en modo desarrollo                                            |
+| `pnpm lint`          | ESLint y comprobación de formato con Prettier                           |
+| `pnpm format`        | Aplica el formato de Prettier                                           |
+| `pnpm typecheck`     | `tsc --noEmit` en todos los paquetes                                    |
+| `pnpm test`          | Pruebas con Vitest; las de la API necesitan la base de datos en marcha  |
+| `pnpm test:coverage` | Cobertura de `petro-calc`; falla por debajo del 90%                     |
+| `pnpm test:e2e`      | Pruebas de extremo a extremo con Playwright; necesitan la base de datos |
+| `pnpm build`         | Compila paquetes, API y web                                             |
+| `pnpm db:migrate`    | Aplica las migraciones pendientes de `db/migrations`                    |
+| `pnpm db:seed`       | Carga los datos sintéticos; se puede repetir sin duplicar nada          |
+| `pnpm etl:sodir`     | Descarga los pozos y campos públicos de Sodir a `data/` y los carga     |
+| `pnpm etl:volve`     | Carga la producción y las trayectorias de Volve desde `data/volve`      |
 
 Un cambio está terminado cuando `pnpm lint`, `pnpm typecheck`, `pnpm test` y `pnpm build` pasan. El resto de reglas está en [docs/12-convenciones.md](docs/12-convenciones.md).
 
