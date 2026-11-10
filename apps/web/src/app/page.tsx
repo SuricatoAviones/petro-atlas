@@ -1,4 +1,4 @@
-import { BaseMap } from '@/components/base-map';
+import { LazyBaseMap } from '@/components/lazy-base-map';
 import { messages } from '@/messages/es';
 
 export default function HomePage() {
@@ -9,7 +9,7 @@ export default function HomePage() {
         <p className="app-header__tagline">{messages.app.tagline}</p>
       </header>
       <main className="app-main">
-        <BaseMap />
+        <LazyBaseMap />
       </main>
     </div>
   );
