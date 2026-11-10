@@ -146,6 +146,17 @@ export const messages = {
       cumulativeGas: 'Gas',
       cumulativeWater: 'Agua',
     },
+    fit: {
+      title: 'Ajuste de Arps',
+      useView: 'Usar la ventana visible',
+      window: 'Ventana',
+      qi: 'qi',
+      di: 'Di',
+      b: 'b',
+      r2: 'R²',
+      noFit: 'La ventana necesita al menos 6 días con producción positiva.',
+      loadedFrom: 'Calculado con los datos visibles; la curva se superpone a la tasa de petróleo.',
+    },
     trajectory: {
       title: 'Trayectoria',
       noData: 'La fuente no publica la trayectoria de este pozo.',

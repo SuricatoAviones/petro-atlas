@@ -51,6 +51,8 @@ test('filters the map, opens a well and keeps the view after a reload', async ({
   await sheet.getByRole('tab', { name: 'Producción' }).click();
   await expect(sheet.getByRole('heading', { name: 'Tasas de producción' })).toBeVisible();
   await expect(sheet.getByRole('img', { name: 'Tasas de producción' })).toBeVisible();
+  await sheet.getByRole('button', { name: 'Usar la ventana visible' }).click();
+  await expect(sheet.getByRole('heading', { name: 'Ajuste de Arps' })).toBeVisible();
   await sheet.getByRole('radio', { name: 'Campo' }).check();
   await expect(sheet.getByRole('radio', { name: 'Campo' })).toBeChecked();
   await sheet.getByRole('tab', { name: 'Trayectoria' }).click();

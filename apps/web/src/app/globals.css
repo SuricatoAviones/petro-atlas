@@ -503,9 +503,67 @@ body {
   border-top: 1px solid var(--color-border);
 }
 
+.chart-card__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
 .chart-card h4 {
   margin: 0 0 0.25rem;
   font-size: 0.9rem;
+}
+
+.chart-card__action {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-header);
+  font: inherit;
+  font-size: 0.72rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.fit-summary {
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  background: var(--color-surface);
+}
+
+.fit-summary h4 {
+  margin: 0 0 0.25rem;
+  font-size: 0.9rem;
+}
+
+.fit-summary p {
+  margin: 0 0 0.375rem;
+  color: var(--color-ink-muted);
+  font-size: 0.75rem;
+}
+
+.fit-summary dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.15rem 0.75rem;
+  margin: 0;
+  font-size: 0.78rem;
+}
+
+.fit-summary dt {
+  color: var(--color-ink-muted);
+}
+
+.fit-summary dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.fit-summary__note {
+  margin-top: 0.5rem;
 }
 
 .chart-card__canvas {

@@ -315,6 +315,7 @@ export function WellSheet({
                 )}
                 {productionData !== null && (
                   <LazyProductionCharts
+                    key={productionData.wellId}
                     data={productionData}
                     unitSystem={unitSystem}
                     section={tab}
