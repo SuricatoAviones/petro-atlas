@@ -14,7 +14,6 @@ COPY apps/web/package.json apps/web/
 COPY packages/petro-calc/package.json packages/petro-calc/
 COPY packages/shared-types/package.json packages/shared-types/
 COPY db/package.json db/
-COPY etl/package.json etl/
 
 FROM base AS build
 RUN pnpm install --frozen-lockfile

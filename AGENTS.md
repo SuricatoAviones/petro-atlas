@@ -12,7 +12,6 @@ PetroAtlas: un mapa de pozos petroleros con fichas de producción y presión y h
 | `apps/api`              | Express 5, solo lectura                                   |
 | `packages/petro-calc`   | Cálculos de ingeniería, TypeScript puro, sin dependencias |
 | `packages/shared-types` | Tipos y esquemas Zod; solo depende de Zod                 |
-| `etl`                   | Ingesta de datos públicos                                 |
 | `db`                    | Migraciones SQL, seed sintético y creación de usuarios    |
 | `docs`                  | Diseño: la fuente de verdad                               |
 
@@ -51,14 +50,14 @@ Un cambio está terminado cuando `pnpm lint`, `pnpm typecheck`, `pnpm test` y `p
 - **Unidades:** todo en SI, con la unidad en el nombre (`bhpBar`, `oil_sm3`). Un dato ausente es `null`, nunca `0`.
 - **Bordes:** lo que cruza un borde (respuesta de la API, entorno, CSV, URL, fila de la base de datos) se valida con Zod.
 - **Base de datos:** cada cambio de esquema es una migración nueva en `db/migrations`; las aplicadas no se editan (el ejecutor lo detecta). SQL siempre parametrizado. La API usa el usuario de solo lectura `petroatlas_api`.
-- **Datos:** el repositorio no incluye datos de terceros. El ETL descarga a `data/`, ignorada por Git. `db/seed` solo genera datos sintéticos.
+- **Datos:** el repositorio no incluye datos de terceros. `db/seed` genera un conjunto sintético de Venezuela; no hay ETL de datos públicos.
 - **Fórmulas y constantes:** no se transcriben de memoria sin marcarlas para verificación y sin una prueba que las respalde.
 - **Versiones:** se fijan exactas. pnpm aplica una antigüedad mínima a las publicaciones; no añadas excepciones para instalar una versión publicada hace horas. TypeScript 6 y ESLint 9 son deliberados (ADR 0006).
 
 ## Git
 
 - Rama principal `main`; ramas cortas (`feat/...`, `fix/...`, `docs/...`, `chore/...`) y PR hacia `main`. No se sube a `main` sin que pase el CI.
-- Conventional Commits con ámbito: `web`, `api`, `calc`, `types`, `etl`, `db`, `docs`, `ci`. Commits pequeños, uno por tarea.
+- Conventional Commits con ámbito: `web`, `api`, `calc`, `types`, `db`, `docs`, `ci`. Commits pequeños, uno por tarea.
 - Los commits y los PR llevan solo la autoría de quien mantiene el repositorio: sin `Co-Authored-By` ni pies de "generado con".
 
 ## Skills
