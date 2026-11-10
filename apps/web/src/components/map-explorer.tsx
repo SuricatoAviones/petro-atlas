@@ -1,7 +1,7 @@
 'use client';
 
 import type { FieldSummary } from '@petroatlas/shared-types';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { fetchFields, fetchWellCount } from '@/lib/api';
 import { EMPTY_WELL_FILTERS, toWellQuery, type WellFilters } from '@/lib/well-filters';
@@ -9,6 +9,8 @@ import { EMPTY_WELL_FILTERS, toWellQuery, type WellFilters } from '@/lib/well-fi
 import { FilterPanel, type FilterOptionsStatus, type WellCountState } from './filter-panel';
 import { LazyWellMap } from './lazy-well-map';
 import type { WellColorMode } from './well-colors';
+import type { WellAtPoint } from './well-map';
+import { WellSheet } from './well-sheet';
 
 interface FieldOptionsState {
   status: FilterOptionsStatus;
@@ -86,9 +88,20 @@ function useWellCount(query: string): WellCountState {
 export function MapExplorer() {
   const [filters, setFilters] = useState<WellFilters>(EMPTY_WELL_FILTERS);
   const [colorMode, setColorMode] = useState<WellColorMode>('status');
+  const [wellsAtPoint, setWellsAtPoint] = useState<readonly WellAtPoint[]>([]);
+  const [selectedWellId, setSelectedWellId] = useState<number | null>(null);
   const filterQuery = useMemo(() => toWellQuery(filters), [filters]);
   const options = useFieldOptions();
   const count = useWellCount(filterQuery);
+
+  const handleSelectWells = useCallback((wells: readonly WellAtPoint[]) => {
+    setWellsAtPoint(wells);
+    setSelectedWellId(wells[0]?.id ?? null);
+  }, []);
+  const closeWellSheet = useCallback(() => {
+    setWellsAtPoint([]);
+    setSelectedWellId(null);
+  }, []);
 
   return (
     <div className="map-explorer">
@@ -103,7 +116,19 @@ export function MapExplorer() {
         onColorModeChange={setColorMode}
       />
       <div className="map-explorer__map">
-        <LazyWellMap colorMode={colorMode} filtersQuery={filterQuery} />
+        <LazyWellMap
+          colorMode={colorMode}
+          filtersQuery={filterQuery}
+          onSelectWells={handleSelectWells}
+        />
+        {wellsAtPoint.length > 0 && selectedWellId !== null && (
+          <WellSheet
+            wells={wellsAtPoint}
+            selectedWellId={selectedWellId}
+            onSelectWell={setSelectedWellId}
+            onClose={closeWellSheet}
+          />
+        )}
       </div>
     </div>
   );

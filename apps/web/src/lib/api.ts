@@ -2,7 +2,9 @@
 import {
   fieldListResponseSchema,
   wellCollectionResponseSchema,
+  wellDetailSchema,
   type FieldSummary,
+  type WellDetail,
 } from '@petroatlas/shared-types';
 
 import { mapConfig } from '@/components/map-config';
@@ -34,4 +36,9 @@ export async function fetchWellCount(query: string, signal?: AbortSignal): Promi
   const suffix = query === '' ? '' : `&${query}`;
   const body = await getJson(`/api/wells?limit=1${suffix}`, signal);
   return wellCollectionResponseSchema.parse(body).totalCount;
+}
+
+/** Metadata of one well and the series it has (docs/06, `GET /api/wells/:id`). */
+export async function fetchWellDetail(id: number, signal?: AbortSignal): Promise<WellDetail> {
+  return wellDetailSchema.parse(await getJson(`/api/wells/${String(id)}`, signal));
 }

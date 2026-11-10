@@ -4,6 +4,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 
 import {
   Map as MapLibreMap,
+  type MapGeoJSONFeature,
   type MapLayerMouseEvent,
   NavigationControl,
   ScaleControl,
@@ -18,6 +19,7 @@ import type { WellColorMode } from './well-colors';
 import {
   CLUSTER_LAYER_ID,
   FIELD_SOURCE_ID,
+  WELL_LAYER_ID,
   WELL_SOURCE_ID,
   addWellLayers,
   setWellColorMode,
@@ -35,18 +37,47 @@ function isDataSource(sourceId: unknown): boolean {
   return typeof sourceId === 'string' && DATA_SOURCE_IDS.includes(sourceId);
 }
 
+export interface WellAtPoint {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+function readStringProperty(properties: unknown, key: string): string | null {
+  if (typeof properties !== 'object' || properties === null) return null;
+  const value = (properties as Record<string, unknown>)[key];
+  return typeof value === 'string' ? value : null;
+}
+
+/** Unique wells among the features under a click; several can share the same coordinates. */
+function wellsAtPoint(features: readonly MapGeoJSONFeature[] | undefined): WellAtPoint[] {
+  const seen = new Set<number>();
+  const wells: WellAtPoint[] = [];
+  for (const feature of features ?? []) {
+    if (typeof feature.id !== 'number' || seen.has(feature.id)) continue;
+    const name = readStringProperty(feature.properties, 'name');
+    const slug = readStringProperty(feature.properties, 'slug');
+    if (name === null || slug === null) continue;
+    seen.add(feature.id);
+    wells.push({ id: feature.id, name, slug });
+  }
+  return wells;
+}
+
 export interface WellMapProps {
   colorMode: WellColorMode;
   /** Query string of the filters shared by the count and the tiles (docs/06). */
   filtersQuery: string;
+  onSelectWells: (wells: readonly WellAtPoint[]) => void;
 }
 
 /** Full-size map of wells, grouped at low zoom, with field outlines from a zoom level on. */
-export function WellMap({ colorMode, filtersQuery }: WellMapProps) {
+export function WellMap({ colorMode, filtersQuery, onSelectWells }: WellMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap>(null);
   const latestColorMode = useRef(colorMode);
   const latestFiltersQuery = useRef(filtersQuery);
+  const latestOnSelectWells = useRef(onSelectWells);
   const [status, setStatus] = useState<MapStatus>('loading');
   const [hasDataError, setHasDataError] = useState(false);
 
@@ -57,6 +88,10 @@ export function WellMap({ colorMode, filtersQuery }: WellMapProps) {
   useEffect(() => {
     latestFiltersQuery.current = filtersQuery;
   }, [filtersQuery]);
+
+  useEffect(() => {
+    latestOnSelectWells.current = onSelectWells;
+  }, [onSelectWells]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -101,12 +136,18 @@ export function WellMap({ colorMode, filtersQuery }: WellMapProps) {
       if (typeof lon !== 'number' || typeof lat !== 'number') return;
       map.easeTo({ center: [lon, lat], zoom: map.getZoom() + CLUSTER_CLICK_ZOOM_STEP });
     });
-    map.on('mouseenter', CLUSTER_LAYER_ID, () => {
-      map.getCanvas().style.cursor = 'pointer';
+    map.on('click', WELL_LAYER_ID, (event: MapLayerMouseEvent) => {
+      const wells = wellsAtPoint(event.features);
+      if (wells.length > 0) latestOnSelectWells.current(wells);
     });
-    map.on('mouseleave', CLUSTER_LAYER_ID, () => {
-      map.getCanvas().style.cursor = '';
-    });
+    for (const layerId of [CLUSTER_LAYER_ID, WELL_LAYER_ID]) {
+      map.on('mouseenter', layerId, () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+      map.on('mouseleave', layerId, () => {
+        map.getCanvas().style.cursor = '';
+      });
+    }
 
     return () => {
       mapRef.current = null;
