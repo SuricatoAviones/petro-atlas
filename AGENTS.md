@@ -65,6 +65,8 @@ Un cambio está terminado cuando `pnpm lint`, `pnpm typecheck`, `pnpm test` y `p
 
 Las skills de agente se versionan en `.agents/skills` (registro en `skills-lock.json`). Claude Code solo las descubre en `.claude/skills`, que no se versiona: tras clonar, `pnpm skills:link` crea ahí un enlace a `.agents/skills`. No copies skills a `.claude/`.
 
+Para añadir skills, ejecuta `npx autoskills` en el paquete que toque, revisa lo que instala, mueve las carpetas nuevas a `.agents/skills` de la raíz, fusiona su `skills-lock.json` con el de la raíz y borra los `.agents`, `.claude` y `skills-lock.json` que deja dentro del paquete. Antes de tocar la API, consulta `nodejs-backend-patterns`, `nodejs-best-practices` y `zod`; antes de tocar la web, `react-best-practices`, `composition-patterns`, `accessibility` y `next-cache-components-adoption`.
+
 ## Al terminar una tarea
 
 Resume qué cambió, cómo se verificó, qué decisiones se tomaron que no estaban en `docs/` y qué queda pendiente. No marques una casilla de `docs/11-plan-de-fases.md` si las pruebas no pasan.

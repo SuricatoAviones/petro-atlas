@@ -229,6 +229,8 @@ Los valores del ejemplo son ilustrativos.
 ## Seguridad
 
 - CORS limitado al origen de la web.
+- Cabeceras de seguridad con Helmet.
+- Las respuestas de más de 1 kB se comprimen si el cliente lo acepta, incluidas las teselas.
 - Límite de peticiones por IP: 1.200 por minuto por defecto (`RATE_LIMIT_PER_MINUTE`), holgado porque cada vista del mapa pide varias teselas.
 - Sin rutas de escritura. La API se conecta con un usuario de base de datos de solo lectura.
 - Todo SQL es parametrizado.
