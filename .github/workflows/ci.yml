@@ -15,7 +15,7 @@ permissions:
 jobs:
   checks:
     name: Lint, typecheck, test and build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -39,7 +39,7 @@ jobs:
 
   compose:
     name: docker compose up (RNF-05)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - name: Start the stack
