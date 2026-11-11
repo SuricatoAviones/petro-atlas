@@ -8,6 +8,8 @@ export const messages = {
     navigation: 'Navegación principal',
     map: 'Mapa',
     sources: 'Fuentes y licencias',
+    about: 'Acerca de',
+    projectLinks: 'Proyecto',
     language: 'Idioma',
     spanish: 'Español',
     english: 'English',
@@ -172,6 +174,41 @@ export const messages = {
       'El conjunto de desarrollo incluye un campo ficticio, CAMPO ESCUELA VENEZUELA, situado en Venezuela y generado por db/seed. No representa un yacimiento real.',
     backToMap: 'Volver al mapa',
   },
+  about: {
+    title: 'Acerca de PetroAtlas',
+    intro:
+      'PetroAtlas es un explorador de pozos petroleros de código abierto: mapa, series de producción y presión, registros e ingeniería en el navegador.',
+    sections: [
+      {
+        title: 'Datos de ejemplo',
+        paragraphs: [
+          'La demo pública usa un campo ficticio de Venezuela, CAMPO ESCUELA VENEZUELA, y veinte pozos VE-01 a VE-20 generados por db/seed.',
+          'No son mediciones reales ni representan ningún campo, operadora o pozo existente. Puedes consultar el detalle en la página de datos.',
+        ],
+      },
+      {
+        title: 'Código abierto',
+        paragraphs: [
+          'El código se publica bajo licencia MIT y el paquete de cálculos está disponible en npm y GitHub Packages.',
+          'Las decisiones de diseño, la API, la base de datos y las convenciones están documentadas en el repositorio.',
+        ],
+      },
+      {
+        title: 'Cómo colaborar',
+        paragraphs: [
+          'Puedes abrir un issue para reportar un error, proponer una mejora o discutir una fuente de datos.',
+          'Las contribuciones siguen CONTRIBUTING.md: una rama corta, pruebas en verde y un PR hacia main. Las traducciones español/inglés se mantienen en los dos diccionarios.',
+        ],
+      },
+    ],
+    links: {
+      github: 'Repositorio en GitHub',
+      npm: 'Paquete en npm',
+      docs: 'Documentación',
+      data: 'Datos de la demo',
+      collaborate: 'Cómo colaborar',
+    },
+  },
   legal: {
     navigation: 'Información legal',
     updated: 'Última actualización: 10 de noviembre de 2026',
@@ -181,6 +218,10 @@ export const messages = {
     footer: {
       copyright: '© 2026 PetroAtlas. Código bajo licencia MIT.',
       data: 'Los datos pertenecen a sus fuentes.',
+      demoData: 'Demo con datos sintéticos de Venezuela; no son mediciones reales.',
+      github: 'GitHub',
+      npm: 'npm',
+      about: 'Acerca de',
     },
     notice: {
       title: 'Aviso legal',

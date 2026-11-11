@@ -25,6 +25,8 @@ export function pageMetadata(
       description,
       locale: locale === 'es' ? 'es_VE' : 'en_US',
       alternateLocale: locale === 'es' ? 'en_US' : 'es_VE',
+      images: [{ url: '/og.png', width: 1200, height: 630, alt: title }],
     },
+    twitter: { card: 'summary_large_image' },
   };
 }
