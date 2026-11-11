@@ -155,6 +155,15 @@ body {
   text-decoration: underline;
 }
 
+.app-footer__demo {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.app-footer__project {
+  margin-left: auto;
+}
+
 .legal-page__updated {
   margin: -0.75rem 0 1.5rem;
   color: var(--color-ink-muted);
@@ -172,6 +181,15 @@ body {
 
 .legal-section p {
   margin: 0.5rem 0;
+}
+
+.about-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  margin: 1.5rem 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
 }
 
 .legal-section__links {

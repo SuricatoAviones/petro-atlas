@@ -20,13 +20,14 @@ Las cuatro están enlazadas desde el pie de página de todas las pantallas. Los 
 
 ## Revisión pendiente antes de la explotación pública
 
-El texto actual es un borrador técnico, no asesoramiento jurídico. Antes de publicar la demo con un dominio propio hay que completar y revisar:
+El texto actual es un borrador técnico, no asesoramiento jurídico. Antes de difundir la demo ampliamente o usar un dominio propio hay que completar y revisar:
 
 - [x] Nombre del titular: Luis Angel Gutierrez, con sitio web <https://luisangelgutierrez.com>.
 - [x] País y jurisdicción: Venezuela; las controversias se someten a los tribunales competentes de Venezuela.
 - [ ] NIF y domicilio completo del titular.
 - [ ] Correo electrónico o formulario de contacto dedicado; el sitio web y el repositorio de GitHub no cubren por sí solos todas las obligaciones de información.
-- [ ] Proveedor de alojamiento, ubicación de los servidores y contrato de encargo de tratamiento si trata datos personales. La demo usa Render, en la región de Virginia.
+- [x] Proveedor de alojamiento: Render, región de Virginia. La demo usa solo datos sintéticos y no trata datos de usuarios.
+- [ ] Contrato de encargo de tratamiento con el proveedor, si se añaden datos personales.
 - [ ] Plazo concreto de conservación de los registros de acceso.
 - [ ] Revisión de la política de cookies si se añade analítica, publicidad o cualquier tecnología no esencial.
 - [ ] Revisión por una persona con conocimientos jurídicos antes de la puesta en producción.

@@ -1,0 +1,56 @@
+name: Mejora
+description: Proponer una función, un cambio de interfaz o una mejora técnica.
+title: '[Feature]: '
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Antes de proponer una función grande, revisa `docs/11-plan-de-fases.md`.
+        Autenticación, edición de datos, tiempo real, simulación de yacimientos y análisis nodal requieren un ADR.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema o necesidad
+      description: Qué falta y a quién afecta.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Propuesta
+      description: Cómo te gustaría que funcionara.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas consideradas
+    validations:
+      required: false
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área
+      options:
+        - Mapa
+        - Ficha del pozo
+        - Gráficas
+        - Ingeniería
+        - Importación o exportación
+        - Accesibilidad
+        - Idiomas
+        - API
+        - Paquete petro-calc
+        - Documentación
+        - Despliegue
+    validations:
+      required: true
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Alcance
+      options:
+        - label: He revisado el plan de fases y no está ya cubierto.
+          required: true
+        - label: Entiendo que una función fuera de alcance necesita un ADR.
+          required: true

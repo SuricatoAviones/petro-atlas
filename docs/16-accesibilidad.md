@@ -8,7 +8,8 @@ La web se comprueba con axe en las pruebas de extremo a extremo. axe no sustituy
 
 - el mapa y la ficha de un pozo;
 - las páginas legales;
-- la versión inglesa de las páginas legales.
+- la versión inglesa de las páginas legales;
+- la página Acerca de.
 
 ```bash
 pnpm test:e2e

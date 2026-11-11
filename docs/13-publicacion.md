@@ -2,7 +2,7 @@
 
 `@suricatoaviones/petro-calc` vive en `packages/petro-calc` y se publica desde este monorepo. No hay un repositorio aparte para el paquete.
 
-> **Estado:** `0.2.0` preparada para publicarse como `@suricatoaviones/petro-calc`. Sustituye al antiguo `@petroatlas/petro-calc`, que se deprecará.
+> **Estado:** `0.2.0` publicado como `@suricatoaviones/petro-calc` en npm y disponible en GitHub Packages. El antiguo `@petroatlas/petro-calc` ya no existe en npm.
 
 ## Requisitos
 

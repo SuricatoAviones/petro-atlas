@@ -3,7 +3,15 @@ import type { MetadataRoute } from 'next';
 import { LOCALES } from '@/messages';
 
 const SITE_URL = 'https://petroatlas-web.onrender.com';
-const PATHS = ['', '/fuentes', '/aviso-legal', '/privacidad', '/datos', '/cookies'] as const;
+const PATHS = [
+  '',
+  '/fuentes',
+  '/acerca',
+  '/aviso-legal',
+  '/privacidad',
+  '/datos',
+  '/cookies',
+] as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return LOCALES.flatMap((locale) =>

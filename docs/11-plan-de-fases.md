@@ -69,7 +69,7 @@ Objetivo: calcular sobre los datos del pozo.
 - [x] Pestaña Ingeniería con parámetros editables y curvas que responden al instante.
 - [x] Pestaña Diagnóstico: Chan, tasa vs acumulado e índice de productividad.
 - [x] Ventana de ajuste reflejada en la URL.
-- [ ] Publicar `petro-calc` en npm con su propio README. La versión `0.2.0` está preparada como `@suricatoaviones/petro-calc`; el antiguo `@petroatlas/petro-calc` se deprecará.
+- [x] Publicar `petro-calc` en npm con su propio README. Publicado como `@suricatoaviones/petro-calc@0.2.0` y en GitHub Packages.
 
 Cierre: cobertura de 90% o más en `petro-calc` y cada fórmula con al menos una prueba contra un valor publicado.
 
@@ -96,6 +96,6 @@ Autenticación, edición de datos públicos, tiempo real, simulación de yacimie
 
 ## Preguntas abiertas
 
-- [x] Nombre definitivo: **PetroAtlas**. El repositorio, la web y el paquete usan `@petroatlas`.
+- [x] Nombre definitivo: **PetroAtlas**. El paquete npm usa `@suricatoaviones/petro-calc` para coincidir con el propietario del repositorio y poder publicarse en GitHub Packages.
 - [x] La demo pública se aloja en Render: <https://petroatlas-web.onrender.com>.
 - [x] La interfaz es bilingüe, español e inglés, con rutas `/es` y `/en`, metadatos, `hreflang` y sitemap por idioma.
