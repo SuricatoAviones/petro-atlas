@@ -1,10 +1,16 @@
 # PetroAtlas
 
+[![CI](https://github.com/SuricatoAviones/petro-atlas/actions/workflows/ci.yml/badge.svg)](https://github.com/SuricatoAviones/petro-atlas/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/@suricatoaviones/petro-calc.svg)](https://www.npmjs.com/package/@suricatoaviones/petro-calc)
+[![License: MIT](https://img.shields.io/badge/license-MIT-1a7f4b.svg)](LICENSE)
+
 Explorador web de pozos petroleros, de código abierto: un mapa como entrada, fichas con series de producción y presión, herramientas de ingeniería que calculan en el navegador e importación de datos propios en CSV. Disponible en español e inglés.
 
-**Demo:** <https://petroatlas-web.onrender.com> · **API:** <https://petroatlas-api.onrender.com/api/health>
+**Demo:** <https://petroatlas-web.onrender.com/es> · **English:** <https://petroatlas-web.onrender.com/en> · **API:** <https://petroatlas-api.onrender.com/api/health>
 
-> **Estado: fase 4 completa.** Mapa con clustering, filtros y estado en la URL; fichas con producción, operación, trayectoria, registros, ingeniería y diagnóstico; alertas; comparación de pozos; importación CSV en IndexedDB; exportación CSV y PNG; páginas legales y revisión de accesibilidad con axe. `petro-calc` supera el 90 % de cobertura. Su versión `0.2.0` está preparada para publicarse como [`@suricatoaviones/petro-calc`](https://www.npmjs.com/package/@suricatoaviones/petro-calc). La demo pública corre en Render. El plan completo está en [docs/11-plan-de-fases.md](docs/11-plan-de-fases.md).
+> La demo usa **datos sintéticos de Venezuela** (`CAMPO ESCUELA VENEZUELA`, pozos `VE-01` a `VE-20`). No son mediciones reales. Detalle en [docs/17-demo-publica.md](docs/17-demo-publica.md).
+
+> **Estado: fase 4 completa.** Mapa con clustering, filtros y estado en la URL; fichas con producción, operación, trayectoria, registros, ingeniería y diagnóstico; alertas; comparación de pozos; importación CSV en IndexedDB; exportación CSV y PNG; páginas legales y revisión de accesibilidad con axe. `petro-calc` supera el 90 % de cobertura y está publicado como [`@suricatoaviones/petro-calc`](https://www.npmjs.com/package/@suricatoaviones/petro-calc) en npm y en GitHub Packages. La demo pública corre en Render. El plan completo está en [docs/11-plan-de-fases.md](docs/11-plan-de-fases.md).
 
 ![Mapa de pozos con filtros, clustering y alertas](docs/images/mapa.png)
 
@@ -98,6 +104,22 @@ La web no distingue el origen de un pozo: una interfaz `WellRepository` tiene un
 
 El detalle está en [docs/03-arquitectura.md](docs/03-arquitectura.md) y las decisiones, en [docs/adr/](docs/adr/README.md).
 
+## Paquete `petro-calc`
+
+Los cálculos de ingeniería están publicados por separado:
+
+```bash
+npm install @suricatoaviones/petro-calc
+```
+
+```ts
+import { fitArps, forecast, eur, vogel, standing, chan } from '@suricatoaviones/petro-calc';
+```
+
+- npm: <https://www.npmjs.com/package/@suricatoaviones/petro-calc>
+- GitHub Packages: mismo nombre, visible en la sección Packages del repositorio.
+- Código y guía: [`packages/petro-calc`](packages/petro-calc) y [docs/13-publicacion.md](docs/13-publicacion.md).
+
 ## Accesibilidad
 
 La interfaz usa HTML semántico, etiquetas explícitas, foco visible y regiones anunciadas para los estados de carga. Las gráficas tienen una vista de tabla equivalente y los estados no se comunican solo con color. Las pruebas de Playwright incluyen una auditoría con [axe](https://github.com/dequelabs/axe-core) del mapa, la ficha y las páginas legales.
@@ -109,6 +131,17 @@ La interfaz usa HTML semántico, etiquetas explícitas, foco visible y regiones 
 - No se usan datos de Sodir, Volve ni Diskos. Las reglas del conjunto están en [docs/10-fuentes-de-datos.md](docs/10-fuentes-de-datos.md).
 - El mapa base usa las teselas de [OpenFreeMap](https://openfreemap.org/), con datos de © OpenMapTiles y © OpenStreetMap. Se puede cambiar con `NEXT_PUBLIC_MAP_STYLE_URL`.
 - Un CSV importado es responsabilidad de quien lo carga: se guarda solo en su navegador y no se redistribuye.
+
+## Cómo colaborar
+
+- Lee [CONTRIBUTING.md](CONTRIBUTING.md): entorno, ramas, commits, pruebas y reglas de datos.
+- Usa las plantillas de issue para errores, mejoras o problemas de datos.
+- Respeta el [Código de conducta](CODE_OF_CONDUCT.md).
+- Reporta vulnerabilidades en privado según [SECURITY.md](SECURITY.md); no abras un issue público.
+- Las traducciones se mantienen en `apps/web/src/messages/es.ts` y `en.ts`.
+- No se aceptan datos de terceros en Git; el seed es sintético.
+
+La guía de la demo, sus límites y la lista de comprobación antes de difundirla están en [docs/17-demo-publica.md](docs/17-demo-publica.md).
 
 ## Documentación
 

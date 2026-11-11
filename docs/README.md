@@ -24,6 +24,10 @@ Esta carpeta es la fuente de verdad del diseño. Si el código y la documentaci�
 | [14-textos-legales.md](14-textos-legales.md) | Páginas legales, estado y revisión pendiente antes de la explotación pública |
 | [15-despliegue.md](15-despliegue.md) | Despliegue en Render: Blueprint, base de datos, migraciones y limitaciones |
 | [16-accesibilidad.md](16-accesibilidad.md) | Pruebas automáticas con axe y revisión manual de accesibilidad |
+| [17-demo-publica.md](17-demo-publica.md) | Demo pública: URLs, datos sintéticos, límites, operación y difusión |
+| [../CONTRIBUTING.md](../CONTRIBUTING.md) | Entorno, flujo de ramas, pruebas y cómo colaborar |
+| [../SECURITY.md](../SECURITY.md) | Cómo reportar vulnerabilidades |
+| [../CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md) | Normas de convivencia del proyecto |
 | [adr/](adr/README.md) | Decisiones de arquitectura registradas |
 | [PROMPT-INICIAL.md](PROMPT-INICIAL.md) | Prompt para arrancar el desarrollo con un agente de IA |
 
