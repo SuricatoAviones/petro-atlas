@@ -24,7 +24,19 @@ export default defineConfig({
     baseURL: WEB_ORIGIN,
     trace: 'on-first-retry',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+      // The phone flow lives in the `mobile` project.
+      testIgnore: /mobile\.spec\.ts/,
+    },
+    {
+      name: 'mobile',
+      use: { ...devices['Pixel 7'] },
+      testMatch: /mobile\.spec\.ts/,
+    },
+  ],
   webServer: [
     {
       command: 'pnpm --filter @petroatlas/api dev',
