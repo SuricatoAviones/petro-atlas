@@ -10,6 +10,10 @@
   --color-border: #d5ddda;
   --color-panel: #ffffff;
   --header-height: 3.5rem;
+  /* Notched phones: bottom bars and sheets add this on top of their padding. */
+  --space-safe-bottom: env(safe-area-inset-bottom, 0rem);
+  /* Comfortable touch target on coarse pointers (WCAG 2.5.8 AA minimum is 24px). */
+  --touch-target: 2.75rem;
   --font-sans:
     system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
 }
