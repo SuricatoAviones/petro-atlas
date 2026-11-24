@@ -15,7 +15,7 @@ permissions:
 jobs:
   checks:
     name: Lint, typecheck, test and build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -32,14 +32,14 @@ jobs:
           docker compose run --rm db-setup
       - run: pnpm test
       - name: Install the Playwright browser
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm exec playwright install chromium
       - name: End-to-end tests
         run: pnpm test:e2e
       - run: pnpm build
 
   compose:
     name: docker compose up (RNF-05)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - name: Start the stack

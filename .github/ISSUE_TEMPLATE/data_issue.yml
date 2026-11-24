@@ -1,0 +1,48 @@
+name: Datos o licencia
+description: Reportar un problema con el conjunto sintético, una atribución o una fuente propuesta.
+title: '[Data]: '
+body:
+  - type: markdown
+    attributes:
+      value: |
+        No adjuntes datos de terceros ni archivos de producción real.
+        La demo usa solo el conjunto sintético de Venezuela de `db/seed`.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Tipo
+      options:
+        - El conjunto sintético no se muestra bien
+        - Una atribución o licencia es incorrecta
+        - Propongo una fuente de datos nueva
+        - Otro
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Descripción
+      description: Qué ocurre y dónde.
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: Página o ruta
+      placeholder: '/es/datos, /en/fuentes, API /api/wells...'
+    validations:
+      required: false
+  - type: textarea
+    id: source
+    attributes:
+      label: Fuente y licencia propuesta
+      description: Si propones datos, indica enlace, granularidad, licencia y atribución.
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Comprobaciones
+      options:
+        - label: No adjunto datos de terceros ni información confidencial.
+          required: true

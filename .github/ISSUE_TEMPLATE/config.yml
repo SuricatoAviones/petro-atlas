@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Seguridad
+    url: https://github.com/SuricatoAviones/petro-atlas/security/advisories/new
+    about: Reporta una vulnerabilidad de forma privada.
+  - name: Guía de colaboración
+    url: https://github.com/SuricatoAviones/petro-atlas/blob/main/CONTRIBUTING.md
+    about: Entorno, pruebas, ramas y convenciones.
+  - name: Demo pública
+    url: https://petroatlas-web.onrender.com/es
+    about: Prueba la aplicación antes de reportar.

@@ -6,7 +6,7 @@ import { useLocale, useMessages } from './locale-provider';
 
 interface AppHeaderProps {
   /** Page highlighted in the header; legal pages do not highlight any. */
-  current?: 'map' | 'sources';
+  current?: 'map' | 'sources' | 'about';
 }
 
 /** Application header with the main pages and the language switch. */
@@ -24,6 +24,9 @@ export function AppHeader({ current }: AppHeaderProps) {
         </Link>
         <Link href={`/${locale}/fuentes`} aria-current={current === 'sources' ? 'page' : undefined}>
           {messages.app.sources}
+        </Link>
+        <Link href={`/${locale}/acerca`} aria-current={current === 'about' ? 'page' : undefined}>
+          {messages.app.about}
         </Link>
       </nav>
       <div className="app-header__language" role="group" aria-label={messages.app.language}>

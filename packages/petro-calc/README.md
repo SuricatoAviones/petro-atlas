@@ -2,7 +2,7 @@
 
 Cálculos de ingeniería de petróleo en TypeScript puro, sin dependencias. Se ejecuta igual en el navegador, en Node o en un worker, y no conoce la interfaz ni la base de datos.
 
-> **Estado:** versión `0.2.0` preparada para publicarse como `@suricatoaviones/petro-calc`.
+> **Estado:** publicado en npm como `@suricatoaviones/petro-calc@0.2.0` y disponible también como espejo en GitHub Packages.
 
 ## Instalación
 

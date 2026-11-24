@@ -47,3 +47,9 @@ test('the English legal pages have no axe violations', async ({ page }) => {
   await page.goto('/en/aviso-legal');
   await expectNoViolations(page);
 });
+
+test('the about page has no axe violations', async ({ page }) => {
+  await page.goto('/es/acerca');
+  await expect(page.getByRole('heading', { level: 1, name: 'Acerca de PetroAtlas' })).toBeVisible();
+  await expectNoViolations(page);
+});
