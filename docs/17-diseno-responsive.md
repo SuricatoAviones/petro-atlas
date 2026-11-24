@@ -10,7 +10,7 @@ Reglas para que la web funcione igual de bien en un escritorio y en un teléfono
 | Más de 48rem | Escritorio | Columna de filtros fija y ficha lateral |
 
 - Un solo punto de ruptura: 48rem. No se añaden rangos intermedios sin una razón que se vea en una pantalla real.
-- El ancho de referencia mínimo es 360 px: ninguna vista puede desbordar a ese ancho, y las pruebas de extremo a extremo lo comprueban con un dispositivo Pixel 7.
+- El ancho de referencia mínimo es 360 px: ninguna vista puede desbordar a ese ancho. Las pruebas de extremo a extremo lo comprueban con un Pixel 7 (412 px) y la revisión manual llega a los 360 px.
 - Las hojas y las barras pegadas al borde inferior respetan `env(safe-area-inset-bottom)`.
 
 ## Hojas inferiores
