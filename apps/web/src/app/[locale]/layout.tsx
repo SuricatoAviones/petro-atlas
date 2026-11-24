@@ -18,7 +18,6 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
-
 export function generateStaticParams(): { locale: Locale }[] {
   return LOCALES.map((locale) => ({ locale }));
 }

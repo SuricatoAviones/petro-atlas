@@ -19,6 +19,8 @@ export const messagesEn: Messages = {
     loading: 'Loading the basemap…',
     loadError: 'Could not load the basemap. Check your connection and reload the page.',
     dataError: 'Could not load the wells. Try again in a few minutes.',
+    /** Floating chip that opens the filter sheet on phones (ADR 0007). */
+    openFilters: 'Filters',
     colorMode: {
       legend: 'Well colour',
       status: 'Status',
@@ -54,6 +56,7 @@ export const messagesEn: Messages = {
     label: 'Well filters',
     title: 'Filters',
     reset: 'Clear filters',
+    close: 'Close filters',
     loading: 'Updating the count…',
     countError: 'Could not update the count.',
     resultCount: (count: number) =>

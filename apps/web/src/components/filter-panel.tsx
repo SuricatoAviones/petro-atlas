@@ -7,7 +7,7 @@ import {
   type WellStatus,
   type WellType,
 } from '@petroatlas/shared-types';
-import { useId, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
 
 import { BUBBLE_FLUIDS, bubbleRadius, formatVolume, type BubbleFluid } from '@/lib/bubble';
 import type { WellAlert } from '@/lib/well-alerts';
@@ -15,6 +15,8 @@ import { EMPTY_WELL_FILTERS, hasActiveWellFilters, type WellFilters } from '@/li
 
 import { AlertsList } from './alerts-list';
 import { useLocale, useMessages } from './locale-provider';
+import { useSheetDismiss } from './sheet-dismiss';
+import { useMediaQuery } from './use-media-query';
 import {
   BUBBLE_COLORS,
   WELL_STATUS_COLORS,
@@ -50,6 +52,9 @@ interface FilterPanelProps {
   onColorModeChange: (mode: WellColorMode) => void;
   onBubbleFluidChange: (fluid: BubbleFluid | null) => void;
   onOpenWell: (alert: WellAlert) => void;
+  /** Mobile bottom-sheet state (ADR 0007); on desktop the panel is a fixed column. */
+  open: boolean;
+  onClose: () => void;
   /** Sections below the alerts, such as the CSV import of docs/09. */
   children?: ReactNode;
 }
@@ -75,14 +80,25 @@ export function FilterPanel({
   onColorModeChange,
   onBubbleFluidChange,
   onOpenWell,
+  open,
+  onClose,
   children,
 }: FilterPanelProps) {
   const messages = useMessages();
   const { locale } = useLocale();
+  const isCompact = useMediaQuery('(max-width: 48rem)');
+  const dismiss = useSheetDismiss(onClose);
+  const closeRef = useRef<HTMLButtonElement>(null);
   const fieldId = useId();
   const operatorId = useId();
   const spudFromId = useId();
   const spudToId = useId();
+
+  // Focus lands on the close button when the sheet opens; the toggle button
+  // takes it back when it closes (map-explorer).
+  useEffect(() => {
+    if (open) closeRef.current?.focus();
+  }, [open]);
 
   const optionsDisabled = optionsStatus !== 'ready';
   const countText =
@@ -95,19 +111,51 @@ export function FilterPanel({
           : messages.filters.resultCount(count.total);
 
   return (
-    <aside className="filter-panel" aria-label={messages.filters.label}>
+    <aside
+      className={
+        dismiss.offset > 0
+          ? 'filter-panel filter-panel--dragging'
+          : open
+            ? 'filter-panel filter-panel--open'
+            : 'filter-panel'
+      }
+      aria-label={messages.filters.label}
+      data-testid="filter-panel"
+      /* Closed on the phone the sheet sits below the fold: keep it out of
+         keyboard focus and assistive trees until it opens. */
+      inert={!open && isCompact}
+      style={
+        dismiss.offset > 0 ? { transform: `translateY(${String(dismiss.offset)}px)` } : undefined
+      }
+    >
+      <div className="sheet-grabber" {...dismiss.handlers} aria-hidden="true">
+        <span className="sheet-grabber__bar" />
+      </div>
       <div className="filter-panel__header">
         <h2>{messages.filters.title}</h2>
-        <button
-          type="button"
-          className="filter-panel__reset"
-          disabled={!hasActiveWellFilters(filters)}
-          onClick={() => {
-            onFiltersChange(EMPTY_WELL_FILTERS);
-          }}
-        >
-          {messages.filters.reset}
-        </button>
+        <div className="filter-panel__header-actions">
+          <button
+            type="button"
+            className="filter-panel__reset"
+            disabled={!hasActiveWellFilters(filters)}
+            onClick={() => {
+              onFiltersChange(EMPTY_WELL_FILTERS);
+            }}
+          >
+            {messages.filters.reset}
+          </button>
+          <button
+            ref={closeRef}
+            type="button"
+            className="sheet-close filter-panel__close"
+            aria-label={messages.filters.close}
+            onClick={onClose}
+          >
+            <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+              <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" strokeWidth="1.8" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       <p
