@@ -145,7 +145,7 @@ export function TrajectoryChart({ data, unitSystem }: TrajectoryChartProps) {
 
   return (
     <section className="chart-card">
-      <h4>{messages.wellSheet.trajectory.title}</h4>
+      <h3>{messages.wellSheet.trajectory.title}</h3>
       <div
         ref={containerRef}
         className="chart-card__canvas"

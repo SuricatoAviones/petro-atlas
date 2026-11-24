@@ -637,7 +637,7 @@ body {
   gap: 0.5rem;
 }
 
-.chart-card h4 {
+.chart-card h3 {
   margin: 0 0 0.25rem;
   font-size: 0.9rem;
 }
@@ -660,7 +660,7 @@ body {
   background: var(--color-surface);
 }
 
-.fit-summary h4 {
+.fit-summary h3 {
   margin: 0 0 0.25rem;
   font-size: 0.9rem;
 }
@@ -1519,8 +1519,7 @@ body {
   border-top: 1px solid var(--color-border);
 }
 
-.import-panel h3,
-.import-panel h4 {
+.import-panel h3 {
   margin: 0;
   font-size: 0.9rem;
 }

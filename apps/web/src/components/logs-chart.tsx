@@ -177,7 +177,7 @@ export function LogsChart({ curves, source }: LogsChartProps) {
   return (
     <section className="chart-card">
       <div className="chart-card__header">
-        <h4>{messages.wellSheet.logs.title}</h4>
+        <h3>{messages.wellSheet.logs.title}</h3>
       </div>
       <p className="production-charts__hint">{messages.wellSheet.logs.zoomHint}</p>
       <div

@@ -142,7 +142,7 @@ export function EngineeringChart({
 
   return (
     <section className="chart-card">
-      <h4>{title}</h4>
+      <h3>{title}</h3>
       <div ref={containerRef} className="chart-card__canvas" role="img" aria-label={title} />
       {note !== undefined && <p className="chart-card__note">{note}</p>}
       {source !== undefined && <ChartSource source={source} />}

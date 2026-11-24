@@ -243,7 +243,7 @@ export function SeriesChart({
   return (
     <section className="chart-card">
       <div className="chart-card__header">
-        <h4>{title}</h4>
+        <h3>{title}</h3>
         {onSelectVisibleRange !== undefined && (
           <button type="button" className="chart-card__action" onClick={useVisibleRange}>
             {messages.wellSheet.fit.useView}

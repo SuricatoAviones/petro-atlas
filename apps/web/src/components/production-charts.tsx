@@ -245,7 +245,7 @@ export function ProductionCharts({
           {fit !== null && (
             <section className="fit-summary">
               <div className="chart-card__header">
-                <h4>{messages.wellSheet.fit.title}</h4>
+                <h3>{messages.wellSheet.fit.title}</h3>
                 <button
                   type="button"
                   className="chart-card__action"

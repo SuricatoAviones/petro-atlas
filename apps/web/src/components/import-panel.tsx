@@ -198,9 +198,9 @@ export function ImportPanel({ importedWells, onImportedChange, onOpenImported }:
       )}
 
       <section className="import-panel__list" aria-labelledby="imported-list-heading">
-        <h4 id="imported-list-heading">
+        <h3 id="imported-list-heading">
           {messages.importWells.listTitle} ({importedWells.length})
-        </h4>
+        </h3>
         {importedWells.length === 0 ? (
           <p className="filter-panel__hint">{messages.importWells.empty}</p>
         ) : (

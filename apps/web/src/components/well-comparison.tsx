@@ -230,7 +230,7 @@ export function WellComparison({
   return (
     <section className="comparison">
       <div className="chart-card__header">
-        <h4>{messages.wellSheet.comparison.title}</h4>
+        <h3>{messages.wellSheet.comparison.title}</h3>
       </div>
       <p className="chart-card__note">{messages.wellSheet.comparison.intro}</p>
 
