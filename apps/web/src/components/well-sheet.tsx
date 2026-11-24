@@ -6,7 +6,15 @@ import type {
   WellProductionResponse,
   WellTrajectoryResponse,
 } from '@petroatlas/shared-types';
-import { useEffect, useId, useRef, useState, useSyncExternalStore, type RefObject } from 'react';
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type RefObject,
+} from 'react';
 
 import { wellExportUrl } from '@/lib/api';
 import { downloadCsv, safeFileName, type TableData } from '@/lib/export';
@@ -119,7 +127,9 @@ function useTabsHaveMore(tabsRef: RefObject<HTMLDivElement | null>): boolean {
     () => {
       const element = tabsRef.current;
       if (element === null) return false;
-      return element.scrollWidth - element.clientWidth - element.scrollLeft > TABS_SCROLL_TOLERANCE_PX;
+      return (
+        element.scrollWidth - element.clientWidth - element.scrollLeft > TABS_SCROLL_TOLERANCE_PX
+      );
     },
     () => false,
   );
@@ -319,7 +329,7 @@ export function WellSheet({
   const currentKey: WellKey = { origin: selectedOrigin, slug: selectedSlug };
 
   /** Arrow keys move across the tab list, as the WAI-ARIA tabs pattern requires. */
-  const handleTablistKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
+  const handleTablistKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>): void => {
     const currentIndex = TABS.indexOf(tab);
     const lastIndex = TABS.length - 1;
     let nextIndex: number;
@@ -346,7 +356,9 @@ export function WellSheet({
       className={dismiss.offset > 0 ? 'well-sheet well-sheet--dragging' : 'well-sheet'}
       aria-labelledby={headingId}
       data-testid="well-sheet"
-      style={dismiss.offset > 0 ? { transform: `translateY(${String(dismiss.offset)}px)` } : undefined}
+      style={
+        dismiss.offset > 0 ? { transform: `translateY(${String(dismiss.offset)}px)` } : undefined
+      }
     >
       <div className="sheet-grabber" {...dismiss.handlers} aria-hidden="true">
         <span className="sheet-grabber__bar" />
@@ -397,7 +409,13 @@ export function WellSheet({
         <p className="well-sheet__notice">{messages.wellSheet.importedNotice}</p>
       )}
 
-      <div className={tabsHaveMore ? 'well-sheet__tabs-wrap well-sheet__tabs-wrap--more' : 'well-sheet__tabs-wrap'}>
+      <div
+        className={
+          tabsHaveMore
+            ? 'well-sheet__tabs-wrap well-sheet__tabs-wrap--more'
+            : 'well-sheet__tabs-wrap'
+        }
+      >
         <div
           ref={tabsRef}
           className="well-sheet__tabs"
