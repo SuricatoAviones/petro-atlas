@@ -547,7 +547,7 @@ body {
   position: relative;
 }
 
-/* Edge fade that signals more tabs to the right (docs/17-diseno-responsive.md). */
+/* Edge fade that signals more tabs to the right (docs/18-diseno-responsive.md). */
 .well-sheet__tabs-wrap::after {
   content: '';
   position: absolute;
@@ -720,7 +720,7 @@ body {
   width: 100%;
   height: 200px;
   /* Vertical touch drags keep scrolling the sheet; pinch and horizontal drags
-     still reach the chart (docs/17-diseno-responsive.md). */
+     still reach the chart (docs/18-diseno-responsive.md). */
   touch-action: pan-y;
 }
 
@@ -905,7 +905,7 @@ body {
 }
 
 /*
- * Bottom sheets (ADR 0007, docs/17-diseno-responsive.md).
+ * Bottom sheets (ADR 0007, docs/18-diseno-responsive.md).
  * Shared by the filter panel and the well sheet on screens up to 48rem.
  */
 
@@ -987,7 +987,7 @@ body {
     min-height: var(--touch-target);
   }
 
-  /* Comfortable touch targets on phones (docs/17-diseno-responsive.md). */
+  /* Comfortable touch targets on phones (docs/18-diseno-responsive.md). */
   .app-header__language button {
     min-height: 2.75rem;
     padding-inline: 0.6rem;

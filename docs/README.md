@@ -25,7 +25,7 @@ Esta carpeta es la fuente de verdad del diseño. Si el código y la documentaci�
 | [15-despliegue.md](15-despliegue.md) | Despliegue en Render: Blueprint, base de datos, migraciones y limitaciones |
 | [16-accesibilidad.md](16-accesibilidad.md) | Pruebas automáticas con axe y revisión manual de accesibilidad |
 | [17-demo-publica.md](17-demo-publica.md) | Demo pública: URLs, datos sintéticos, límites, operación y difusión |
-| [17-diseno-responsive.md](17-diseno-responsive.md) | Diseño responsivo: hojas inferiores, objetivos táctiles y reglas por vista |
+| [18-diseno-responsive.md](18-diseno-responsive.md) | Diseño responsivo: hojas inferiores, objetivos táctiles y reglas por vista |
 | [../CONTRIBUTING.md](../CONTRIBUTING.md) | Entorno, flujo de ramas, pruebas y cómo colaborar |
 | [../SECURITY.md](../SECURITY.md) | Cómo reportar vulnerabilidades |
 | [../CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md) | Normas de convivencia del proyecto |

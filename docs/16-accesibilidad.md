@@ -11,7 +11,7 @@ La web se comprueba con axe en las pruebas de extremo a extremo. axe no sustituy
 - la versión inglesa de las páginas legales;
 - la página Acerca de.
 
-`apps/web/e2e/mobile.spec.ts` ejecuta axe sobre el mapa y la ficha en el proyecto `mobile` de Playwright (un Pixel 7), según `17-diseno-responsive.md`.
+`apps/web/e2e/mobile.spec.ts` ejecuta axe sobre el mapa y la ficha en el proyecto `mobile` de Playwright (un Pixel 7), según `18-diseno-responsive.md`.
 
 ```bash
 pnpm test:e2e

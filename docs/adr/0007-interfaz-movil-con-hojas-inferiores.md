@@ -9,7 +9,7 @@ La web se diseñó para escritorio y solo tiene un punto de ruptura a 48rem: en 
 
 ## Decisión
 
-Adoptar en pantallas de hasta 48rem el patrón de **hojas inferiores** (bottom sheets): el mapa ocupa toda la ventana y los paneles —filtros con importación y ficha del pozo— se abren como hojas ancladas al borde inferior, con tirador, cierre visible y, en la ficha, deslizamiento hacia abajo para cerrar. Por encima de 48rem no cambia nada: el panel de filtros sigue siendo una columna y la ficha un panel lateral. Las reglas concretas están en `17-diseno-responsive.md`.
+Adoptar en pantallas de hasta 48rem el patrón de **hojas inferiores** (bottom sheets): el mapa ocupa toda la ventana y los paneles —filtros con importación y ficha del pozo— se abren como hojas ancladas al borde inferior, con tirador, cierre visible y, en la ficha, deslizamiento hacia abajo para cerrar. Por encima de 48rem no cambia nada: el panel de filtros sigue siendo una columna y la ficha un panel lateral. Las reglas concretas están en `18-diseno-responsive.md`.
 
 ## Alternativas descartadas
 

@@ -110,7 +110,7 @@ const TABS_SCROLL_TOLERANCE_PX = 8;
 
 /**
  * Whether the tab row still has content to the right, for the edge fade of
- * docs/17-diseno-responsive.md. Read like any external store: scroll and
+ * docs/18-diseno-responsive.md. Read like any external store: scroll and
  * resize events carry the updates, no effect setState.
  */
 function useTabsHaveMore(tabsRef: RefObject<HTMLDivElement | null>): boolean {
@@ -295,7 +295,7 @@ export function WellSheet({
   }, [onClose]);
 
   // The active tab enters the view when it changes: on phones the row scrolls
-  // horizontally (docs/17-diseno-responsive.md). Runs on mount too, so a tab
+  // horizontally (docs/18-diseno-responsive.md). Runs on mount too, so a tab
   // restored from the URL starts visible.
   useEffect(() => {
     tabRefs.current.get(tab)?.scrollIntoView({ inline: 'nearest', block: 'nearest' });

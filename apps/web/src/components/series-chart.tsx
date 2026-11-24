@@ -61,7 +61,7 @@ export interface SeriesChartProps {
   /**
    * Shows the zoom window as a slider on narrow screens. Set on the lead chart
    * of each section: pinch zoom works everywhere, but the window that the Arps
-   * fit uses deserves a visible affordance (docs/17-diseno-responsive.md).
+   * fit uses deserves a visible affordance (docs/18-diseno-responsive.md).
    */
   zoomSlider?: boolean;
 }

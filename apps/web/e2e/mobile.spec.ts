@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
 /**
- * Phone flows of docs/17-diseno-responsive.md: the filter panel and the well
+ * Phone flows of docs/18-diseno-responsive.md: the filter panel and the well
  * sheet are bottom sheets, the tabs scroll and axe runs on the mobile layout.
  * Runs in the `mobile` project (Pixel 7).
  */
