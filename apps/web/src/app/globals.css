@@ -317,19 +317,7 @@ body {
   font-size: 0.8rem;
 }
 
-.well-sheet__close {
-  flex: none;
-  width: 2rem;
-  height: 2rem;
-  padding: 0;
-  border: 1px solid var(--color-border);
-  border-radius: 50%;
-  background: var(--color-panel);
-  color: var(--color-ink);
-  font-size: 1.25rem;
-  line-height: 1;
-  cursor: pointer;
-}
+/* The close button uses the shared `.sheet-close` of the bottom sheets. */
 
 .well-sheet__list {
   display: flex;
@@ -522,6 +510,27 @@ body {
   border-top: 1px solid var(--color-border);
 }
 
+.well-sheet__tabs-wrap {
+  position: relative;
+}
+
+/* Edge fade that signals more tabs to the right (docs/17-diseno-responsive.md). */
+.well-sheet__tabs-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 1px;
+  width: 1.5rem;
+  background: linear-gradient(to right, transparent, var(--color-panel));
+  pointer-events: none;
+  opacity: 0;
+}
+
+.well-sheet__tabs-wrap--more::after {
+  opacity: 1;
+}
+
 .well-sheet__tabs {
   display: flex;
   gap: 0.25rem;
@@ -543,6 +552,26 @@ body {
   border-bottom-color: var(--color-accent);
   color: var(--color-ink);
   font-weight: 600;
+}
+
+@media (max-width: 48rem) {
+  .well-sheet__tabs {
+    /* One scrollable row instead of wrapping: it never steals sheet height. */
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+  }
+
+  .well-sheet__tab {
+    flex: none;
+    scroll-snap-align: start;
+  }
+}
+
+@media (pointer: coarse) {
+  .well-sheet__tab {
+    padding-block: 0.85rem;
+  }
 }
 
 .well-sheet__units {
@@ -805,6 +834,25 @@ body {
     border-top: 1px solid var(--color-border);
     border-left: 0;
     box-shadow: 0 -2px 8px rgb(0 0 0 / 12%);
+    padding-bottom: calc(1rem + var(--space-safe-bottom));
+    animation: petroatlas-sheet-in 0.2s ease-out;
+  }
+
+  /* The user is pulling the grabber: follow the finger without animation. */
+  .well-sheet--dragging {
+    animation: none;
+  }
+}
+
+@keyframes petroatlas-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .well-sheet {
+    animation: none;
   }
 }
 
