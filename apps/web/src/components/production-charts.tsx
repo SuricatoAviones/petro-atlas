@@ -221,6 +221,9 @@ export function ProductionCharts({
     },
   ];
 
+  /** The first chart with data carries the zoom slider of the section. */
+  const leadOperationTitle = operationSeries.find((chart) => chart.hasData)?.title;
+
   return (
     <div className="production-charts">
       <p className="production-charts__hint">{messages.wellSheet.charts.zoomHint}</p>
@@ -234,6 +237,7 @@ export function ProductionCharts({
             source={source}
             closedDates={closedDates}
             groupId={groupId}
+            zoomSlider
             onSelectVisibleRange={(start, end) => {
               onFitWindowChange({ start, end });
             }}
@@ -356,6 +360,7 @@ export function ProductionCharts({
                 source={source}
                 closedDates={closedDates}
                 groupId={groupId}
+                zoomSlider={chart.title === leadOperationTitle}
               />
             ) : null,
           )}

@@ -696,6 +696,21 @@ body {
 .chart-card__canvas {
   width: 100%;
   height: 200px;
+  /* Vertical touch drags keep scrolling the sheet; pinch and horizontal drags
+     still reach the chart (docs/17-diseno-responsive.md). */
+  touch-action: pan-y;
+}
+
+@media (max-width: 48rem) {
+  .chart-card__canvas {
+    /* Taller plots read better on phones; capped so short screens keep room
+       for the card header and the source note. */
+    height: min(38dvh, 16rem);
+  }
+
+  .chart-card__canvas--logs {
+    height: min(52dvh, 24rem);
+  }
 }
 
 .engineering-tabs {
@@ -947,6 +962,19 @@ body {
 
   .map-explorer__filters-toggle {
     min-height: var(--touch-target);
+  }
+
+  /* Comfortable touch targets on phones (docs/17-diseno-responsive.md). */
+  .app-header__language button {
+    min-height: 2.75rem;
+    padding-inline: 0.6rem;
+  }
+
+  .app-header__nav a,
+  .filter-panel__reset,
+  .chart-card__tool,
+  .chart-card__action {
+    padding-block: 0.85rem;
   }
 }
 

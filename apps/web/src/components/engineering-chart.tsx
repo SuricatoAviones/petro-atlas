@@ -14,8 +14,10 @@ import { useEffect, useMemo, useRef } from 'react';
 
 import type { TableData } from '@/lib/export';
 
+import { chartGridMargins, COMPACT_CHART_WIDTH_PX } from './chart-grid';
 import { ChartSource, ChartTools, PNG_EXPORT_OPTIONS } from './chart-tools';
 import { useMessages } from './locale-provider';
+import { useElementWidth } from './use-element-width';
 
 echarts.use([
   LineChart,
@@ -66,7 +68,8 @@ export function EngineeringChart({
   xLabel,
 }: EngineeringChartProps) {
   const messages = useMessages();
-  const containerRef = useRef<HTMLDivElement>(null);
+  const { ref: containerRef, width } = useElementWidth<HTMLDivElement>();
+  const compact = width > 0 && width < COMPACT_CHART_WIDTH_PX;
   const chartRef = useRef<ReturnType<typeof echarts.init> | null>(null);
   const table = useMemo(
     (): TableData => ({
@@ -96,7 +99,7 @@ export function EngineeringChart({
       chartRef.current = null;
       chart.dispose();
     };
-  }, []);
+  }, [containerRef]);
 
   useEffect(() => {
     const x = (value: string | number): string | number =>
@@ -106,7 +109,7 @@ export function EngineeringChart({
         animation: false,
         tooltip: { trigger: 'axis' },
         legend: { top: 0, textStyle: { fontSize: 10 }, itemWidth: 14, itemHeight: 8 },
-        grid: { left: 54, right: axes.length > 1 ? 58 : 18, top: 32, bottom: 12 },
+        grid: chartGridMargins(compact, axes.length > 1),
         xAxis: {
           type: logX ? 'log' : xType,
           boundaryGap: false,
@@ -135,7 +138,7 @@ export function EngineeringChart({
       } satisfies echarts.EChartsCoreOption,
       true,
     );
-  }, [axes, logX, logY, series, xType, xValues]);
+  }, [axes, compact, logX, logY, series, xType, xValues]);
 
   return (
     <section className="chart-card">
