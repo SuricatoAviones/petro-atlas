@@ -22,7 +22,11 @@ export default defineConfig({
   expect: { timeout: 15_000 },
   use: {
     baseURL: WEB_ORIGIN,
-    trace: 'on-first-retry',
+    // A stuck action reports its precise reason instead of eating the whole test
+    // timeout, and the trace of a failed test lands in test-results for the CI
+    // artifacts. There are no retries, so 'on-first-retry' never captured any.
+    actionTimeout: 15_000,
+    trace: 'retain-on-failure',
   },
   projects: [
     {
@@ -35,10 +39,9 @@ export default defineConfig({
       name: 'mobile',
       use: {
         ...devices['Pixel 7'],
-        // New headless runs the full Chromium binary; the default headless shell
-        // is a separate minimal browser whose behaviour under device emulation
-        // varies (microsoft/playwright#33566). The phone flow hangs in the
-        // shell on the GitHub runner, while the full browser runs it reliably.
+        // New headless runs the full Chromium binary, which Chrome recommends for
+        // end-to-end testing (microsoft/playwright#33566). The headless shell is a
+        // reduced build for scraping, not for authentic phone emulation.
         channel: 'chromium',
       },
       testMatch: /mobile\.spec\.ts/,
