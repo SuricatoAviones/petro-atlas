@@ -24,6 +24,7 @@ Esta carpeta es la fuente de verdad del diseño. Si el código y la documentaci�
 | [14-textos-legales.md](14-textos-legales.md) | Páginas legales, estado y revisión pendiente antes de la explotación pública |
 | [15-despliegue.md](15-despliegue.md) | Despliegue en Render: Blueprint, base de datos, migraciones y limitaciones |
 | [16-accesibilidad.md](16-accesibilidad.md) | Pruebas automáticas con axe y revisión manual de accesibilidad |
+| [17-diseno-responsive.md](17-diseno-responsive.md) | Diseño responsivo: hojas inferiores, objetivos táctiles y reglas por vista |
 | [adr/](adr/README.md) | Decisiones de arquitectura registradas |
 | [PROMPT-INICIAL.md](PROMPT-INICIAL.md) | Prompt para arrancar el desarrollo con un agente de IA |
 
