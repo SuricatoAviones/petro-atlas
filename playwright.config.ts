@@ -33,7 +33,14 @@ export default defineConfig({
     },
     {
       name: 'mobile',
-      use: { ...devices['Pixel 7'] },
+      use: {
+        ...devices['Pixel 7'],
+        // New headless runs the full Chromium binary; the default headless shell
+        // is a separate minimal browser whose behaviour under device emulation
+        // varies (microsoft/playwright#33566). The phone flow hangs in the
+        // shell on the GitHub runner, while the full browser runs it reliably.
+        channel: 'chromium',
+      },
       testMatch: /mobile\.spec\.ts/,
     },
   ],
