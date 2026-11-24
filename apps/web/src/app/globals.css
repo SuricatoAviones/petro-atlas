@@ -1284,8 +1284,21 @@ body {
 }
 
 @media (max-width: 48rem) {
+  /* The wrapped header grows beyond the desktop height, so the shell's first
+     row cannot stay pinned to --header-height. */
+  .app-shell {
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+
+  /* The brand and the language buttons keep the first row and the links wrap
+     below: no font metric can push the page past the phone viewport
+     (docs/18: no view overflows at 360 px). */
   .app-header {
+    flex-wrap: wrap;
     gap: 0.5rem;
+    row-gap: 0.25rem;
+    padding-block: 0.25rem;
+    line-height: var(--touch-target);
   }
 
   .app-header__tagline {
@@ -1293,7 +1306,13 @@ body {
   }
 
   .app-header__nav {
-    gap: 0.75rem;
+    flex-basis: 100%;
+    order: 1;
+    gap: 1rem;
+  }
+
+  .app-header__language {
+    margin-left: auto;
   }
 
   /* ADR 0007: the map fills the page and the panel becomes a bottom sheet. */
