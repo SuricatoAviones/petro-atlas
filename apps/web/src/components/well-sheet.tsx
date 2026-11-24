@@ -6,7 +6,15 @@ import type {
   WellProductionResponse,
   WellTrajectoryResponse,
 } from '@petroatlas/shared-types';
-import { useEffect, useId, useRef, useState } from 'react';
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type RefObject,
+} from 'react';
 
 import { wellExportUrl } from '@/lib/api';
 import { downloadCsv, safeFileName, type TableData } from '@/lib/export';
@@ -29,6 +37,7 @@ import { LazyTrajectoryChart } from './lazy-trajectory-chart';
 import { LocalLogs } from './local-logs';
 import { useLocale, useMessages } from './locale-provider';
 import { LogsChart } from './logs-chart';
+import { useSheetDismiss } from './sheet-dismiss';
 import { WellComparison } from './well-comparison';
 import type { WellAtPoint } from './well-map';
 
@@ -96,6 +105,36 @@ function formatCoordinate(value: number, locale: string): string {
   }).format(value);
 }
 
+/** Tolerance in px: anything below this counts as "scrolled to the end". */
+const TABS_SCROLL_TOLERANCE_PX = 8;
+
+/**
+ * Whether the tab row still has content to the right, for the edge fade of
+ * docs/18-diseno-responsive.md. Read like any external store: scroll and
+ * resize events carry the updates, no effect setState.
+ */
+function useTabsHaveMore(tabsRef: RefObject<HTMLDivElement | null>): boolean {
+  return useSyncExternalStore(
+    (onChange) => {
+      const element = tabsRef.current;
+      if (element !== null) element.addEventListener('scroll', onChange);
+      window.addEventListener('resize', onChange);
+      return () => {
+        if (element !== null) element.removeEventListener('scroll', onChange);
+        window.removeEventListener('resize', onChange);
+      };
+    },
+    () => {
+      const element = tabsRef.current;
+      if (element === null) return false;
+      return (
+        element.scrollWidth - element.clientWidth - element.scrollLeft > TABS_SCROLL_TOLERANCE_PX
+      );
+    },
+    () => false,
+  );
+}
+
 function openStreetMapUrl(latDeg: number, lonDeg: number): string {
   return `https://www.openstreetmap.org/?mlat=${String(latDeg)}&mlon=${String(lonDeg)}#map=13/${String(latDeg)}/${String(lonDeg)}`;
 }
@@ -153,6 +192,10 @@ export function WellSheet({
   const headingId = useId();
   const chartGroupId = useId();
   const closeRef = useRef<HTMLButtonElement>(null);
+  const dismiss = useSheetDismiss(onClose);
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef(new Map<SheetTab, HTMLButtonElement>());
+  const tabsHaveMore = useTabsHaveMore(tabsRef);
   const [state, setState] = useState<LoadState<WellDetail>>(idleState);
   const [production, setProduction] = useState<LoadState<WellProductionResponse>>(idleState);
   const [trajectory, setTrajectory] = useState<LoadState<WellTrajectoryResponse>>(idleState);
@@ -251,6 +294,13 @@ export function WellSheet({
     };
   }, [onClose]);
 
+  // The active tab enters the view when it changes: on phones the row scrolls
+  // horizontally (docs/18-diseno-responsive.md). Runs on mount too, so a tab
+  // restored from the URL starts visible.
+  useEffect(() => {
+    tabRefs.current.get(tab)?.scrollIntoView({ inline: 'nearest', block: 'nearest' });
+  }, [tab]);
+
   const isCurrent = state.key === selectedKey;
   const detail = isCurrent && state.status === 'ready' ? state.data : null;
   const isLoading = !isCurrent || state.status === 'idle' || state.status === 'loading';
@@ -278,8 +328,41 @@ export function WellSheet({
       : alerts.filter((alert) => alert.origin === 'imported' && alert.wellSlug === selectedSlug);
   const currentKey: WellKey = { origin: selectedOrigin, slug: selectedSlug };
 
+  /** Arrow keys move across the tab list, as the WAI-ARIA tabs pattern requires. */
+  const handleTablistKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>): void => {
+    const currentIndex = TABS.indexOf(tab);
+    const lastIndex = TABS.length - 1;
+    let nextIndex: number;
+    if (event.key === 'ArrowRight') {
+      nextIndex = currentIndex === lastIndex ? 0 : currentIndex + 1;
+    } else if (event.key === 'ArrowLeft') {
+      nextIndex = currentIndex === 0 ? lastIndex : currentIndex - 1;
+    } else if (event.key === 'Home') {
+      nextIndex = 0;
+    } else if (event.key === 'End') {
+      nextIndex = lastIndex;
+    } else {
+      return;
+    }
+    event.preventDefault();
+    const nextTab = TABS[nextIndex];
+    if (nextTab === undefined || nextTab === tab) return;
+    onTabChange(nextTab);
+    tabRefs.current.get(nextTab)?.focus();
+  };
+
   return (
-    <aside className="well-sheet" aria-labelledby={headingId} data-testid="well-sheet">
+    <aside
+      className={dismiss.offset > 0 ? 'well-sheet well-sheet--dragging' : 'well-sheet'}
+      aria-labelledby={headingId}
+      data-testid="well-sheet"
+      style={
+        dismiss.offset > 0 ? { transform: `translateY(${String(dismiss.offset)}px)` } : undefined
+      }
+    >
+      <div className="sheet-grabber" {...dismiss.handlers} aria-hidden="true">
+        <span className="sheet-grabber__bar" />
+      </div>
       <div className="well-sheet__header">
         <div>
           <h2 id={headingId}>{detail?.name ?? selectedWell.name ?? messages.wellSheet.title}</h2>
@@ -288,7 +371,7 @@ export function WellSheet({
         <button
           ref={closeRef}
           type="button"
-          className="well-sheet__close"
+          className="sheet-close"
           aria-label={messages.wellSheet.close}
           onClick={onClose}
         >
@@ -326,24 +409,42 @@ export function WellSheet({
         <p className="well-sheet__notice">{messages.wellSheet.importedNotice}</p>
       )}
 
-      <div className="well-sheet__tabs" role="tablist" aria-label={messages.wellSheet.tabs.label}>
-        {TABS.map((candidate) => (
-          <button
-            key={candidate}
-            id={`${headingId}-${candidate}`}
-            type="button"
-            role="tab"
-            aria-selected={tab === candidate}
-            aria-controls={`${headingId}-panel`}
-            tabIndex={tab === candidate ? 0 : -1}
-            className="well-sheet__tab"
-            onClick={() => {
-              onTabChange(candidate);
-            }}
-          >
-            {messages.wellSheet.tabs[candidate]}
-          </button>
-        ))}
+      <div
+        className={
+          tabsHaveMore
+            ? 'well-sheet__tabs-wrap well-sheet__tabs-wrap--more'
+            : 'well-sheet__tabs-wrap'
+        }
+      >
+        <div
+          ref={tabsRef}
+          className="well-sheet__tabs"
+          role="tablist"
+          aria-label={messages.wellSheet.tabs.label}
+          onKeyDown={handleTablistKeyDown}
+        >
+          {TABS.map((candidate) => (
+            <button
+              key={candidate}
+              id={`${headingId}-${candidate}`}
+              ref={(node) => {
+                if (node === null) tabRefs.current.delete(candidate);
+                else tabRefs.current.set(candidate, node);
+              }}
+              type="button"
+              role="tab"
+              aria-selected={tab === candidate}
+              aria-controls={`${headingId}-panel`}
+              tabIndex={tab === candidate ? 0 : -1}
+              className="well-sheet__tab"
+              onClick={() => {
+                onTabChange(candidate);
+              }}
+            >
+              {messages.wellSheet.tabs[candidate]}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div id={`${headingId}-panel`} role="tabpanel" aria-labelledby={`${headingId}-${tab}`}>

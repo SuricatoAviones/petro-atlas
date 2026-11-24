@@ -11,8 +11,10 @@ import { useEffect, useMemo, useRef } from 'react';
 import type { TableData } from '@/lib/export';
 import type { UnitSystem } from '@/lib/sheet-state';
 
+import { trajectoryGridMargins, COMPACT_CHART_WIDTH_PX } from './chart-grid';
 import { ChartSource, ChartTools, PNG_EXPORT_OPTIONS } from './chart-tools';
 import { useMessages } from './locale-provider';
+import { useElementWidth } from './use-element-width';
 
 echarts.use([LineChart, GridComponent, TooltipComponent, CanvasRenderer]);
 
@@ -58,7 +60,8 @@ export interface TrajectoryChartProps {
 /** Vertical section of the well (docs/07, "Trayectoria"). */
 export function TrajectoryChart({ data, unitSystem }: TrajectoryChartProps) {
   const messages = useMessages();
-  const containerRef = useRef<HTMLDivElement>(null);
+  const { ref: containerRef, width } = useElementWidth<HTMLDivElement>();
+  const compact = width > 0 && width < COMPACT_CHART_WIDTH_PX;
   const chartRef = useRef<ReturnType<typeof echarts.init> | null>(null);
   const unit = unitSystem === 'si' ? 'm' : 'ft';
   const points = useMemo(() => stationPoints(data), [data]);
@@ -100,14 +103,14 @@ export function TrajectoryChart({ data, unitSystem }: TrajectoryChartProps) {
       chartRef.current = null;
       chart.dispose();
     };
-  }, []);
+  }, [containerRef]);
 
   useEffect(() => {
     chartRef.current?.setOption(
       {
         animation: false,
         tooltip: { trigger: 'axis' },
-        grid: { left: 56, right: 24, top: 36, bottom: 32 },
+        grid: trajectoryGridMargins(compact),
         xAxis: {
           type: 'value',
           name: `${messages.wellSheet.trajectory.displacement} (${unit})`,
@@ -134,7 +137,7 @@ export function TrajectoryChart({ data, unitSystem }: TrajectoryChartProps) {
       } satisfies echarts.EChartsCoreOption,
       true,
     );
-  }, [chartData, messages, unit]);
+  }, [chartData, compact, messages, unit]);
 
   if (data.stations.length === 0) {
     return <p className="well-sheet__notice">{messages.wellSheet.trajectory.noData}</p>;
@@ -142,7 +145,7 @@ export function TrajectoryChart({ data, unitSystem }: TrajectoryChartProps) {
 
   return (
     <section className="chart-card">
-      <h4>{messages.wellSheet.trajectory.title}</h4>
+      <h3>{messages.wellSheet.trajectory.title}</h3>
       <div
         ref={containerRef}
         className="chart-card__canvas"

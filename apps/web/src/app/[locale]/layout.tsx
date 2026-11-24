@@ -1,6 +1,6 @@
 import '../globals.css';
 
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 
@@ -8,6 +8,15 @@ import { LocaleProvider } from '@/components/locale-provider';
 import { LOCALES, getMessages, type Locale } from '@/messages';
 
 const SITE_URL = 'https://petroatlas-web.onrender.com';
+
+/**
+ * Mobile viewport: `viewportFit: 'cover'` lets sheets reach the bottom edge on
+ * notched phones, and the theme color matches the header bar.
+ */
+export const viewport: Viewport = {
+  themeColor: '#12303a',
+  viewportFit: 'cover',
+};
 
 export function generateStaticParams(): { locale: Locale }[] {
   return LOCALES.map((locale) => ({ locale }));

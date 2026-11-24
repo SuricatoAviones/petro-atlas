@@ -17,8 +17,10 @@ import { useEffect, useMemo, useRef } from 'react';
 import type { TableData } from '@/lib/export';
 import type { UnitSystem } from '@/lib/sheet-state';
 
+import { chartGridMargins, COMPACT_CHART_WIDTH_PX, type ChartGridMargins } from './chart-grid';
 import { ChartSource, ChartTools, PNG_EXPORT_OPTIONS } from './chart-tools';
 import { useMessages } from './locale-provider';
+import { useElementWidth } from './use-element-width';
 
 echarts.use([
   LineChart,
@@ -56,6 +58,12 @@ export interface SeriesChartProps {
   closedDates: readonly string[];
   groupId: string;
   onSelectVisibleRange?: (startDate: string, endDate: string) => void;
+  /**
+   * Shows the zoom window as a slider on narrow screens. Set on the lead chart
+   * of each section: pinch zoom works everywhere, but the window that the Arps
+   * fit uses deserves a visible affordance (docs/18-diseno-responsive.md).
+   */
+  zoomSlider?: boolean;
 }
 
 function addDays(isoDate: string, days: number): string {
@@ -64,16 +72,46 @@ function addDays(isoDate: string, days: number): string {
   return `${date.toISOString().slice(0, 10)} 00:00:00`;
 }
 
+/** Room for the slider of `zoomSlider` charts on narrow screens. */
+const COMPACT_SLIDER_GRID_BOTTOM = 34;
+
+function compactDataZoom(): echarts.EChartsCoreOption['dataZoom'] {
+  return [
+    { type: 'inside', xAxisIndex: 0 },
+    {
+      type: 'slider',
+      xAxisIndex: 0,
+      height: 16,
+      bottom: 8,
+      borderColor: 'transparent',
+      fillerColor: 'rgb(18 48 58 / 12%)',
+      handleStyle: { color: '#12303a', borderColor: '#12303a' },
+      moveHandleSize: 0,
+      textStyle: { fontSize: 9 },
+      brushSelect: false,
+    },
+  ];
+}
+
 function chartOption({
   dates,
   series,
   axes,
   closedDates,
-}: Pick<SeriesChartProps, 'dates' | 'series' | 'axes' | 'closedDates'>): echarts.EChartsCoreOption {
+  compact,
+  zoomSlider,
+}: Pick<SeriesChartProps, 'dates' | 'series' | 'axes' | 'closedDates' | 'zoomSlider'> & {
+  compact: boolean;
+}): echarts.EChartsCoreOption {
   const closedRanges = closedDates.map((date) => [
     { xAxis: `${date} 00:00:00` },
     { xAxis: addDays(date, 1) },
   ]);
+  const margins: ChartGridMargins = chartGridMargins(compact, axes.length > 1);
+  const grid: ChartGridMargins = {
+    ...margins,
+    bottom: compact && zoomSlider === true ? COMPACT_SLIDER_GRID_BOTTOM : margins.bottom,
+  };
   return {
     animation: false,
     axisPointer: { link: [{ xAxisIndex: 'all' }] },
@@ -84,7 +122,7 @@ function chartOption({
       itemWidth: 22,
       itemHeight: 8,
     },
-    grid: { left: 52, right: axes.length > 1 ? 58 : 18, top: 32, bottom: 12 },
+    grid,
     xAxis: {
       type: 'time',
       boundaryGap: false,
@@ -99,7 +137,8 @@ function chartOption({
       axisLabel: { fontSize: 10 },
       splitLine: { show: index === 0 },
     })),
-    dataZoom: [{ type: 'inside', xAxisIndex: 0 }],
+    dataZoom:
+      compact && zoomSlider === true ? compactDataZoom() : [{ type: 'inside', xAxisIndex: 0 }],
     series: series.map((item, index) => ({
       type: 'line',
       name: item.name,
@@ -131,9 +170,11 @@ export function SeriesChart({
   closedDates,
   groupId,
   onSelectVisibleRange,
+  zoomSlider = false,
 }: SeriesChartProps) {
   const messages = useMessages();
-  const containerRef = useRef<HTMLDivElement>(null);
+  const { ref: containerRef, width } = useElementWidth<HTMLDivElement>();
+  const compact = width > 0 && width < COMPACT_CHART_WIDTH_PX;
   const chartRef = useRef<ReturnType<typeof echarts.init> | null>(null);
 
   useEffect(() => {
@@ -152,11 +193,14 @@ export function SeriesChart({
       chartRef.current = null;
       chart.dispose();
     };
-  }, [groupId]);
+  }, [containerRef, groupId]);
 
   useEffect(() => {
-    chartRef.current?.setOption(chartOption({ dates, series, axes, closedDates }), true);
-  }, [axes, closedDates, dates, series]);
+    chartRef.current?.setOption(
+      chartOption({ dates, series, axes, closedDates, compact, zoomSlider }),
+      true,
+    );
+  }, [axes, closedDates, compact, dates, series, zoomSlider]);
 
   /** Indices of the first and last date inside the current zoom window. */
   const visibleRange = (): [number, number] | null => {
@@ -199,7 +243,7 @@ export function SeriesChart({
   return (
     <section className="chart-card">
       <div className="chart-card__header">
-        <h4>{title}</h4>
+        <h3>{title}</h3>
         {onSelectVisibleRange !== undefined && (
           <button type="button" className="chart-card__action" onClick={useVisibleRange}>
             {messages.wellSheet.fit.useView}

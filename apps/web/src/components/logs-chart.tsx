@@ -10,8 +10,10 @@ import { useEffect, useMemo, useRef } from 'react';
 
 import type { TableData } from '@/lib/export';
 
+import { logTrackMargins, COMPACT_CHART_WIDTH_PX } from './chart-grid';
 import { ChartSource, ChartTools, PNG_EXPORT_OPTIONS } from './chart-tools';
 import { useMessages } from './locale-provider';
+import { useElementWidth } from './use-element-width';
 
 echarts.use([LineChart, GridComponent, TooltipComponent, DataZoomComponent, CanvasRenderer]);
 
@@ -52,9 +54,14 @@ function trackName(curve: LogCurve, messages: Messages): string {
   return messages.wellSheet.logs.trackLabel(curve.mnemonic, curve.unit);
 }
 
-function chartOption(curves: readonly LogCurve[], messages: Messages): echarts.EChartsCoreOption {
+function chartOption(
+  curves: readonly LogCurve[],
+  messages: Messages,
+  compact: boolean,
+): echarts.EChartsCoreOption {
   const count = Math.max(1, curves.length);
   const width = 93 / count;
+  const { top, bottom } = logTrackMargins(compact);
   return {
     animation: false,
     axisPointer: { link: [{ yAxisIndex: 'all' }] },
@@ -62,8 +69,8 @@ function chartOption(curves: readonly LogCurve[], messages: Messages): echarts.E
     grid: curves.map((curve, index) => ({
       left: `${String(7 + index * width)}%`,
       width: `${String(width - 2)}%`,
-      top: 44,
-      bottom: 44,
+      top,
+      bottom,
     })),
     xAxis: curves.map((curve, index) => ({
       type: isLogScale(curve.mnemonic) ? 'log' : 'value',
@@ -138,7 +145,8 @@ export interface LogsChartProps {
 /** Depth tracks of the log curves of a well (docs/07, "Registros"). */
 export function LogsChart({ curves, source }: LogsChartProps) {
   const messages = useMessages();
-  const containerRef = useRef<HTMLDivElement>(null);
+  const { ref: containerRef, width } = useElementWidth<HTMLDivElement>();
+  const compact = width > 0 && width < COMPACT_CHART_WIDTH_PX;
   const chartRef = useRef<ReturnType<typeof echarts.init> | null>(null);
   const sorted = useMemo(
     () => [...curves].sort((left, right) => familyRank(left.mnemonic) - familyRank(right.mnemonic)),
@@ -160,16 +168,16 @@ export function LogsChart({ curves, source }: LogsChartProps) {
       chartRef.current = null;
       chart.dispose();
     };
-  }, []);
+  }, [containerRef]);
 
   useEffect(() => {
-    chartRef.current?.setOption(chartOption(sorted, messages), true);
-  }, [messages, sorted]);
+    chartRef.current?.setOption(chartOption(sorted, messages, compact), true);
+  }, [compact, messages, sorted]);
 
   return (
     <section className="chart-card">
       <div className="chart-card__header">
-        <h4>{messages.wellSheet.logs.title}</h4>
+        <h3>{messages.wellSheet.logs.title}</h3>
       </div>
       <p className="production-charts__hint">{messages.wellSheet.logs.zoomHint}</p>
       <div

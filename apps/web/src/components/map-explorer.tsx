@@ -2,7 +2,7 @@
 
 import type { AlertItem, FieldSummary, WellCumulative } from '@petroatlas/shared-types';
 import { useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { fetchAlerts, fetchCumulativeWells, fetchFields, fetchWellCount } from '@/lib/api';
 import { bubbleMaximum, type BubbleFluid } from '@/lib/bubble';
@@ -21,9 +21,11 @@ import {
 } from './filter-panel';
 import { ImportPanel } from './import-panel';
 import { LazyWellMap } from './lazy-well-map';
+import { useMessages } from './locale-provider';
 import type { WellColorMode } from './well-colors';
 import type { WellAtPoint } from './well-map';
 import { WellSheet, type WellSelection } from './well-sheet';
+import { useMediaQuery } from './use-media-query';
 
 interface FieldOptionsState {
   status: FilterOptionsStatus;
@@ -162,6 +164,7 @@ function useWellCount(query: string): WellCountState {
 /** Map page state: filters, result count and colour mode, shared by the panel and the map. */
 export function MapExplorer() {
   const searchParams = useSearchParams();
+  const messages = useMessages();
   const [initialUrlState] = useState(() => parseMapUrlState(searchParams));
   const [filters, setFilters] = useState<WellFilters>(initialUrlState.filters);
   const [colorMode, setColorMode] = useState<WellColorMode>('status');
@@ -180,6 +183,10 @@ export function MapExplorer() {
   const [compareKeys, setCompareKeys] = useState<WellKey[]>(
     initialUrlState.compareSlugs.map((slug) => ({ origin: 'public', slug })),
   );
+  // Mobile bottom-sheet state (ADR 0007): ephemeral UI, not carried in the URL.
+  const isCompact = useMediaQuery('(max-width: 48rem)');
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const filtersToggleRef = useRef<HTMLButtonElement>(null);
   const filterQuery = useMemo(() => toWellQuery(filters), [filters]);
   const options = useFieldOptions();
   const count = useWellCount(filterQuery);
@@ -275,6 +282,28 @@ export function MapExplorer() {
   const handleViewChange = useCallback((nextView: MapView) => {
     setView(nextView);
   }, []);
+  const openFilters = useCallback(() => {
+    setFiltersOpen(true);
+  }, []);
+  const closeFilters = useCallback(() => {
+    setFiltersOpen(false);
+    // Focus goes back where the user came from; a no-op on desktop, where the
+    // toggle is hidden and the panel is a fixed column.
+    filtersToggleRef.current?.focus();
+  }, []);
+
+  // Escape closes the filter sheet while it is open on a phone.
+  useEffect(() => {
+    if (!filtersOpen || !isCompact) return;
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') closeFilters();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [closeFilters, filtersOpen, isCompact]);
+
   const handleOpenAlert = useCallback((alert: WellAlert) => {
     setWellsAtPoint([]);
     setSelectedWell({
@@ -283,10 +312,13 @@ export function MapExplorer() {
       name: alert.wellName,
       origin: alert.origin,
     });
+    // The well sheet comes from the filter sheet: close it so both do not stack.
+    setFiltersOpen(false);
   }, []);
   const handleOpenImported = useCallback((well: ImportedWell) => {
     setWellsAtPoint([]);
     setSelectedWell({ id: null, slug: well.slug, name: well.name, origin: 'imported' });
+    setFiltersOpen(false);
   }, []);
 
   return (
@@ -307,6 +339,8 @@ export function MapExplorer() {
         onColorModeChange={setColorMode}
         onBubbleFluidChange={setBubbleFluid}
         onOpenWell={handleOpenAlert}
+        open={filtersOpen}
+        onClose={closeFilters}
       >
         <ImportPanel
           importedWells={importedWells}
@@ -324,6 +358,18 @@ export function MapExplorer() {
           onSelectWells={handleSelectWells}
           onViewChange={handleViewChange}
         />
+        {/* Rendered always and hidden by CSS on desktop: no hydration pop-in (ADR 0007). */}
+        <button
+          ref={filtersToggleRef}
+          type="button"
+          className="map-explorer__filters-toggle"
+          onClick={openFilters}
+        >
+          {messages.map.openFilters}
+        </button>
+        {isCompact && filtersOpen && (
+          <div className="map-explorer__scrim" aria-hidden="true" onClick={closeFilters} />
+        )}
         {selectedWell !== null && (
           <WellSheet
             wells={wellsAtPoint}

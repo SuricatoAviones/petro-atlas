@@ -10,6 +10,10 @@
   --color-border: #d5ddda;
   --color-panel: #ffffff;
   --header-height: 3.5rem;
+  /* Notched phones: bottom bars and sheets add this on top of their padding. */
+  --space-safe-bottom: env(safe-area-inset-bottom, 0rem);
+  /* Comfortable touch target on coarse pointers (WCAG 2.5.8 AA minimum is 24px). */
+  --touch-target: 2.75rem;
   --font-sans:
     system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
 }
@@ -162,6 +166,21 @@ body {
 
 .app-footer__project {
   margin-left: auto;
+}
+
+@media (max-width: 48rem) {
+  /* Keep the legal links on the phone without eating the map. */
+  .app-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+    padding-block: 0.4rem;
+  }
+
+  /* The project links follow the column flow instead of the desktop auto margin. */
+  .app-footer__project {
+    margin-left: 0;
+  }
 }
 
 .legal-page__updated {
@@ -331,19 +350,7 @@ body {
   font-size: 0.8rem;
 }
 
-.well-sheet__close {
-  flex: none;
-  width: 2rem;
-  height: 2rem;
-  padding: 0;
-  border: 1px solid var(--color-border);
-  border-radius: 50%;
-  background: var(--color-panel);
-  color: var(--color-ink);
-  font-size: 1.25rem;
-  line-height: 1;
-  cursor: pointer;
-}
+/* The close button uses the shared `.sheet-close` of the bottom sheets. */
 
 .well-sheet__list {
   display: flex;
@@ -536,6 +543,27 @@ body {
   border-top: 1px solid var(--color-border);
 }
 
+.well-sheet__tabs-wrap {
+  position: relative;
+}
+
+/* Edge fade that signals more tabs to the right (docs/18-diseno-responsive.md). */
+.well-sheet__tabs-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 1px;
+  width: 1.5rem;
+  background: linear-gradient(to right, transparent, var(--color-panel));
+  pointer-events: none;
+  opacity: 0;
+}
+
+.well-sheet__tabs-wrap--more::after {
+  opacity: 1;
+}
+
 .well-sheet__tabs {
   display: flex;
   gap: 0.25rem;
@@ -557,6 +585,26 @@ body {
   border-bottom-color: var(--color-accent);
   color: var(--color-ink);
   font-weight: 600;
+}
+
+@media (max-width: 48rem) {
+  .well-sheet__tabs {
+    /* One scrollable row instead of wrapping: it never steals sheet height. */
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+  }
+
+  .well-sheet__tab {
+    flex: none;
+    scroll-snap-align: start;
+  }
+}
+
+@media (pointer: coarse) {
+  .well-sheet__tab {
+    padding-block: 0.85rem;
+  }
 }
 
 .well-sheet__units {
@@ -612,7 +660,7 @@ body {
   gap: 0.5rem;
 }
 
-.chart-card h4 {
+.chart-card h3 {
   margin: 0 0 0.25rem;
   font-size: 0.9rem;
 }
@@ -635,7 +683,7 @@ body {
   background: var(--color-surface);
 }
 
-.fit-summary h4 {
+.fit-summary h3 {
   margin: 0 0 0.25rem;
   font-size: 0.9rem;
 }
@@ -671,6 +719,21 @@ body {
 .chart-card__canvas {
   width: 100%;
   height: 200px;
+  /* Vertical touch drags keep scrolling the sheet; pinch and horizontal drags
+     still reach the chart (docs/18-diseno-responsive.md). */
+  touch-action: pan-y;
+}
+
+@media (max-width: 48rem) {
+  .chart-card__canvas {
+    /* Taller plots read better on phones; capped so short screens keep room
+       for the card header and the source note. */
+    height: min(38dvh, 16rem);
+  }
+
+  .chart-card__canvas--logs {
+    height: min(52dvh, 24rem);
+  }
 }
 
 .engineering-tabs {
@@ -819,6 +882,122 @@ body {
     border-top: 1px solid var(--color-border);
     border-left: 0;
     box-shadow: 0 -2px 8px rgb(0 0 0 / 12%);
+    padding-bottom: calc(1rem + var(--space-safe-bottom));
+    animation: petroatlas-sheet-in 0.2s ease-out;
+  }
+
+  /* The user is pulling the grabber: follow the finger without animation. */
+  .well-sheet--dragging {
+    animation: none;
+  }
+}
+
+@keyframes petroatlas-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .well-sheet {
+    animation: none;
+  }
+}
+
+/*
+ * Bottom sheets (ADR 0007, docs/18-diseno-responsive.md).
+ * Shared by the filter panel and the well sheet on screens up to 48rem.
+ */
+
+.sheet-grabber {
+  display: none;
+}
+
+.sheet-grabber__bar {
+  display: block;
+  width: 2.25rem;
+  height: 0.25rem;
+  margin: 0 auto;
+  border-radius: 999px;
+  background: var(--color-border);
+}
+
+.sheet-close {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-panel);
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+/* Floating chip that opens the filter sheet; hidden on desktop by the media
+   query below, the same one that switches the panel itself. */
+.map-explorer__filters-toggle {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 4;
+  /* Hidden on desktop: shown only where the panel is a sheet (below). */
+  display: none;
+  padding: 0.45rem 0.9rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-header);
+  color: var(--color-header-text);
+  font: inherit;
+  font-size: 0.875rem;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 25%);
+  cursor: pointer;
+}
+
+.map-explorer__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgb(19 33 43 / 40%);
+  animation: petroatlas-fade-in 0.2s ease-out;
+}
+
+@keyframes petroatlas-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-explorer__scrim {
+    animation: none;
+  }
+}
+
+@media (pointer: coarse) {
+  .sheet-close {
+    width: var(--touch-target);
+    height: var(--touch-target);
+  }
+
+  .map-explorer__filters-toggle {
+    min-height: var(--touch-target);
+  }
+
+  /* Comfortable touch targets on phones (docs/18-diseno-responsive.md). */
+  .app-header__language button {
+    min-height: 2.75rem;
+    padding-inline: 0.6rem;
+  }
+
+  .app-header__nav a,
+  .filter-panel__reset,
+  .chart-card__tool,
+  .chart-card__action {
+    padding-block: 0.85rem;
   }
 }
 
@@ -835,6 +1014,17 @@ body {
   align-items: baseline;
   justify-content: space-between;
   gap: 0.5rem;
+}
+
+.filter-panel__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* The panel is a fixed column on desktop: closing it only exists as a sheet. */
+.filter-panel__close {
+  display: none;
 }
 
 .filter-panel h2 {
@@ -1094,8 +1284,21 @@ body {
 }
 
 @media (max-width: 48rem) {
+  /* The wrapped header grows beyond the desktop height, so the shell's first
+     row cannot stay pinned to --header-height. */
+  .app-shell {
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+
+  /* The brand and the language buttons keep the first row and the links wrap
+     below: no font metric can push the page past the phone viewport
+     (docs/18: no view overflows at 360 px). */
   .app-header {
+    flex-wrap: wrap;
     gap: 0.5rem;
+    row-gap: 0.25rem;
+    padding-block: 0.25rem;
+    line-height: var(--touch-target);
   }
 
   .app-header__tagline {
@@ -1103,18 +1306,65 @@ body {
   }
 
   .app-header__nav {
-    gap: 0.75rem;
+    flex-basis: 100%;
+    order: 1;
+    gap: 1rem;
   }
 
+  .app-header__language {
+    margin-left: auto;
+  }
+
+  /* ADR 0007: the map fills the page and the panel becomes a bottom sheet. */
   .map-explorer {
     grid-template-columns: 1fr;
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .map-explorer__filters-toggle {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .sheet-grabber {
+    display: block;
+    padding: 0.25rem 0 0.5rem;
+    cursor: grab;
+    /* The drag must move the sheet, not scroll it (sheet-dismiss.ts). */
+    touch-action: none;
   }
 
   .filter-panel {
-    max-height: 42dvh;
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 41;
+    max-height: 90dvh;
+    padding-bottom: calc(1rem + var(--space-safe-bottom));
+    border-top: 1px solid var(--color-border);
     border-right: 0;
-    border-bottom: 1px solid var(--color-border);
+    box-shadow: 0 -2px 8px rgb(0 0 0 / 12%);
+    transform: translateY(100%);
+    transition: transform 0.2s ease-out;
+  }
+
+  .filter-panel--open {
+    transform: translateY(0);
+  }
+
+  /* While the user is pulling: follow the finger without transition. */
+  .filter-panel--dragging {
+    transition: none;
+  }
+
+  .filter-panel__close {
+    display: inline-flex;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .filter-panel {
+    transition: none;
   }
 }
 
@@ -1311,8 +1561,7 @@ body {
   border-top: 1px solid var(--color-border);
 }
 
-.import-panel h3,
-.import-panel h4 {
+.import-panel h3 {
   margin: 0;
   font-size: 0.9rem;
 }

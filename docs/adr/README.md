@@ -10,6 +10,7 @@ Cada decisión que da forma al sistema queda escrita aquí: qué se decidió, po
 | [0004](0004-monorepo-pnpm.md) | Monorepo con pnpm workspaces | Aceptada |
 | [0005](0005-alertas-como-vista-sql.md) | Las alertas de pozos públicos son una vista SQL | Aceptada |
 | [0006](0006-typescript-6-y-eslint-9.md) | TypeScript 6 y ESLint 9 en lugar de las últimas versiones | Aceptada |
+| [0007](0007-interfaz-movil-con-hojas-inferiores.md) | Interfaz de teléfono con hojas inferiores | Aceptada |
 
 ## Cómo añadir una
 

@@ -19,6 +19,8 @@ export const messages = {
     loading: 'Cargando el mapa base…',
     loadError: 'No se pudo cargar el mapa base. Revisa la conexión y recarga la página.',
     dataError: 'No se pudieron cargar los pozos. Inténtalo de nuevo en unos minutos.',
+    /** Floating chip that opens the filter sheet on phones (ADR 0007). */
+    openFilters: 'Filtros',
     colorMode: {
       legend: 'Color de los pozos',
       status: 'Estado',
@@ -55,6 +57,7 @@ export const messages = {
     label: 'Filtros de pozos',
     title: 'Filtros',
     reset: 'Quitar filtros',
+    close: 'Cerrar filtros',
     loading: 'Actualizando el conteo…',
     countError: 'No se pudo actualizar el conteo.',
     resultCount: (count: number) =>
